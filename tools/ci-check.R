@@ -30,6 +30,19 @@ contract_status <- system2(
 if (!identical(contract_status, 0L)) {
   stop("Packaged contract synchronization failed.", call. = FALSE)
 }
+hosted_liberation_launcher <- file.path(
+  root, "deploy", "shinyapps", "liberation", "app.R"
+)
+hosted_liberation_source <- paste(
+  readLines(hosted_liberation_launcher, warn = FALSE),
+  collapse = "\n"
+)
+if (!grepl("allow_ollama = FALSE", hosted_liberation_source, fixed = TRUE)) {
+  stop(
+    "The hosted LibeRation launcher must explicitly disable Ollama.",
+    call. = FALSE
+  )
+}
 if (.Platform$OS.type == "windows") {
   rtools_roots <- unique(Filter(nzchar, c(
     Sys.getenv("RTOOLS45_HOME"), Sys.getenv("RTOOLS_HOME"), "C:/rtools45"

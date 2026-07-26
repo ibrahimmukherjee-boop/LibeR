@@ -7,6 +7,10 @@ apps <- c(
 )
 
 for (name in names(apps)) {
+  source_text <- paste(readLines(apps[[name]], warn = FALSE), collapse = "\n")
+  if (identical(name, "liberation")) {
+    stopifnot(grepl("allow_ollama = FALSE", source_text, fixed = TRUE))
+  }
   value <- source(apps[[name]], local = new.env(parent = globalenv()))$value
   stopifnot(inherits(value, "shiny.appobj"))
   shiny::testServer(value$serverFuncSource(), {
