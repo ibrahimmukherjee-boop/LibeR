@@ -85,6 +85,8 @@ ls_admin_gui <- function(root = .ls_default_root(),
     paste0("data:image/svg+xml,", utils::URLencode(favicon, reserved = TRUE))
   } else ""
   css <- .ls_admin_asset_data("admin.css")
+  design_css <- .ls_admin_asset_data("liber-design-system.css")
+  design_js <- .ls_admin_asset_data("liber-design-system.js")
   package_version <- as.character(utils::packageVersion("LibeRties"))
 
   login_ui <- shiny::div(
@@ -210,9 +212,12 @@ ls_admin_gui <- function(root = .ls_default_root(),
       shiny::tags$meta(name = "viewport", content = "width=device-width, initial-scale=1"),
       if (nzchar(favicon_href)) shiny::tags$link(rel = "icon", type = "image/svg+xml", href = favicon_href),
       shiny::tags$script(shiny::HTML(
-        "(function(){\n  var dark=false;\n  function apply(){\n    document.documentElement.setAttribute('data-liber-theme',dark?'dark':'light');\n    document.body.classList.toggle('la-theme-dark',dark);\n    document.querySelectorAll('.la-theme-checkbox').forEach(function(node){node.checked=dark;});\n    var label=dark?'Dark':'Light';\n    document.querySelectorAll('.la-theme-label').forEach(function(node){if(node.textContent!==label)node.textContent=label;});\n  }\n  window.liberAdminSetTheme=function(value){dark=!!value;try{localStorage.setItem('liber.theme',dark?'dark':'light');localStorage.setItem('libertiesDarkTheme',dark?'1':'0');}catch(e){}apply();};\n  function restore(){try{var shared=localStorage.getItem('liber.theme');var legacy=localStorage.getItem('libertiesDarkTheme');dark=shared==='dark'||(shared!=='light'&&legacy==='1');if(shared!=='dark'&&shared!=='light'&&legacy!=='1'&&legacy!=='0')dark=matchMedia('(prefers-color-scheme: dark)').matches;}catch(e){dark=matchMedia('(prefers-color-scheme: dark)').matches;}apply();}\n  document.addEventListener('DOMContentLoaded',restore);\n  new MutationObserver(apply).observe(document.documentElement,{childList:true,subtree:true});\n})();"
+        paste0(
+          design_js,
+          "\n(function(){\n  var dark=window.LibeRDesign.theme.bootstrap('libertiesDarkTheme',true);\n  function apply(){\n    document.documentElement.setAttribute('data-liber-theme',dark?'dark':'light');\n    document.body.classList.toggle('la-theme-dark',dark);\n    document.querySelectorAll('.la-theme-checkbox').forEach(function(node){node.checked=dark;});\n    var label=dark?'Dark':'Light';\n    document.querySelectorAll('.la-theme-label').forEach(function(node){if(node.textContent!==label)node.textContent=label;});\n  }\n  window.liberAdminSetTheme=function(value){dark=!!value;window.LibeRDesign.theme.store(dark,'libertiesDarkTheme',true);apply();};\n  document.addEventListener('DOMContentLoaded',apply);\n  new MutationObserver(apply).observe(document.documentElement,{childList:true,subtree:true});\n})();"
+        )
       )),
-      shiny::tags$style(shiny::HTML(css))
+      shiny::tags$style(shiny::HTML(paste(design_css, css, sep = "\n")))
     ),
     shiny::uiOutput("gate")
   )
@@ -249,12 +254,14 @@ ls_admin_gui <- function(root = .ls_default_root(),
     }
     refresh_user_data <- function(preferred = NULL) {
       if (is.null(preferred)) preferred <- shiny::isolate(selected_user())
-      users(ls_user_list(root))
+      next_users <- ls_user_list(root)
+      if (!identical(shiny::isolate(users()), next_users)) users(next_users)
       normalize_user_selection(preferred)
     }
     refresh_job_data <- function(preferred = NULL) {
       if (is.null(preferred)) preferred <- shiny::isolate(selected_job())
-      jobs(.ls_admin_jobs(root, users()))
+      next_jobs <- .ls_admin_jobs(root, shiny::isolate(users()))
+      if (!identical(shiny::isolate(jobs()), next_jobs)) jobs(next_jobs)
       normalize_job_selection(preferred)
     }
     selected_job_parts <- function() {
@@ -280,7 +287,8 @@ ls_admin_gui <- function(root = .ls_default_root(),
       if (inherits(value, "error")) {
         set_notice(conditionMessage(value), "error")
       } else {
-        logs(paste(value, collapse = "\n"))
+        next_logs <- paste(value, collapse = "\n")
+        if (!identical(shiny::isolate(logs()), next_logs)) logs(next_logs)
       }
       invisible(NULL)
     }

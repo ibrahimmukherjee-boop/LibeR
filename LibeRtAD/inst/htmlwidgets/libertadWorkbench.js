@@ -5,21 +5,10 @@
   function val(x, fallback) { return x === undefined || x === null || x === "" ? fallback : x; }
   function fmt(x, digits) { var n = Number(x); return isFinite(n) ? n.toFixed(digits === undefined ? 2 : digits).replace(/\.0+$/, "") : "--"; }
   function initialDarkTheme(legacyKey) {
-    try {
-      var shared = localStorage.getItem("liber.theme");
-      if (shared === "dark" || shared === "light") return shared === "dark";
-      var legacy = localStorage.getItem(legacyKey);
-      if (legacy === "dark" || legacy === "1") return true;
-      if (legacy === "light" || legacy === "0") return false;
-    } catch (_) {}
-    return !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    return window.LibeRDesign.theme.initialDark(legacyKey);
   }
   function storeTheme(dark, legacyKey) {
-    try {
-      localStorage.setItem("liber.theme", dark ? "dark" : "light");
-      localStorage.setItem(legacyKey, dark ? "dark" : "light");
-      document.documentElement.setAttribute("data-liber-theme", dark ? "dark" : "light");
-    } catch (_) {}
+    window.LibeRDesign.theme.store(dark, legacyKey, false);
   }
   function emit(props, action, detail) {
     if (!window.Shiny || !window.Shiny.setInputValue) return;
@@ -88,16 +77,34 @@
   function NativeConfig(props) {
     var cases = list(props.cases), selected = React.useState(cases.length ? cases[0].id : "rosenbrock"), iterations = React.useState("1000"), warmups = React.useState("50"), optimize = React.useState(true), finite = React.useState(true);
     var info = cases.filter(function(x){return x.id===selected[0];})[0];
-    return e("div", null, e(Field, { label: "Workload", help: info ? info.description : "" }, e("select", { value: selected[0], onChange: function(x){selected[1](x.target.value);} }, cases.map(function(x){return e("option",{key:x.id,value:x.id},x.label);}))), e("div", { className: "ad-form-pair" }, e(Field, { label: "Requested calls" }, e("input", { type:"number",min:1,value:iterations[0],onChange:function(x){iterations[1](x.target.value);} })), e(Field, { label: "Warm-up calls" }, e("input", { type:"number",min:0,value:warmups[0],onChange:function(x){warmups[1](x.target.value);} }))), e(Check, { checked: optimize[0], onChange: function(x){optimize[1](x.target.checked);}, label: "Optimise the CppAD tape" }), e(Check, { checked: finite[0], onChange: function(x){finite[1](x.target.checked);}, label: "Include finite-difference comparator" }), e(Button, { className:"ad-primary ad-wide", onClick:function(){emit(props,"run_native",{case:selected[0],iterations:Number(iterations[0]),warmups:Number(warmups[0]),optimize:optimize[0],finite_difference:finite[0]});} }, "Run AD benchmark"));
+    return e("div", null, e(Field, { label: "Workload", help: info ? info.description : "" }, e("select", { value: selected[0], onChange: function(x){selected[1](x.target.value);} }, cases.map(function(x){return e("option",{key:x.id,value:x.id},x.label);}))), e("div", { className: "ad-form-pair" }, e(Field, { label: "Requested calls" }, e("input", { type:"number",min:1,value:iterations[0],onChange:function(x){iterations[1](x.target.value);} })), e(Field, { label: "Warm-up calls" }, e("input", { type:"number",min:0,value:warmups[0],onChange:function(x){warmups[1](x.target.value);} }))), e(Check, { checked: optimize[0], onChange: function(x){optimize[1](x.target.checked);}, label: "Optimise the CppAD tape" }), e(Check, { checked: finite[0], onChange: function(x){finite[1](x.target.checked);}, label: "Include finite-difference comparator" }), e(Button, { className:"ad-primary ad-wide", disabled:!!(props.task&&props.task.running)||!!props.ecosystemRunning, onClick:function(){emit(props,"run_native",{case:selected[0],iterations:Number(iterations[0]),warmups:Number(warmups[0]),optimize:optimize[0],finite_difference:finite[0]});} }, props.task&&props.task.running ? "Benchmark running..." : "Run AD benchmark"));
   }
   function EcosystemConfig(props) {
     var profile=React.useState("smoke"),scenario=React.useState("iv-bolus"),methods=React.useState("deterministic"),engines=React.useState("LIBERATION"),repeats=React.useState("1"),warmups=React.useState("0"),covariance=React.useState(true),simulation=React.useState(true),output=React.useState(val(props.defaultOutput,""));
-    var running=!!props.ecosystemRunning;
-    return e("div",null,e(Field,{label:"Profile"},e("select",{value:profile[0],onChange:function(x){profile[1](x.target.value);}},["smoke","quick","standard"].map(function(x){return e("option",{key:x},x);}))),e(Field,{label:"Scenario"},e("select",{value:scenario[0],onChange:function(x){scenario[1](x.target.value);}},["iv-bolus","oral","two-compartment","three-compartment","full-omega","infusion-steady-state","iov","advan6","advan13"].map(function(x){return e("option",{key:x},x);}))),e(Field,{label:"Methods"},e("select",{value:methods[0],onChange:function(x){methods[1](x.target.value);}},e("option",{value:"deterministic"},"FO / FOCE / FOCEI / Laplace"),e("option",{value:"all"},"All supported methods"),["FO","FOCE","FOCEI","LAPLACE","ITS","IMP","SAEM"].map(function(x){return e("option",{key:x,value:x},x);}))),e(Field,{label:"Engines"},e("select",{value:engines[0],onChange:function(x){engines[1](x.target.value);}},e("option",{value:"LIBERATION"},"LibeRation only"),e("option",{value:"NONMEM,LIBERATION"},"NONMEM and LibeRation"),e("option",{value:"NONMEM"},"NONMEM only"))),e("div",{className:"ad-form-pair"},e(Field,{label:"Measured repeats"},e("input",{type:"number",min:1,value:repeats[0],onChange:function(x){repeats[1](x.target.value);}})),e(Field,{label:"Process warm-ups"},e("input",{type:"number",min:0,value:warmups[0],onChange:function(x){warmups[1](x.target.value);}}))),e(Check,{checked:covariance[0],onChange:function(x){covariance[1](x.target.checked);},label:"Include covariance"}),e(Check,{checked:simulation[0],onChange:function(x){simulation[1](x.target.checked);},label:"Include simulation"}),e(Field,{label:"Output root"},e("input",{value:output[0],onChange:function(x){output[1](x.target.value);}})),running?e(Button,{className:"ad-danger ad-wide",onClick:function(){emit(props,"stop_ecosystem",{});}},"Stop benchmark"):e(Button,{className:"ad-primary ad-wide",disabled:!props.benchmarkAvailable,onClick:function(){emit(props,"run_ecosystem",{profile:profile[0],scenario:scenario[0],methods:methods[0],engines:engines[0],repeats:Number(repeats[0]),process_warmups:Number(warmups[0]),covariance:covariance[0],simulation:simulation[0],output:output[0]});}},"Run ecosystem benchmark"),!props.benchmarkAvailable?e("p",{className:"ad-note"},"Repository harness not found. Pass benchmark_root to libertad_gui()."):null);
+    var running=!!props.ecosystemRunning, taskRunning=!!(props.task&&props.task.running);
+    return e("div",null,e(Field,{label:"Profile"},e("select",{value:profile[0],onChange:function(x){profile[1](x.target.value);}},["smoke","quick","standard"].map(function(x){return e("option",{key:x},x);}))),e(Field,{label:"Scenario"},e("select",{value:scenario[0],onChange:function(x){scenario[1](x.target.value);}},["iv-bolus","oral","two-compartment","three-compartment","full-omega","infusion-steady-state","iov","advan6","advan13"].map(function(x){return e("option",{key:x},x);}))),e(Field,{label:"Methods"},e("select",{value:methods[0],onChange:function(x){methods[1](x.target.value);}},e("option",{value:"deterministic"},"FO / FOCE / FOCEI / Laplace"),e("option",{value:"all"},"All supported methods"),["FO","FOCE","FOCEI","LAPLACE","ITS","IMP","SAEM"].map(function(x){return e("option",{key:x,value:x},x);}))),e(Field,{label:"Engines"},e("select",{value:engines[0],onChange:function(x){engines[1](x.target.value);}},e("option",{value:"LIBERATION"},"LibeRation only"),e("option",{value:"NONMEM,LIBERATION"},"NONMEM and LibeRation"),e("option",{value:"NONMEM"},"NONMEM only"))),e("div",{className:"ad-form-pair"},e(Field,{label:"Measured repeats"},e("input",{type:"number",min:1,value:repeats[0],onChange:function(x){repeats[1](x.target.value);}})),e(Field,{label:"Process warm-ups"},e("input",{type:"number",min:0,value:warmups[0],onChange:function(x){warmups[1](x.target.value);}}))),e(Check,{checked:covariance[0],onChange:function(x){covariance[1](x.target.checked);},label:"Include covariance"}),e(Check,{checked:simulation[0],onChange:function(x){simulation[1](x.target.checked);},label:"Include simulation"}),e(Field,{label:"Output root"},e("input",{value:output[0],onChange:function(x){output[1](x.target.value);}})),running?e(Button,{className:"ad-danger ad-wide",onClick:function(){emit(props,"stop_ecosystem",{});}},"Stop benchmark"):e(Button,{className:"ad-primary ad-wide",disabled:!props.benchmarkAvailable||taskRunning,onClick:function(){emit(props,"run_ecosystem",{profile:profile[0],scenario:scenario[0],methods:methods[0],engines:engines[0],repeats:Number(repeats[0]),process_warmups:Number(warmups[0]),covariance:covariance[0],simulation:simulation[0],output:output[0]});}},"Run ecosystem benchmark"),!props.benchmarkAvailable?e("p",{className:"ad-note"},"Repository harness not found. Pass benchmark_root to libertad_gui()."):null);
   }
 
   function Workbench(props) {
     var mode=React.useState("native"),tab=React.useState("summary"),dark=React.useState(function(){return initialDarkTheme("libertadTheme");}),navOpen=React.useState(false),configOpen=React.useState(false);
+    var task=window.LibeRDesign.taskState.use(React,props.inputId,props.task);
+    var ecosystemLog=React.useState(list(props.ecosystemLog));
+    React.useEffect(function(){ecosystemLog[1](list(props.ecosystemLog));},[props.ecosystemLog]);
+    React.useEffect(function(){
+      if(!window.Shiny||!window.Shiny.addCustomMessageHandler)return undefined;
+      window.Shiny.addCustomMessageHandler("libertad-workbench-patch",function(patch){
+        window.setTimeout(function(){
+          if(!patch||patch.inputId!==(props.inputId||"libertad_workbench"))return;
+          if(Array.isArray(patch.ecosystemLog)){
+            ecosystemLog[1](patch.ecosystemLog);
+          }else if(Array.isArray(patch.ecosystemLogAppend)&&patch.ecosystemLogAppend.length){
+            ecosystemLog[1](function(current){return list(current).concat(patch.ecosystemLogAppend);});
+          }
+        },0);
+      });
+      return undefined;
+    },[props.inputId]);
+    props=Object.assign({},props,{task:task,ecosystemLog:ecosystemLog[0]});
     React.useEffect(function(){storeTheme(dark[0],"libertadTheme");},[dark[0]]);
     React.useEffect(function(){
       function keydown(event){if(event.key==="Escape"){navOpen[1](false);configOpen[1](false);}}
@@ -109,7 +116,7 @@
     var tabs=["summary","accuracy","runtime log"];
     return e("div",{className:"ad-shell "+(dark[0]?"ad-dark":"ad-light")},
       e("header",{className:"ad-header"},e("div",{className:"ad-brand"},props.icon?e("img",{src:props.icon,alt:"",className:"ad-logo"}):e("span",{className:"ad-logo-fallback"},"AD"),e("div",null,e("strong",null,"LibeRtAD"),e("span",null,"Automatic differentiation benchmark laboratory"))),e("div",{className:"ad-header-right"},e("button",{type:"button",className:"ad-drawer-toggle ad-nav-toggle","aria-label":"Open benchmark navigation","aria-expanded":navOpen[0],onClick:function(){navOpen[1](!navOpen[0]);configOpen[1](false);}},"☰"),e("button",{type:"button",className:"ad-drawer-toggle ad-config-toggle","aria-label":"Open benchmark settings","aria-expanded":configOpen[0],onClick:function(){configOpen[1](!configOpen[0]);navOpen[1](false);}},"⚙"),e("span",{className:"ad-engine-badge"},"C++17 / CppAD"),e(ThemeSwitch,{dark:dark[0],onChange:toggle}))),
-      e("div",{className:"ad-message ad-message-"+val(props.status&&props.status.level,"info")},e("i",null),e("span",null,val(props.status&&props.status.text,"Benchmark laboratory ready"))),
+      e("div",{className:"ad-message ad-message-"+val(props.status&&props.status.level,"info")},e("i",null),e("span",null,task.running?val(task.label,"Background calculation")+" is running":val(props.status&&props.status.text,"Benchmark laboratory ready")),task.running&&task.cancellable?e(Button,{className:"ad-task-cancel",onClick:function(){emit(props,"cancel_task",{id:task.id});}},"Cancel"):null),
       (navOpen[0]||configOpen[0])?e("button",{type:"button",className:"ad-drawer-backdrop","aria-label":"Close navigation and settings",onClick:closeDrawers}):null,
       e("div",{className:"ad-layout"},e("aside",{className:"ad-sidebar"+(navOpen[0]?" open":"")},e("strong",{className:"ad-kicker"},"Benchmark suite"),e("button",{className:mode[0]==="native"?"active":"",onClick:function(){mode[1]("native");tab[1]("summary");navOpen[1](false);}},e("b",null,"AD microbenchmarks"),e("span",null,"Tape recording and derivatives")),e("button",{className:mode[0]==="ecosystem"?"active":"",onClick:function(){mode[1]("ecosystem");tab[1]("summary");navOpen[1](false);}},e("b",null,"Ecosystem benchmark"),e("span",null,"LibeRation versus NONMEM")),e("div",{className:"ad-engine-card"},e("strong",null,"Engine"),e("dl",null,e("dt",null,"Backend"),e("dd",null,val(props.engineNamed&&props.engineNamed.backend,"CppAD")),e("dt",null,"Tape"),e("dd",null,props.engineNamed&&props.engineNamed.persistent_tape?"Persistent":"Unavailable"),e("dt",null,"C++"),e("dd",null,val(props.engineNamed&&props.engineNamed.cpp_standard,"17"))))),
         e("main",{className:"ad-main"},e("nav",{className:"ad-tabs"},tabs.map(function(x){var disabled=x==="accuracy"&&mode[0]!=="native";return e("button",{key:x,disabled:disabled,className:tab[0]===x?"active":"",onClick:function(){tab[1](x);}},x);})),e("div",{className:"ad-canvas"},tab[0]==="runtime log"?e(RuntimeLog,props):tab[0]==="accuracy"?e(Accuracy,props):mode[0]==="native"?e(NativeSummary,props):e(EcosystemSummary,props))),

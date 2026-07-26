@@ -1,0 +1,15 @@
+# Conservative browser-export alternative. Qwen2.5-Coder uses the established
+# Qwen2 architecture family in MLC/WebLLM and gives up some general prose ability
+# for stronger code-focused behaviour.
+training:
+  student_model: Qwen/Qwen2.5-Coder-1.5B-Instruct
+  output_dir: runs/qwen25-coder-1.5b-liber-sft
+
+preference_training:
+  output_dir: runs/qwen25-coder-1.5b-liber-dpo
+
+export:
+  merged_dir: exports/liber-pmx-assistant-qwen25-hf
+  gguf_dir: exports/liber-pmx-assistant-qwen25-gguf
+  ollama_model_name: liber-pmx-assistant-qwen25
+  mlc_dir: exports/liber-pmx-assistant-qwen25-webllm

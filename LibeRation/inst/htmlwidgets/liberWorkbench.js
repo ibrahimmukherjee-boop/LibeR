@@ -8,21 +8,10 @@
   function value(x, fallback) { return x === null || x === undefined || x === "" ? fallback : x; }
   function number(x) { var n = Number(x); return isFinite(n) ? n : null; }
   function initialDarkTheme(legacyKey) {
-    try {
-      var shared = window.localStorage.getItem("liber.theme");
-      if (shared === "dark" || shared === "light") return shared === "dark";
-      var legacy = window.localStorage.getItem(legacyKey);
-      if (legacy === "1" || legacy === "dark") return true;
-      if (legacy === "0" || legacy === "light") return false;
-    } catch (error) {}
-    return !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    return window.LibeRDesign.theme.initialDark(legacyKey);
   }
   function storeTheme(dark, legacyKey, numericLegacy) {
-    try {
-      window.localStorage.setItem("liber.theme", dark ? "dark" : "light");
-      window.localStorage.setItem(legacyKey, numericLegacy ? (dark ? "1" : "0") : (dark ? "dark" : "light"));
-      document.documentElement.setAttribute("data-liber-theme", dark ? "dark" : "light");
-    } catch (error) {}
+    window.LibeRDesign.theme.store(dark, legacyKey, numericLegacy);
   }
   function useDialogFocus(open, onClose) {
     var dialog = React.useRef(null), close = React.useRef(onClose);
@@ -94,7 +83,17 @@
     return isFinite(numeric)?Math.max(1024,Math.min(16384,numeric)):localAIAutoContextWindow(ai,model,purpose);
   }
   function localAISettingsDetail(ai) {
-    return {activated:!!(ai&&ai.activated),consented:!!(ai&&ai.consented),help_model:value(ai&&ai.help_model,ai&&ai.model),report_model:value(ai&&ai.report_model,"same_as_help"),help_context:value(ai&&ai.help_context,"auto"),report_context:value(ai&&ai.report_context,"auto")};
+    return {
+      activated:!!(ai&&ai.activated),consented:!!(ai&&ai.consented),
+      backend:value(ai&&ai.backend,"webllm"),
+      help_model:value(ai&&ai.help_model,ai&&ai.model),
+      report_model:value(ai&&ai.report_model,"same_as_help"),
+      help_context:value(ai&&ai.help_context,"auto"),
+      report_context:value(ai&&ai.report_context,"auto"),
+      ollama_url:value(ai&&ai.ollama_url,"http://127.0.0.1:11434"),
+      ollama_help_model:value(ai&&ai.ollama_help_model,""),
+      ollama_report_model:value(ai&&ai.ollama_report_model,"same_as_help")
+    };
   }
   function localAIClip(text, limit) {
     text=String(text||"");limit=Math.max(80,Number(limit)||80);
@@ -275,6 +274,91 @@
     var state=React.useState(Object.assign({},localAI.status));
     React.useEffect(function(){var listener=function(next){state[1](next);};localAI.listeners.push(listener);return function(){localAI.listeners=localAI.listeners.filter(function(item){return item!==listener;});};},[]);
     return state[0];
+  }
+
+  var ollamaAI={status:{stage:"idle",text:"Ollama model not contacted",progress:0,budget:null},listeners:[],pending:{},handlerRegistered:false};
+  function ollamaAINotify(){ollamaAI.listeners.slice().forEach(function(listener){listener(Object.assign({},ollamaAI.status));});}
+  function ollamaAISetStatus(next){ollamaAI.status=Object.assign({},ollamaAI.status,next);ollamaAINotify();}
+  function ollamaAIHandle(message){
+    message=message||{};
+    var pending=message.id&&ollamaAI.pending[message.id];
+    if(message.type==="status"){
+      ollamaAISetStatus({stage:value(message.stage,"generating"),text:value(message.message,"Generating with local Ollama"),progress:0});
+    }else if(message.type==="token"&&pending){
+      pending.emitted=true;pending.onToken(message.token||"");
+    }else if(message.type==="complete"&&pending){
+      delete ollamaAI.pending[message.id];
+      ollamaAISetStatus({stage:"ready",text:(pending.purpose==="report"?"Report":"Help")+" response complete - local Ollama",progress:1,budget:pending.budget});
+      pending.resolve(message.text||"");
+    }else if(message.type==="error"&&pending){
+      delete ollamaAI.pending[message.id];
+      var reason=new Error(message.message||"Local Ollama generation failed.");
+      ollamaAISetStatus({stage:"error",text:reason.message,progress:0,budget:pending.budget});
+      pending.reject(reason);
+    }
+  }
+  function registerOllamaAIHandler(){
+    if(ollamaAI.handlerRegistered||!window.Shiny||!window.Shiny.addCustomMessageHandler)return;
+    window.Shiny.addCustomMessageHandler("liber-ollama-ai",ollamaAIHandle);
+    ollamaAI.handlerRegistered=true;
+  }
+  function ollamaAIHasPendingPurpose(purpose){
+    return Object.keys(ollamaAI.pending).some(function(id){return ollamaAI.pending[id].purpose===purpose;});
+  }
+  function ollamaAICancelPurpose(purpose,reason){
+    Object.keys(ollamaAI.pending).filter(function(id){return ollamaAI.pending[id].purpose===purpose;}).forEach(function(id){
+      var pending=ollamaAI.pending[id];delete ollamaAI.pending[id];
+      emit(pending.props,"ollama_cancel",{id:id});
+      pending.reject(reason instanceof Error?reason:new Error("Local Ollama generation was stopped."));
+    });
+    ollamaAISetStatus({stage:"ready",text:"Local Ollama ready",progress:0});
+  }
+  function ollamaAIShutdown(reason){
+    Object.keys(ollamaAI.pending).forEach(function(id){
+      var pending=ollamaAI.pending[id];delete ollamaAI.pending[id];
+      emit(pending.props,"ollama_cancel",{id:id});
+      pending.reject(reason instanceof Error?reason:new Error("Local Ollama generation was stopped."));
+    });
+    ollamaAISetStatus({stage:"idle",text:"Ollama model not contacted",progress:0,budget:null});
+  }
+  function ollamaAIGenerate(ai,messages,onToken,options,props){
+    return new Promise(function(resolve,reject){
+      if(!ai||!ai.activated){reject(new Error("Activate AI before requesting local generation."));return;}
+      if(!ai.ollama_allowed){reject(new Error("Ollama is disabled for this hosted or remote LibeRation session."));return;}
+      var purpose=options&&options.purpose==="report"?"report":"help";
+      var model=purpose==="report"?value(ai.ollama_report_model,"same_as_help"):value(ai.ollama_help_model,"");
+      if(model==="same_as_help")model=value(ai.ollama_help_model,"");
+      if(!model){reject(new Error("Refresh the Ollama models and select one before generating."));return;}
+      if(Object.keys(ollamaAI.pending).length){reject(new Error("Wait for the current Ollama response or cancel it first."));return;}
+      var contextWindow=localAIContextWindow(ai,model,purpose,options&&options.context_window_size);
+      var budgeted=localAIBudgetMessages(messages,model,options&&options.max_tokens,contextWindow);
+      var id="ollama-"+Date.now()+"-"+Math.random().toString(16).slice(2);
+      ollamaAI.pending[id]={resolve:resolve,reject:reject,onToken:onToken||function(){},purpose:purpose,props:props,budget:budgeted,emitted:false};
+      ollamaAISetStatus({stage:"starting",text:"Contacting local Ollama model "+model,progress:0,budget:budgeted});
+      if(!emit(props,"ollama_generate",{id:id,purpose:purpose,messages:budgeted.messages,max_tokens:budgeted.max_tokens,temperature:options&&options.temperature,top_p:options&&options.top_p})){
+        delete ollamaAI.pending[id];reject(new Error("The Shiny connection is unavailable."));
+      }
+    });
+  }
+  function useOllamaAIStatus(){
+    var state=React.useState(Object.assign({},ollamaAI.status));
+    React.useEffect(function(){var listener=function(next){state[1](next);};ollamaAI.listeners.push(listener);return function(){ollamaAI.listeners=ollamaAI.listeners.filter(function(item){return item!==listener;});};},[]);
+    return state[0];
+  }
+  function aiGenerate(ai,messages,onToken,options,props){
+    return value(ai&&ai.backend,"webllm")==="ollama"?
+      ollamaAIGenerate(ai,messages,onToken,options,props):
+      localAIGenerate(ai,messages,onToken,options);
+  }
+  function aiHasPendingPurpose(ai,purpose){
+    return value(ai&&ai.backend,"webllm")==="ollama"?ollamaAIHasPendingPurpose(purpose):localAIHasPendingPurpose(purpose);
+  }
+  function aiCancelPurpose(ai,purpose,reason){
+    if(value(ai&&ai.backend,"webllm")==="ollama")ollamaAICancelPurpose(purpose,reason);
+    else localAICancelPurpose(purpose,reason);
+  }
+  function aiShutdown(reason){
+    localAIShutdown(reason);ollamaAIShutdown(reason);
   }
 
   function escapeCode(value) {
@@ -714,7 +798,7 @@
         e("div", { className: "lw-editor-box" }, e("h5", null, "$ERROR"), e(CodeEditor,{label:"ERROR model code",value:source.error,onValue:function(next){setSource(Object.assign({},source,{error:next}));}}))),
       e("div", { className: "lw-parameter-grid" },
         e(ParameterGrid, { title: "THETA", bounds:true, prefix: "THETA", indexName: "THETA", rows: parameters.theta, unitLabel:"THETA", onAdd:function(){resizeParameterKind("theta",1);}, onRemove:function(){resizeParameterKind("theta",-1);}, onChange: function (i,f,v) { updateParameter("theta",i,f,v); } }),
-        e("div",{className:"lw-omega-block"},e(ParameterGrid, { title: omegaStructure==="full"?"OMEGA lower triangle":"OMEGA", matrix:omegaStructure==="full", prefix: "OMEGA", indexName: "OMEGA", rows: parameters.omega, unitLabel:"ETA", onAdd:function(){resizeParameterKind("omega",1);}, onRemove:function(){resizeParameterKind("omega",-1);}, onChange: function (i,f,v) { updateParameter("omega",i,f,v); } }),e("label",{className:"lw-check lw-omega-matrix-toggle"},e("input",{type:"checkbox",checked:omegaStructure==="full",onChange:function(event){changeOmegaStructure(event.target.checked?"full":"diagonal");}})," OMEGA matrix")),
+        e("div",{className:"lw-omega-block"},e(ParameterGrid, { title: omegaStructure==="full"?"OMEGA lower triangle":"OMEGA", matrix:omegaStructure==="full", prefix: "OMEGA", indexName: "OMEGA", rows: parameters.omega, unitLabel:"OMEGA", onAdd:function(){resizeParameterKind("omega",1);}, onRemove:function(){resizeParameterKind("omega",-1);}, onChange: function (i,f,v) { updateParameter("omega",i,f,v); } }),e("label",{className:"lw-check lw-omega-matrix-toggle"},e("input",{type:"checkbox",checked:omegaStructure==="full",onChange:function(event){changeOmegaStructure(event.target.checked?"full":"diagonal");}})," OMEGA matrix")),
         e(ParameterGrid, { title: "SIGMA", prefix: "SIGMA", indexName: "SIGMA", rows: parameters.sigma, unitLabel:"SIGMA", onAdd:function(){resizeParameterKind("sigma",1);}, onRemove:function(){resizeParameterKind("sigma",-1);}, onChange: function (i,f,v) { updateParameter("sigma",i,f,v); } })),
       e(PriorGrid,{rows:priors,parameterNames:priorParameterNames,onChange:setPriors}),
       e("div", { className: "lw-inline-actions lw-editor-actions" },
@@ -993,7 +1077,7 @@
 
       e(Modal,{open:copyModal[0],onClose:function(){copyModal[1](false);},title:"Copy to new model version",footer:e(React.Fragment,null,e(Button,{className:"lw-button-quiet",onClick:function(){copyModal[1](false);}},"Cancel"),e(Button,{className:"lw-button-primary",onClick:function(){emit(props,"project_copy",{id:workspace.current,snapshot:workspace.current_snapshot,updateInits:copyUpdateInits[0]});copyModal[1](false);}},"Copy"))},e("p",{className:"lw-help-text"},props.fit.available?"A fitted run is loaded; its final estimates can become the new version's initial values.":"No fitted run is loaded, so initials will match the source version."),e("label",{className:"lw-check"},e("input",{type:"checkbox",disabled:!props.fit.available,checked:copyUpdateInits[0]&&props.fit.available,onChange:function(event){copyUpdateInits[1](event.target.checked);}})," Update THETA / OMEGA / SIGMA initials from current fit")),
 
-      e(Modal,{open:templateModal[0],onClose:function(){templateModal[1](false);},title:"New version from template",footer:e(React.Fragment,null,e(Button,{className:"lw-button-quiet",onClick:function(){templateModal[1](false);}},"Cancel"),e(Button,{className:"lw-button-primary",disabled:!props.dataset.loaded,onClick:submitTemplate},"Create version"))},e(Field,{label:"Dataset"},e("select",{disabled:!props.dataset.loaded,value:props.dataset.loaded?"current":""},e("option",{value:props.dataset.loaded?"current":""},props.dataset.loaded?value(props.dataset.name,"Current dataset"):"No dataset loaded"))),e(Field,{label:"Model family"},e("select",{value:templateStructural[0],onChange:function(event){templateStructural[1](event.target.value);}},e("option",{value:"standard"},"Standard ADVAN template"),[["nonlinear_elimination","Nonlinear elimination"],["transit_absorption","Transit absorption"],["dual_absorption","Dual absorption"],["parent_metabolite","Parent–metabolite"],["effect_compartment","Effect compartment"],["indirect_response","Indirect response"],["tumour_growth","Tumour growth"],["tmdd","Target-mediated disposition"]].map(function(item){return e("option",{key:item[0],value:item[0]},item[1]);}))),templateStructural[0]==="standard"?e(TemplateFields,{advan:templateAdvan,trans:templateTrans,nState:templateNState,label:templateLabel,problem:templateProblem}):e("div",{className:"lw-modal-section lw-modal-section-tinted"},e("p",{className:"lw-help-text"},"Creates a complete editable ADVAN13 $PK/$PRED and $DES model. Initial-state requirements are documented with the template."),e("div",{className:"lw-form-grid lw-form-grid-two"},e(Field,{label:"Version label (optional)"},e("input",{value:templateLabel[0],onChange:function(event){templateLabel[1](event.target.value);}})),e(Field,{label:"Problem statement"},e("input",{value:templateProblem[0],onChange:function(event){templateProblem[1](event.target.value);}}))))),
+      e(Modal,{open:templateModal[0],onClose:function(){templateModal[1](false);},title:"New version from template",footer:e(React.Fragment,null,e(Button,{className:"lw-button-quiet",onClick:function(){templateModal[1](false);}},"Cancel"),e(Button,{className:"lw-button-primary",disabled:!props.dataset.loaded,onClick:submitTemplate},"Create version"))},e(Field,{label:"Dataset"},e("select",{disabled:!props.dataset.loaded,value:props.dataset.loaded?"current":""},e("option",{value:props.dataset.loaded?"current":""},props.dataset.loaded?value(props.dataset.name,"Current dataset"):"No dataset loaded"))),e(Field,{label:"Model family"},e("select",{value:templateStructural[0],onChange:function(event){templateStructural[1](event.target.value);}},e("option",{value:"standard"},"Standard ADVAN template"),e("optgroup",{label:"PK/PD structural models"},[["nonlinear_elimination","Nonlinear elimination"],["transit_absorption","Transit absorption"],["dual_absorption","Dual absorption"],["parent_metabolite","Parent–metabolite"],["effect_compartment","Effect compartment"],["indirect_response","Indirect response"],["tumour_growth","Tumour growth"],["tmdd","Target-mediated disposition"]].map(function(item){return e("option",{key:item[0],value:item[0]},item[1]);})),e("optgroup",{label:"Outcome and event models"},[["bernoulli","Binary outcome (Bernoulli)"],["categorical","Categorical outcome"],["ordinal","Ordinal outcome"],["poisson","Count outcome (Poisson)"],["negative_binomial","Overdispersed count"],["time_to_event","Time to first event"],["recurrent_event","Recurrent events"],["competing_risks","Competing risks"]].map(function(item){return e("option",{key:item[0],value:item[0]},item[1]);})),e("optgroup",{label:"State-transition models"},[["markov","Discrete-time Markov"],["continuous_time_markov","Continuous-time Markov"],["hidden_markov","Hidden Markov (HMM)"],["continuous_time_hidden_markov","Continuous-time HMM"]].map(function(item){return e("option",{key:item[0],value:item[0]},item[1]);})))),templateStructural[0]==="standard"?e(TemplateFields,{advan:templateAdvan,trans:templateTrans,nState:templateNState,label:templateLabel,problem:templateProblem}):e("div",{className:"lw-modal-section lw-modal-section-tinted"},e("p",{className:"lw-help-text"},"Creates a complete editable model with the required structural, outcome-likelihood, or state-transition configuration. Use a dataset coded as described by the selected template."),e("div",{className:"lw-form-grid lw-form-grid-two"},e(Field,{label:"Version label (optional)"},e("input",{value:templateLabel[0],onChange:function(event){templateLabel[1](event.target.value);}})),e(Field,{label:"Problem statement"},e("input",{value:templateProblem[0],onChange:function(event){templateProblem[1](event.target.value);}}))))),
 
       e(Modal,{open:estimationModal[0],className:"lw-modal-wide",onClose:function(){estimationModal[1](false);},title:"Run estimation",footer:e(React.Fragment,null,e(Button,{className:"lw-button-quiet",onClick:function(){estimationModal[1](false);}},"Cancel"),e(Button,{className:"lw-button-primary",onClick:submitEstimate},"Submit estimation"))},
         e("div",{className:"lw-modal-section"},userLikelihood?e("div",{className:"lw-info-banner"},"User-defined likelihood detected. LAPLACE is the NONMEM-like default; Gaussian FO/FOCE/FOCEI linearizations are not applicable."):null,e("div",{className:"lw-form-grid"},e(Field,{label:"Run on"},e("select",{value:value(props.server.queue_id,"local"),onChange:function(event){emit(props,"queue_select",{id:event.target.value});}},list(props.server.queues).map(function(queue){return e("option",{key:queue.id,value:queue.id},queue.name);}))),e(Field,{label:"Method"},e("select",{value:estimationMethod[0],onChange:function(event){estimationMethod[1](event.target.value);}},estimationMethods.map(function(method){var label=method==="GQ"?"GQ (adaptive Gauss-Hermite)":method==="NPML"?"NPML (fixed support)":method==="NPAG"?"NPAG (adaptive grid)":method;return e("option",{key:method,value:method},label);}))),e(Field,{label:"Job label (optional)"},e("input",{value:estimationLabel[0],onChange:function(event){estimationLabel[1](event.target.value);}}))),e("div",{className:"lw-form-grid"},["HMC","NUTS"].indexOf(estimationMethod[0])<0?e(Field,{label:"Outer iterations"},e("input",{type:"number",min:1,value:estimationMaxit[0],onChange:function(event){estimationMaxit[1](Number(event.target.value));}})):null,["BAYES","HMC","NUTS"].indexOf(estimationMethod[0])<0?e(Field,{label:"ETA iterations"},e("input",{type:"number",min:1,value:etaMaxit[0],onChange:function(event){etaMaxit[1](Number(event.target.value));}})):null,e(Field,{label:"Tolerance"},e("input",{type:"number",min:1e-12,step:"any",value:tolerance[0],onChange:function(event){tolerance[1](Number(event.target.value));}})),["HMC","NUTS","NPML","NPAG"].indexOf(estimationMethod[0])<0?e(Field,{label:"Parallel cores"},e("input",{type:"number",min:1,max:64,value:estimationCores[0],onChange:function(event){estimationCores[1](Number(event.target.value));}})):null,e(Field,{label:"Print gradients every N (0 = off)"},e("input",{type:"number",min:0,value:printEvery[0],onChange:function(event){printEvery[1](Number(event.target.value));}})))),
@@ -1053,24 +1137,54 @@
   }
 
   function AIStatusLine(props) {
-    var status=useLocalAIStatus(),percent=Math.round((Number(status.progress)||0)*100),budget=status.budget;
+    var webStatus=useLocalAIStatus(),ollamaStatus=useOllamaAIStatus(),ai=props.ai||{},backend=value(ai.backend,"webllm");
+    var status=backend==="ollama"?ollamaStatus:webStatus,percent=Math.round((Number(status.progress)||0)*100),budget=status.budget;
+    if(backend==="ollama"&&status.stage==="idle"&&ai.ollama_status&&ai.ollama_status.message)status={stage:value(ai.ollama_status.stage,"idle"),text:ai.ollama_status.message,progress:0,budget:null};
     return e("div",{className:"lw-ai-status lw-ai-status-"+status.stage},
-      e("div",null,e("span",null,status.text),status.locked?e("strong",null,"Network locked"):null),
+      e("div",null,e("span",null,status.text),backend==="webllm"&&status.locked?e("strong",null,"Network locked"):null),
       budget?e("small",{className:budget.compacted?"lw-ai-budget-compact":""},"Approx. "+Number(budget.prompt_tokens_estimated||0).toLocaleString()+" prompt tokens / "+Number(budget.context_window_size||0).toLocaleString()+" context; "+budget.retained_message_count+" of "+budget.original_message_count+" messages retained; "+Number(budget.max_tokens||0).toLocaleString()+" output tokens reserved"+(budget.compacted?" (context compacted)":"")):null,
       status.stage==="loading"?e("progress",{max:100,value:percent},percent+"%"):null,
-      status.stage==="error"?e(Button,{className:"lw-button-quiet",onClick:function(){localAIShutdown();}},"Reset local AI"):null);
+      status.stage==="error"?e(Button,{className:"lw-button-quiet",onClick:function(){if(backend==="ollama"){ollamaAIShutdown();emit(props,"ollama_refresh");}else localAIShutdown();}},"Reset local AI"):null);
+  }
+
+  function AIProviderSelect(props) {
+    var ai=props.ai||{},backend=value(ai.backend,"webllm");
+    function change(event){
+      var next=event.target.value,detail=localAISettingsDetail(ai);detail.backend=next;aiShutdown();emit(props,"ai_settings",detail);
+    }
+    return e("label",{className:"lw-ai-model-select lw-ai-provider-select"},
+      e("span",null,"AI backend"),
+      e("select",{value:backend,onChange:change,"aria-label":"Local AI backend"},
+        e("option",{value:"webllm"},"WebLLM - in this browser"),
+        ai.ollama_allowed?e("option",{value:"ollama"},"Ollama - local R backend"):null),
+      e("small",null,ai.ollama_allowed?"WebLLM uses browser WebGPU; Ollama lets ellmer use models installed on this computer.":"This hosted or remote session permits WebLLM only."));
+  }
+
+  function OllamaEndpoint(props) {
+    var ai=props.ai||{},endpoint=useSynced(value(ai.ollama_url,"http://127.0.0.1:11434"),[ai.ollama_url]);
+    function save(){
+      var detail=localAISettingsDetail(ai);detail.ollama_url=endpoint[0];ollamaAIShutdown();emit(props,"ai_settings",detail);
+      window.setTimeout(function(){emit(props,"ollama_refresh");},80);
+    }
+    return e("div",{className:"lw-ai-ollama-endpoint"},
+      e(Field,{label:"Loopback endpoint"},e("div",{className:"lw-inline-field"},
+        e("input",{value:endpoint[0],onChange:function(event){endpoint[1](event.target.value);},onBlur:save,onKeyDown:function(event){if(event.key==="Enter"){event.preventDefault();save();}}}),
+        e(Button,{className:"lw-button-quiet",onClick:function(){emit(props,"ollama_refresh");}},"Refresh models"))),
+      e("p",{className:"lw-help-text"},value(ai.ollama_status&&ai.ollama_status.message,"Ollama has not been checked yet.")));
   }
 
   function AIModelSelect(props) {
-    var ai=props.ai||{},models=list(ai.models),className=value(props.className,""),purpose=props.purpose==="report"?"report":"help";
-    var configured=purpose==="report"?value(ai.report_model,"same_as_help"):value(ai.help_model,ai.model),resolved=configured==="same_as_help"?value(ai.help_model,ai.model):configured;
+    var ai=props.ai||{},backend=value(ai.backend,"webllm"),models=backend==="ollama"?list(ai.ollama_models):list(ai.models),className=value(props.className,""),purpose=props.purpose==="report"?"report":"help";
+    var helpField=backend==="ollama"?"ollama_help_model":"help_model",reportField=backend==="ollama"?"ollama_report_model":"report_model";
+    var configured=purpose==="report"?value(ai[reportField],"same_as_help"):value(ai[helpField],backend==="ollama"?"":ai.model),resolved=configured==="same_as_help"?value(ai[helpField],ai.model):configured;
     var selected=models.filter(function(model){return model.id===resolved;})[0];
-    function setModel(event){var detail=localAISettingsDetail(ai);detail[purpose+"_model"]=event.target.value;localAIShutdown();emit(props,"ai_settings",detail);}
-    if(!models.length)return null;
+    function setModel(event){var detail=localAISettingsDetail(ai);detail[purpose==="report"?reportField:helpField]=event.target.value;aiShutdown();emit(props,"ai_settings",detail);}
+    if(!models.length&&configured&&configured!=="same_as_help")models=[{id:configured,label:configured,description:"Saved Ollama selection; refresh to verify that it is installed."}];
+    if(!models.length)return backend==="ollama"?e("div",{className:"lw-ai-model-empty"},e("span",null,"No Ollama models discovered."),e(Button,{className:"lw-button-quiet",onClick:function(){emit(props,"ollama_refresh");}},"Refresh models")):null;
     var options=models.map(function(model){return e("option",{key:model.id,value:model.id},model.label);});
     if(purpose==="report")options=[e("option",{key:"same_as_help",value:"same_as_help"},"Same as Help model")].concat(options);
     var description=configured==="same_as_help"?"Uses the Help model and avoids a model switch.":selected&&selected.description;
-    return e("label",{className:"lw-ai-model-select "+value(className,""),title:description||"Choose the browser-local language model"},
+    return e("label",{className:"lw-ai-model-select "+value(className,""),title:description||"Choose the local language model"},
       e("span",null,props.label||((purpose==="report"?"Report":"Help")+" LLM")),
       e("select",{value:configured,onChange:setModel,"aria-label":purpose==="report"?"Report builder language model":"Help language model"},options),
       description&&className==="lw-ai-model-panel"?e("small",null,description):null);
@@ -1082,17 +1196,17 @@
     var configured=String(value(ai[purpose+"_context"],"auto")),presetStrings=localAIContextPresets.map(String),isPreset=configured==="auto"||presetStrings.indexOf(configured)>=0;
     var mode=useSynced(isPreset?configured:"custom",[configured]),custom=useSynced(isPreset?8192:Number(configured)||8192,[configured]);
     var resolved=localAIContextWindow(ai,model,purpose),className=value(props.className,"");
-    function commit(next){var detail=localAISettingsDetail(ai);detail[purpose+"_context"]=String(next);localAIShutdown();emit(props,"ai_settings",detail);}
+    function commit(next){var detail=localAISettingsDetail(ai);detail[purpose+"_context"]=String(next);aiShutdown();emit(props,"ai_settings",detail);}
     function change(event){var next=event.target.value;mode[1](next);if(next!=="custom")commit(next);}
     function commitCustom(){var next=Math.max(1024,Math.min(16384,Math.round((Number(custom[0])||8192)/512)*512));custom[1](next);commit(next);}
-    var warning=resolved>8192?"Larger contexts use substantially more GPU memory and may be unstable on an 8 GB GPU.":"Changing context reloads the model lazily on its next use.";
+    var warning=value(ai.backend,"webllm")==="ollama"?"This controls LibeRation's prompt budget. The Ollama model context itself is configured in its Modelfile.":resolved>8192?"Larger contexts use substantially more GPU memory and may be unstable on an 8 GB GPU.":"Changing context reloads the model lazily on its next use.";
     return e("label",{className:"lw-ai-context-select "+className,title:warning},e("span",null,props.label||((purpose==="report"?"Report":"Help")+" context")),e("div",null,e("select",{value:mode[0],onChange:change,"aria-label":purpose+" AI context window"},e("option",{value:"auto"},"Auto ("+(resolved/1024).toFixed(resolved%1024?1:0)+"K)"),localAIContextPresets.map(function(size){return e("option",{key:size,value:String(size)},(size/1024).toFixed(size%1024?1:0)+"K"+(size>8192?" - higher memory":""));}),e("option",{value:"custom"},"Custom")),mode[0]==="custom"?e("input",{type:"number",min:1024,max:16384,step:512,value:custom[0],"aria-label":purpose+" custom context tokens",onChange:function(event){custom[1](event.target.value);},onBlur:commitCustom,onKeyDown:function(event){if(event.key==="Enter"){event.preventDefault();commitCustom();}}}):null),className==="lw-ai-context-panel"?e("small",null,warning):null);
   }
 
   function helpQuestionScope(question) {
     var text=String(question||"").toLowerCase();
-    var results=/(?:estimate|result|objective|\bofv\b|converg|covariance|\bse\b|\brse\b|\bgof\b|\bvpc\b|\bnpde\b|\bnpc\b|cwres|residual|diagnostic|compare|difference|best run|successful|failed|timing|iteration|posthoc|posterior|support point)/.test(text);
-    var model=/(?:\$(?:pk|pred|des|error)|\bcode\b|equation|advan|trans|compartment|\btheta\b|\bomega\b|\bsigma\b|\beta\b|structural model|error model|parameter definition)/.test(text);
+    var results=/(?:estimate|result|objective|\bofv\b|converg|covariance|\bse\b|\brse\b|\bgof\b|\bvpc\b|\bnpde\b|\bnpc\b|cwres|residual|diagnostic|compare|difference|best run|successful|failed|timing|iteration|posthoc|posterior|support point|fit quality|adequate fit|good fit)/.test(text);
+    var model=/(?:\$(?:pk|pred|des|error)|\bcode\b|syntax|documentation|equation|advan|trans|compartment|\btheta\b|\bomega\b|\bsigma\b|\beta\b|structural model|error model|parameter definition|\bhmm\b|hidden markov|\bmarkov\b|time.to.event|\btte\b|likelihood)/.test(text);
     return results&&model?"full":results?"results":model?"model":"overview";
   }
   function helpRunLine(run, detailed) {
@@ -1107,6 +1221,7 @@
     if(detailed&&list(run.parameters).length){
       facts.push("parameters="+list(run.parameters).map(function(parameter){return value(parameter.name,"parameter")+"="+formatNumber(parameter.estimate);}).join(","));
     }
+    if(detailed&&run.fit_quality&&run.fit_quality.available)facts.push("fit-quality metrics="+localAIClip(JSON.stringify(run.fit_quality),900));
     return "- "+parts+" ("+facts.join("; ")+")";
   }
   function helpProjectEvidence(projectEvidence, detailed) {
@@ -1117,18 +1232,18 @@
   }
 
   function AIHelpPanel(props) {
-    var ai=props.ai||{},welcome={role:"assistant",content:"Ask me about the current model, estimation workflow, or diagnostics. I run locally in this browser."};
+    var ai=props.ai||{},backend=value(ai.backend,"webllm"),welcome={role:"assistant",content:"Ask me about the current model, estimation workflow, or diagnostics. I run locally "+(backend==="ollama"?"through Ollama on this computer.":"in this browser.")};
     var messages=React.useState([welcome]),prompt=React.useState(""),busy=React.useState(false),error=React.useState("");
     var workspace=props.workspace||{},projectId=value(workspace.current,""),versionId=value(workspace.current_version,""),runId=value(workspace.current_run,"");
     var project=list(workspace.projects).filter(function(item){return String(item.id)===String(projectId);})[0];
     var version=list(workspace.versions).filter(function(item){return String(item.id)===String(versionId);})[0];
     var run=version?list(version.runs).filter(function(item){return String(item.id)===String(runId);})[0]:null;
-    var aiContext=props.ai_context||{},contextKey=[projectId,versionId,runId].join("|");
+    var aiContext=props.ai_context||{},contextKey=[projectId,versionId,runId,backend].join("|");
     var contextRef=React.useRef(contextKey),pendingContext=React.useRef(null);
     React.useEffect(function(){
       contextRef.current=contextKey;
       pendingContext.current=null;
-      if(localAIHasPendingPurpose("help"))localAICancelPurpose("help",new Error("The Help request was stopped because the selected project context changed."));
+      if(aiHasPendingPurpose(ai,"help"))aiCancelPurpose(ai,"help",new Error("The Help request was stopped because the selected project context changed."));
       messages[1]([welcome]);prompt[1]("");busy[1](false);error[1]("");
     },[contextKey]);
     React.useEffect(function(){
@@ -1144,31 +1259,31 @@
       var dataset=props.dataset||{};
       var compactProject=projectEvidence&&String(projectEvidence.project||"")===String(projectId)?{project_name:projectEvidence.project_name,run_count:projectEvidence.run_count,included_runs:projectEvidence.included_runs,omitted_runs:projectEvidence.omitted_runs,message:projectEvidence.message,runs:list(projectEvidence.runs)}:null;
       var selectedFit=props.fit&&props.fit.available?{method:props.fit.method,method_sequence:props.fit.method_sequence,objective:props.fit.objective,convergence:props.fit.convergence,parameters:props.fit.parameters,covariance:props.fit.covariance,run_info:props.fit.run_info}:null;
-      var context=["You are LibeRation's browser-local pharmacometric modelling assistant.","Evidence rules: use the supplied project context as the only source for claims about this model, dataset, run, or result. If a requested fact is absent, say exactly that it is not available in the supplied context. Never invent or approximate parameter values, run results, diagnostics, validation status, dataset characteristics, or code behaviour. Clearly label general PK/PD knowledge as general guidance rather than a fact about the current project. State uncertainty and ask the user to verify consequential modelling decisions. You have no tools and no network access.","Evidence scope selected for this question: "+scope].concat(selection,["Displayed model: "+value(props.model&&props.model.name,"none")+"; ADVAN/TRANS "+value(props.model&&props.model.advan,"-")+"/"+value(props.model&&props.model.trans,"-"),dataset.loaded?"Dataset metadata: "+value(dataset.name,"Current dataset")+"; "+value(dataset.records,0)+" records, "+value(dataset.subjects,0)+" subjects, "+value(dataset.observations,0)+" observations; columns "+list(dataset.columns).join(", "):"Dataset metadata: none loaded",helpProjectEvidence(compactProject,needsResults)]);
+      var context=["You are LibeRation's local pharmacometric modelling assistant.","Evidence rules: use the supplied project context as the only source for claims about this model, dataset, run, or result. If a requested fact is absent, say exactly that it is not available in the supplied context. Never invent or approximate parameter values, run results, diagnostics, validation status, dataset characteristics, or code behaviour. Clearly label general PK/PD knowledge as general guidance rather than a fact about the current project. State uncertainty and ask the user to verify consequential modelling decisions. You receive no LibeRation tools and cannot change project state.","Evidence scope selected for this question: "+scope].concat(selection,["Displayed model: "+value(props.model&&props.model.name,"none")+"; ADVAN/TRANS "+value(props.model&&props.model.advan,"-")+"/"+value(props.model&&props.model.trans,"-"),dataset.loaded?"Dataset metadata: "+value(dataset.name,"Current dataset")+"; "+value(dataset.records,0)+" records, "+value(dataset.subjects,0)+" subjects, "+value(dataset.observations,0)+" observations; columns "+list(dataset.columns).join(", "):"Dataset metadata: none loaded",helpProjectEvidence(compactProject,needsResults)]);
+      if(dataset.simulation_parameters)context.push("Built-in dataset simulation truth: "+localAIClip(JSON.stringify(dataset.simulation_parameters),1400));
       if(needsResults)context.push(selectedFit?"Selected fit detail: "+localAIClip(JSON.stringify(selectedFit),1600):"Selected fit detail: no estimation run is selected.","Selected-run diagnostic availability: "+JSON.stringify(props.diagnostics&&props.diagnostics.available||{}));
       if(needsModel)context=context.concat(["Model-definition mode: "+value(props.model&&props.model.pred_mode,"pk"),"THETA definitions: "+localAIClip(JSON.stringify(list(props.model&&props.model.theta)),800),"OMEGA definitions: "+localAIClip(JSON.stringify(list(props.model&&props.model.omega)),800),"SIGMA definitions: "+localAIClip(JSON.stringify(list(props.model&&props.model.sigma)),600),"$PK:\n"+localAIClip(value(props.model&&props.model.pk_source,""),1000),"$PRED:\n"+localAIClip(value(props.model&&props.model.pred_source,""),1000),"$DES:\n"+localAIClip(value(props.model&&props.model.des,""),1200),"$ERROR:\n"+localAIClip(value(props.model&&props.model.error,""),800)]);
+      if(projectEvidence&&projectEvidence.fit_quality_guide)context.push("Model-fit interpretation guide:\n"+localAIClip(projectEvidence.fit_quality_guide,1800));
+      if(projectEvidence&&list(projectEvidence.documentation).length)context.push("Relevant installed LibeRation/LibeRtAD documentation excerpts:\n"+list(projectEvidence.documentation).map(function(item){return "["+value(item.package,"package")+"::"+value(item.topic,"topic")+"]\n"+value(item.excerpt,"");}).join("\n\n"));
       context=context.join("\n\n");
-      localAIGenerate(ai,[{role:"system",content:context}].concat(history,[{role:"user",content:question}]),function(token){if(contextRef.current!==sentContext)return;messages[1](function(current){var next=current.slice(),last=Object.assign({},next[next.length-1]);last.content+=token;next[next.length-1]=last;return next;});},{purpose:"help",max_tokens:1000,temperature:.1,top_p:.8}).then(function(answer){if(contextRef.current!==sentContext)return;messages[1](function(current){var next=current.slice(),last=Object.assign({},next[next.length-1]);if(!last.content)last.content=answer||"No response was generated.";next[next.length-1]=last;return next;});busy[1](false);}).catch(function(reason){if(contextRef.current!==sentContext)return;messages[1](function(current){var next=current.slice(),last=Object.assign({},next[next.length-1]);if(!last.content)last.content="Generation stopped before a response was produced.";last.failed=true;next[next.length-1]=last;return next;});busy[1](false);error[1](reason.message);});
+      aiGenerate(ai,[{role:"system",content:context}].concat(history,[{role:"user",content:question}]),function(token){if(contextRef.current!==sentContext)return;messages[1](function(current){var next=current.slice(),last=Object.assign({},next[next.length-1]);last.content+=token;next[next.length-1]=last;return next;});},{purpose:"help",max_tokens:1000,temperature:.1,top_p:.8},props).then(function(answer){if(contextRef.current!==sentContext)return;messages[1](function(current){var next=current.slice(),last=Object.assign({},next[next.length-1]);if(!last.content)last.content=answer||"No response was generated.";next[next.length-1]=last;return next;});busy[1](false);}).catch(function(reason){if(contextRef.current!==sentContext)return;messages[1](function(current){var next=current.slice(),last=Object.assign({},next[next.length-1]);if(!last.content)last.content="Generation stopped before a response was produced.";last.failed=true;next[next.length-1]=last;return next;});busy[1](false);error[1](reason.message);});
     }
     function send(){var question=prompt[0].trim();if(!question||busy[0]||!ai.activated)return;
       var sentContext=contextKey,scope=helpQuestionScope(question),projectScope=scope==="results"||scope==="full"?"results":"index",history=messages[0].filter(function(item,index){return index>0&&!item.failed;}).map(function(item){return {role:item.role,content:item.content};});
       var conversation=messages[0].concat([{role:"user",content:question},{role:"assistant",content:""}]);messages[1](conversation);prompt[1]("");busy[1](true);error[1]("");
-      var contextReady=projectId&&String(aiContext.project||"")===String(projectId)&&!!aiContext.request_id&&(String(aiContext.scope||"results")===projectScope||String(aiContext.scope||"")==="results");
-      if(projectId&&!contextReady){
-        var requestId="ai-context-"+Date.now()+"-"+Math.random().toString(16).slice(2);
-        pendingContext.current={requestId:requestId,question:question,history:history,sentContext:sentContext};
-        if(emit(props,"ai_context_request",{project:projectId,requestId:requestId,scope:projectScope}))return;
-        pendingContext.current=null;
-      }
-      runGeneration(question,history,sentContext,contextReady?aiContext:null);
+      var requestId="ai-context-"+Date.now()+"-"+Math.random().toString(16).slice(2);
+      pendingContext.current={requestId:requestId,question:question,history:history,sentContext:sentContext};
+      if(emit(props,"ai_context_request",{project:projectId,requestId:requestId,scope:projectScope,question:question}))return;
+      pendingContext.current=null;
+      runGeneration(question,history,sentContext,aiContext);
     }
-    if(!ai.activated)return e(Empty,{title:"Local AI is off",detail:"Use Activate AI in the header to enable browser-local help."});
+    if(!ai.activated)return e(Empty,{title:"Local AI is off",detail:"Use Activate AI in the header to enable local help."});
     return e("div",{className:"lw-ai-help"},
       e("div",{className:"lw-ai-toolbar"},e("div",{className:"lw-ai-config-row"},e(AIModelSelect,Object.assign({},props,{className:"lw-ai-model-panel",purpose:"help",label:"Help model"})),e(AIContextSelect,Object.assign({},props,{className:"lw-ai-context-panel",purpose:"help",label:"Context"}))),e(AIStatusLine,props)),
       e("div",{className:"lw-ai-messages"},messages[0].map(function(item,index){return e("div",{key:index,className:"lw-ai-message lw-ai-"+item.role+(item.failed?" lw-ai-failed":"")},e("strong",null,item.role==="user"?"You":"Local AI"),e("div",null,item.content||e("span",{className:"lw-ai-cursor"},busy[0]&&index===messages[0].length-1?"Generating...":"No response was generated.")));})),
       error[0]?e("div",{className:"lw-destructive-note"},error[0]):null,
       e("div",{className:"lw-ai-compose"},e("textarea",{rows:3,value:prompt[0],placeholder:"Ask about the model or workflow...",onChange:function(event){prompt[1](event.target.value);},onKeyDown:function(event){if(event.key==="Enter"&&!event.shiftKey){event.preventDefault();send();}}}),e(Button,{className:"lw-button-primary",disabled:busy[0]||!prompt[0].trim(),onClick:send},busy[0]?"Working...":"Send")),
-      e("p",{className:"lw-help-text"},"Model details and compact saved-run summaries are loaded only when Help needs them. Row-level result data are excluded. The worker has no tools, DOM access, or network capability during inference."));
+      e("p",{className:"lw-help-text"},"Model details and compact saved-run summaries are loaded only when Help needs them. Row-level result data are excluded. "+(value(ai.backend,"webllm")==="ollama"?"Requests pass only through the local R session and loopback Ollama service; the model receives no LibeRation tools.":"The browser worker has no tools, DOM access, or network capability during inference.")));
   }
 
   var reportBlockLabels={title:"Title",introduction:"Introduction",methods:"Methods",run:"Model run",comparison:"Model comparison",discussion:"Discussion",conclusion:"Conclusion",appendix:"Appendix",text:"Text",page_break:"Page break"};
@@ -1227,7 +1342,7 @@
       var fallback=props.fit&&props.fit.available?"Currently open fit (used only because the workflow has no selected runs): "+props.fit.method+", objective "+formatNumber(props.fit.objective)+"; parameters "+JSON.stringify(props.fit.parameters):"The workflow has no selected model runs.";
       var evidence=["Draft the report section titled: "+block.title,"Synthesize a coherent account across every selected run. Compare methods, estimates, uncertainty and diagnostics where relevant to this section. Do not produce a generic checklist of missing facts. Mention an unavailable fact only when it is material to the requested section.","Report workflow: "+blocks[0].map(function(item){return item.title+" ["+item.type+"]";}).join(" -> "),"Instruction: "+value(block.options.instruction,"None"),"Template: "+value(block.options.template,"None"),"Source material: "+localAIClip(value(block.options.source_text,"None"),1200),list(selections).length?reportEvidenceText(context,selections):fallback].join("\n\n");
       update(block.id,{text:""});
-      localAIGenerate(ai,[{role:"system",content:"You draft concise, connected pharmacometric report prose from the supplied evidence. Treat every listed saved run as available evidence. Integrate the evidence into a narrative; do not invent results and do not repeat a missing-information checklist unless explicitly requested."},{role:"user",content:evidence}],function(token){blocks[1](function(current){return current.map(function(item){return item.id===block.id?Object.assign({},item,{text:item.text+token}):item;});});},{purpose:"report",max_tokens:1800,temperature:.1,top_p:.8}).then(function(){drafting[1]("");}).catch(function(error){drafting[1]("");update(block.id,{text:"[AI drafting failed: "+error.message+"]"});});
+      aiGenerate(ai,[{role:"system",content:"You draft concise, connected pharmacometric report prose from the supplied evidence. Treat every listed saved run as available evidence. Integrate the evidence into a narrative; do not invent results and do not repeat a missing-information checklist unless explicitly requested."},{role:"user",content:evidence}],function(token){blocks[1](function(current){return current.map(function(item){return item.id===block.id?Object.assign({},item,{text:item.text+token}):item;});});},{purpose:"report",max_tokens:1800,temperature:.1,top_p:.8},props).then(function(answer){if(answer&&!String(block.text||"").length){blocks[1](function(current){return current.map(function(item){return item.id===block.id&&!item.text?Object.assign({},item,{text:answer}):item;});});}drafting[1]("");}).catch(function(error){drafting[1]("");update(block.id,{text:"[AI drafting failed: "+error.message+"]"});});
     }
     function draft(block){
       if(!ai.activated||drafting[0])return;
@@ -1288,7 +1403,7 @@
         e(SimpleTable, { rows: Object.keys(props.fit.run_info || {}).map(function (key) { return { Item: key, Value: props.fit.run_info[key] }; }), columns: ["Item","Value"] }) : e(Empty, { title: "No run information", detail: "Run an estimation first." })) : null,
       tab === "help" ? e("div",{className:"lw-results-tab"},e(AIHelpPanel,props)) : null,
       tab === "report" ? e("div", { className: "lw-results-tab lw-report-controls" },
-        e("p", null, "Build a top-to-bottom workflow from narrative, model-run, diagnostic, and comparison blocks. Narrative blocks can be user-authored or drafted by the browser-local AI."),
+        e("p", null, "Build a top-to-bottom workflow from narrative, model-run, diagnostic, and comparison blocks. Narrative blocks can be user-authored or drafted by the selected local AI backend."),
         e(Button,{className:"lw-button-primary",disabled:!props.workspace.current,onClick:function(){reportDesigner[1](true);}},"Open report designer"),
         !props.workspace.current?e("p",{className:"lw-help-text"},"Open a project to design a report."):null,
         props.report&&(props.report.docx||props.report.pdf)?e("div", { className: "lw-report-status" }, e("strong", null, "Report created"),props.report.docx?e("span", null, props.report.docx):null,props.report.pdf?e("span", null, props.report.pdf):null, props.report.json ? e("span", null, props.report.json) : null) : null) : null,
@@ -1404,12 +1519,18 @@
     React.useEffect(function(){if(!centerTabs.some(function(item){return item.id===centerTab[0];}))centerTab[1]("code");},[!!(props.hmm&&props.hmm.available),!!(props.kalman&&props.kalman.available),!!diagnosticAvailability.vpc,!!diagnosticAvailability.vpc_categorical,!!diagnosticAvailability.vpc_count,!!diagnosticAvailability.vpc_tte,!!diagnosticAvailability.vpc_competing,!!diagnosticAvailability.vpc_recurrent,!!diagnosticAvailability.npde,!!diagnosticAvailability.npc,!!diagnosticAvailability.bootstrap,!!diagnosticAvailability.profile,!!diagnosticAvailability.scm]);
     React.useEffect(function(){if(props.result&&props.result.kind==="comparison")comparisonModal[1](true);},[props.result&&props.result.comparison_id]);
     function closeComparison(){comparisonModal[1](false);emit(props,"comparison_close");}
-    function selectCenterTab(next) {
-      centerTab[1](next);
+    function requestCenterPayload(next) {
       if (next === "gof" && props.fit.available && !props.fit.gof_loaded) emit(props,"load_payload",{kind:"gof"});
       if (next === "hmm" && props.hmm&&props.hmm.available&&!props.hmm.loaded) emit(props,"load_payload",{kind:"hmm"});
       if (next === "kalman" && props.kalman&&props.kalman.available&&!props.kalman.loaded) emit(props,"load_payload",{kind:"kalman"});
       if (["vpc","npde","npc","vpc_categorical","vpc_count","vpc_tte","vpc_competing","vpc_recurrent","bootstrap","profile","scm"].indexOf(next) >= 0 && diagnosticAvailability[next] && !diagnostics[next]) emit(props,"load_payload",{kind:next});
+    }
+    var currentRun = value(workspace.current_run,"");
+    React.useEffect(function(){
+      requestCenterPayload(tab);
+    },[tab,currentRun,!!props.fit.available,!!props.fit.gof_loaded,!!(props.hmm&&props.hmm.available),!!(props.hmm&&props.hmm.loaded),!!(props.kalman&&props.kalman.available),!!(props.kalman&&props.kalman.loaded),!!diagnosticAvailability[tab],!!diagnostics[tab]]);
+    function selectCenterTab(next) {
+      centerTab[1](next);
     }
     var actions = e("div", { className: "lw-header-actions" },
       e(Button, { className: "lw-button-quiet", disabled: !workspace.current_version, onClick: function () { if(workspace.current_run)emit(props,"run_open",{id:workspace.current,run:workspace.current_run});else emit(props, "project_open", { id: workspace.current, snapshot: workspace.current_version }); } }, "Reload"),
@@ -1534,10 +1655,16 @@
     var showPoints = React.useState(false), lineMode = React.useState("individual"), pointShape = React.useState("16");
     var title = React.useState(""), xlab = React.useState(""), ylab = React.useState(""), pointSize = React.useState(0.85), quantile = React.useState(95), shade = React.useState(25), scatter = React.useState(25);
     function load(event) { var file = event.target.files && event.target.files[0]; if (!file) return; var reader = new FileReader(); reader.onload = function () { emit(props, "load_csv", { name: file.name, text: String(reader.result || "") }); }; reader.readAsText(file); }
+    function simulationTruth(){
+      var truth=dataset.simulation_parameters;if(!truth)return null;
+      function line(label,values){return e("div",null,e("strong",null,label+": "),Object.keys(values||{}).map(function(name){return name+"="+formatNumber(values[name]);}).join(", "));}
+      return e("details",{className:"lw-data-truth"},e("summary",null,"Built-in simulation truth"),line("THETA",truth.theta),line("OMEGA",truth.omega),line("SIGMA",truth.sigma),e("small",null,value(truth.note,"")));
+    }
     if (dataset.loaded && !dataset.payload_loaded) {
       return e("div", { className:"lw-ribbon-page lw-data-page lw-data-lazy" },
         e("aside",{className:"lw-data-controls"},
           e("div",{className:"lw-data-summary"},e("strong",null,dataset.records+" records / "+dataset.subjects+" subjects"),e("span",null,dataset.observations+" observations")),
+          simulationTruth(),
           e(Field,{label:"Dataset"},e("select",{value:"current",disabled:true},e("option",{value:"current"},value(dataset.name,"Selected model dataset")))),
           e(Button,{className:"lw-button-primary",title:"Load this dataset into the Data explorer",onClick:function(){emit(props,"load_payload",{kind:"data"});}},"Load selected dataset")),
         e("main",{className:"lw-data-canvas"},e(Empty,{title:"Dataset is not loaded into the browser",detail:"Choose Load selected dataset when you want to explore it. Model and run selection stay lightweight."})));
@@ -1574,6 +1701,7 @@
     return e("div", { className: "lw-ribbon-page lw-data-page" },
       e("aside", { className: "lw-data-controls" },
         e("div", { className: "lw-data-summary" }, e("strong", null, dataset.loaded ? dataset.records + " records / " + dataset.subjects + " subjects" : "No dataset"), e("span", null, dataset.loaded ? dataset.observations + " observations" : "Load a CSV to begin")),
+        simulationTruth(),
         e("label", { className: "lw-button lw-button-primary lw-file-button" }, "Import dataset", e("input", { type: "file", accept: ".csv,text/csv", onChange: load })),
         e("label", { className: "lw-check" }, e("input", { type: "checkbox", checked: showTable[0], onChange: function (event) { showTable[1](event.target.checked); } }), " Show dataset table"),
         showTable[0] ? e("label", { className: "lw-check" }, e("input", { type: "checkbox", checked: allRows[0], onChange: function (event) { allRows[1](event.target.checked); } }), " Show all rows (including doses)") : null,
@@ -1615,34 +1743,82 @@
   }
 
   function LogBanner(props) {
-    var open = React.useState(false), log = props.log || {};
+    var open = React.useState(false), log = props.log || {}, task = props.task || {};
     return e("div", { className: "lw-log-wrap" },
-      e("div", { className: "lw-log-banner lw-log-" + value(log.level, "info") }, e(StatusDot, { status: log.level === "error" ? "error" : "ready" }), e("span", null, value(log.current, "Ready")),
-        e("div", null, e(Button, { className: "lw-button-link", onClick: function () { open[1](!open[0]); } }, open[0] ? "Hide history" : "Show history"), e(Button, { className: "lw-button-link", onClick: function () { emit(props, "clear_log"); } }, "Clear log"))),
+      e("div", { className: "lw-log-banner lw-log-" + value(log.level, "info") }, e(StatusDot, { status: log.level === "error" ? "error" : "ready" }), e("span", null, task.running ? value(task.label, "Background calculation") + " is running" : value(log.current, "Ready")),
+        e("div", null, task.running && task.cancellable ? e(Button, { className: "lw-button-link lw-task-cancel", onClick: function () { emit(props, "cancel_task", { id: task.id }); } }, "Cancel") : null, e(Button, { className: "lw-button-link", onClick: function () { open[1](!open[0]); } }, open[0] ? "Hide history" : "Show history"), e(Button, { className: "lw-button-link", onClick: function () { emit(props, "clear_log"); } }, "Clear log"))),
       open[0] ? e("div", { className: "lw-log-history" }, list(log.history).map(function (line, index) { return e("div", { key: index }, line); })) : null);
   }
 
   function AIActivation(props) {
     var ai=props.ai||{},active=useSynced(!!ai.activated,[!!ai.activated]),consent=useSynced(!!ai.consented,[!!ai.consented]),consentModal=React.useState(false),settingsModal=React.useState(false);
-    function save(next,agreed){active[1](next);consent[1](agreed);if(!next)localAIShutdown();var detail=localAISettingsDetail(ai);detail.activated=next;detail.consented=agreed;emit(props,"ai_settings",detail);}
+    React.useEffect(function(){if(settingsModal[0]&&value(ai.backend,"webllm")==="ollama"&&ai.ollama_allowed&&!list(ai.ollama_models).length)emit(props,"ollama_refresh");},[settingsModal[0],ai.backend]);
+    function save(next,agreed){active[1](next);consent[1](agreed);if(!next)aiShutdown();var detail=localAISettingsDetail(ai);detail.activated=next;detail.consented=agreed;emit(props,"ai_settings",detail);}
     function toggle(event){var next=event.target.checked;if(next&&!consent[0]){consentModal[1](true);return;}save(next,consent[0]);}
     return e(React.Fragment,null,
-      e("label",{className:"lw-ai-toggle",title:"Enable optional browser-local WebGPU assistance"},e("span",null,"Activate AI"),e("input",{type:"checkbox",checked:active[0],onChange:toggle}),e("i",null)),
+      e("label",{className:"lw-ai-toggle",title:"Enable optional local AI assistance"},e("span",null,"Activate AI"),e("input",{type:"checkbox",checked:active[0],onChange:toggle}),e("i",null)),
       e(Button,{className:"lw-ai-settings-button",title:"Local AI settings",onClick:function(){settingsModal[1](true);}},"..."),
       e(Modal,{open:settingsModal[0],className:"lw-modal-ai-settings",onClose:function(){settingsModal[1](false);},title:"Local AI settings",footer:e(Button,{className:"lw-button-primary",onClick:function(){settingsModal[1](false);}},"Done")},
+        e("section",{className:"lw-modal-section lw-modal-section-tinted"},e("h4",null,"Inference backend"),e(AIProviderSelect,props),value(ai.backend,"webllm")==="ollama"?e(OllamaEndpoint,props):null),
         e("div",{className:"lw-ai-settings-grid"},
           e("section",{className:"lw-modal-section lw-modal-section-tinted"},e("h4",null,"Help assistant"),e("p",{className:"lw-help-text"},"Optimised for model code, syntax and workflow questions."),e(AIModelSelect,Object.assign({},props,{className:"lw-ai-model-settings",purpose:"help",label:"Model"})),e(AIContextSelect,Object.assign({},props,{className:"lw-ai-context-settings",purpose:"help",label:"Context window"}))),
           e("section",{className:"lw-modal-section lw-modal-section-tinted"},e("h4",null,"Report builder"),e("p",{className:"lw-help-text"},"A separate, larger model can synthesize selected model runs and diagnostics."),e(AIModelSelect,Object.assign({},props,{className:"lw-ai-model-settings",purpose:"report",label:"Model"})),e(AIContextSelect,Object.assign({},props,{className:"lw-ai-context-settings",purpose:"report",label:"Context window"})))),
-        e("p",{className:"lw-help-text lw-ai-settings-note"},"Selections are saved immediately. Models remain lazy-loaded and only one model occupies GPU memory at a time.")),
-      e(Modal,{open:consentModal[0],onClose:function(){consentModal[1](false);},title:"Activate browser-local AI",footer:e(React.Fragment,null,e(Button,{className:"lw-button-quiet",onClick:function(){consentModal[1](false);}},"Cancel"),e(Button,{className:"lw-button-primary",onClick:function(){consentModal[1](false);save(true,true);}},"Activate AI"))},
-        e("div",{className:"lw-ai-consent"},e("p",null,"LibeRation uses WebGPU language models that run entirely in a dedicated worker inside this browser session."),e("ul",null,e("li",null,"Each selected open model is downloaded on first actual use and cached for later sessions."),e("li",null,"Only one model is held in GPU memory. Switching model or context unloads the resident model and lazily loads the new configuration."),e("li",null,"Activation, model choices, and Help/Report context settings are remembered, but no model loads until you ask for help or draft report text."),e("li",null,"Auto uses a model-aware context size and falls back to a smaller window if browser GPU allocation fails."),e("li",null,"After loading, network APIs in the AI worker are disabled before model context is supplied."),e("li",null,"The model receives no tools, DOM access, or ability to change a model or report.")),e("p",{className:"lw-help-text"},"A compromised browser, extension, or operating system is outside this isolation boundary. AI output can be wrong and must be reviewed as modelling assistance, not clinical advice."))));
+        e("p",{className:"lw-help-text lw-ai-settings-note"},"Selections are saved immediately. Inference remains lazy: no model is loaded or contacted until Help or the report builder requests a response.")),
+      e(Modal,{open:consentModal[0],onClose:function(){consentModal[1](false);},title:"Activate local AI",footer:e(React.Fragment,null,e(Button,{className:"lw-button-quiet",onClick:function(){consentModal[1](false);}},"Cancel"),e(Button,{className:"lw-button-primary",onClick:function(){consentModal[1](false);save(true,true);}},"Activate AI"))},
+        e("div",{className:"lw-ai-consent"},e("p",null,"LibeRation offers two local inference paths. You can choose either path in AI settings."),e("ul",null,e("li",null,"WebLLM downloads the selected open model on first use, caches it, and runs it in a dedicated WebGPU browser worker. Network APIs are disabled before project context is supplied."),e("li",null,"Ollama sends the prepared prompt from this browser to the local Shiny R session, where ellmer streams it through a loopback-only Ollama service on the same computer."),e("li",null,"Ollama is not exposed to remote browser sessions and is explicitly disabled in hosted deployments such as shinyapps.io."),e("li",null,"Activation and model choices are remembered, but no model is loaded or contacted until you ask for help or draft report text."),e("li",null,"The model receives no tools and cannot change a model, dataset, run, or report.")),e("p",{className:"lw-help-text"},"A compromised browser, extension, local Ollama installation, or operating system is outside these isolation boundaries. AI output can be wrong and must be reviewed as modelling assistance, not clinical advice."))));
   }
 
   function LibeRWorkbench(props) {
+    var patchState = React.useState({}), incomingProps = props;
+    React.useEffect(function(){
+      function applyPatch(event) {
+        var message=event&&event.detail||{};
+        if(message.inputId&&message.inputId!==incomingProps.inputId)return;
+        patchState[1](function(current){
+          var next=Object.assign({},current);
+          if(Object.prototype.hasOwnProperty.call(message,"jobs"))next.jobs=message.jobs;
+          if(Object.prototype.hasOwnProperty.call(message,"job_log"))next.job_log=message.job_log;
+          if(message.server)next.server=Object.assign({},next.server||{},message.server);
+          if(message.diagnostics){
+            var run=String(message.run||""),same=String(current.run||"")===run;
+            next.run=run;
+            next.diagnostics=Object.assign({},same?current.diagnostics||{}:{},message.diagnostics);
+            next.diagnostics.available=Object.assign({},same&&current.diagnostics?current.diagnostics.available||{}:{},message.diagnostics.available||{});
+          }
+          if(message.fit){
+            next.fit_run=String(message.run||"");
+            next.fit=message.fit;
+          }
+          return next;
+        });
+      }
+      window.addEventListener("liber-workbench-patch",applyPatch);
+      if(window.Shiny&&window.Shiny.addCustomMessageHandler){
+        window.Shiny.addCustomMessageHandler("liber-workbench-patch",function(message){
+          window.setTimeout(function(){
+            window.dispatchEvent(new CustomEvent("liber-workbench-patch",{detail:message||{}}));
+          },0);
+        });
+      }
+      return function(){window.removeEventListener("liber-workbench-patch",applyPatch);};
+    },[incomingProps.inputId]);
+    var live=patchState[0],incomingRun=String(incomingProps.workspace&&incomingProps.workspace.current_run||""),liveDiagnostics=String(live.run||"")===incomingRun?live.diagnostics:null,liveFit=String(live.fit_run||"")===incomingRun?live.fit:null;
+    props=Object.assign({},incomingProps);
+    if(Object.prototype.hasOwnProperty.call(live,"jobs"))props.jobs=live.jobs;
+    if(Object.prototype.hasOwnProperty.call(live,"job_log"))props.job_log=live.job_log;
+    if(live.server)props.server=Object.assign({},incomingProps.server||{},live.server);
+    if(liveFit)props.fit=liveFit;
+    if(liveDiagnostics){
+      props.diagnostics=Object.assign({},incomingProps.diagnostics||{},liveDiagnostics);
+      props.diagnostics.available=Object.assign({},incomingProps.diagnostics&&incomingProps.diagnostics.available||{},liveDiagnostics.available||{});
+    }
     var ribbon = React.useState("home"), theme = React.useState(function () { return initialDarkTheme("liberationDarkTheme"); });
     var supportModal = React.useState(false);
+    var task = window.LibeRDesign.taskState.use(React, props.inputId, props.task);
+    props = Object.assign({}, props, { task: task });
     React.useEffect(function(){
       if(localAI.status.stage==="error"&&!Object.keys(localAI.pending).length)localAIShutdown();
+      registerOllamaAIHandler();
       if(window.Shiny&&window.Shiny.addCustomMessageHandler){window.Shiny.addCustomMessageHandler("liber-report-document",function(message){window.dispatchEvent(new CustomEvent("liber-report-document",{detail:message||{}}));});window.Shiny.addCustomMessageHandler("liber-report-directory",function(message){window.dispatchEvent(new CustomEvent("liber-report-directory",{detail:message||{}}));});}
     },[]);
     React.useEffect(function () { storeTheme(theme[0], "liberationDarkTheme", true); }, [theme[0]]);

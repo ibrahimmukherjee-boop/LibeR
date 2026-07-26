@@ -1,0 +1,10 @@
+sources:
+  - id: fixture
+    path: .
+    license: MIT
+    rights_basis: owned
+    redistributable: true
+    description: Test fixture owned by the project.
+    include:
+      - source.md
+    exclude: []

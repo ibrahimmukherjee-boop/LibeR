@@ -24,6 +24,7 @@ Imports:
     jsonlite,
     openssl,
     plumber,
+    processx,
     ps,
     sodium,
     shiny

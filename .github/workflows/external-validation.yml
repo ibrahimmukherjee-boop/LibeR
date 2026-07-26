@@ -4,6 +4,22 @@ on:
   schedule:
     - cron: "17 3 * * 1"
   workflow_dispatch:
+    inputs:
+      run_cmdstan:
+        description: Install CmdStan and require the independent Stan Math AD gate
+        required: false
+        type: boolean
+        default: false
+      run_numerical:
+        description: Install Julia SciML and COPASI and require numerical comparators
+        required: false
+        type: boolean
+        default: false
+      run_population:
+        description: Install heavy R population, particle, and dosing comparators
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -25,6 +41,13 @@ jobs:
             any::knitr
             any::rmarkdown
             any::sessioninfo
+            any::KFAS
+            any::TMB
+            any::glmmTMB
+            any::hmmTMB
+            any::deSolve
+            any::mrgsolve
+            any::mapbayr
           dependencies: 'c("Depends", "Imports", "LinkingTo")'
           install-pandoc: true
           install-quarto: false
@@ -38,6 +61,8 @@ jobs:
         run: Rscript validation/experimental-families/run-validation.R
       - name: Validate experimental numerical edge families
         run: Rscript validation/edge-families/run-validation.R
+      - name: Validate against independent open-source comparators
+        run: Rscript validation/external-comparators/run-validation.R
       - name: Upload model-family validation evidence
         uses: actions/upload-artifact@v4
         with:
@@ -47,6 +72,7 @@ jobs:
             validation/nonpk/results
             validation/experimental-families/results
             validation/edge-families/results
+            validation/external-comparators/results
 
   poped-pfim:
     runs-on: ubuntu-latest
@@ -79,3 +105,147 @@ jobs:
         with:
           name: external-validation-${{ github.sha }}
           path: validation/liberality/external/results
+
+  cmdstan-ad:
+    if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.run_cmdstan) }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          packages: |
+            any::jsonlite
+            any::openssl
+            any::testthat
+          dependencies: 'c("Depends", "Imports", "LinkingTo")'
+          install-pandoc: false
+      - name: Install CmdStanR
+        run: >-
+          Rscript -e "install.packages(
+          'cmdstanr',
+          repos=c('https://stan-dev.r-universe.dev','https://cloud.r-project.org'))"
+      - name: Install CmdStan
+        run: >-
+          Rscript validation/external-comparators/install-cmdstan.R
+          --version=2.39.0 --cores=2
+      - name: Create exact source-built validation library
+        run: Rscript tools/create-validation-library.R --source
+      - name: Require independent Stan Math derivative agreement
+        run: >-
+          Rscript validation/ad-backends/run-benchmark.R
+          --iterations=50 --require-cmdstan
+          --output=validation/ad-backends/results/cmdstan
+      - name: Upload AD validation evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: cmdstan-ad-validation-${{ github.sha }}
+          path: validation/ad-backends/results/cmdstan
+
+  sciml-copasi:
+    if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.run_numerical) }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          packages: |
+            any::testthat
+            any::jsonlite
+            any::openssl
+            any::knitr
+            any::rmarkdown
+            any::sessioninfo
+            any::deSolve
+          dependencies: 'c("Depends", "Imports", "LinkingTo")'
+          install-pandoc: false
+      - uses: julia-actions/setup-julia@v2
+        with:
+          version: '1.12.6'
+      - uses: julia-actions/cache@v2
+      - name: Cache exact SciML project
+        uses: actions/cache@v4
+        with:
+          path: .external-tools/julia-project
+          key: sciml-julia-1.12.6-v1
+      - name: Install pinned SciML comparator environment
+        run: julia validation/external-comparators/install-sciml.jl
+      - name: Cache COPASI
+        id: cache-copasi
+        uses: actions/cache@v4
+        with:
+          path: .external-tools/COPASI
+          key: copasi-linux-4.46.300
+      - name: Install pinned COPASI
+        if: steps.cache-copasi.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          mkdir -p .external-tools/COPASI
+          curl --fail --location --silent --show-error \
+            --output /tmp/COPASI-4.46.300-Linux-64bit.sh \
+            https://github.com/copasi/COPASI/releases/download/Build-300/COPASI-4.46.300-Linux-64bit.sh
+          echo "7e2e2de94d50efa773507f5b113708f45b337e7d4c917300a2b12010b68e2ccb  /tmp/COPASI-4.46.300-Linux-64bit.sh" | sha256sum --check
+          chmod +x /tmp/COPASI-4.46.300-Linux-64bit.sh
+          /tmp/COPASI-4.46.300-Linux-64bit.sh -e "$PWD/.external-tools/COPASI"
+      - name: Configure COPASI runtime
+        shell: bash
+        run: |
+          COPASI_ROOT="$PWD/.external-tools/COPASI/COPASI-4.46.300-Linux-64bit"
+          echo "COPASIDIR=$COPASI_ROOT" >> "$GITHUB_ENV"
+          echo "$COPASI_ROOT/bin" >> "$GITHUB_PATH"
+      - name: Create exact source-built validation library
+        run: Rscript tools/create-validation-library.R --source
+      - name: Require SciML and COPASI numerical agreement
+        run: >-
+          Rscript validation/external-comparators/run-validation.R
+          --groups=numerical --strict
+          --output=validation/external-comparators/results/sciml-copasi
+      - name: Upload numerical comparator evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: sciml-copasi-validation-${{ github.sha }}
+          path: validation/external-comparators/results/sciml-copasi
+
+  population-particle-dosing:
+    if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.run_population) }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          packages: |
+            any::testthat
+            any::jsonlite
+            any::openssl
+            any::knitr
+            any::rmarkdown
+            any::sessioninfo
+            any::KFAS
+            any::pomp
+            any::bssm
+            any::nlmixr2
+            any::mrgsolve
+            any::mapbayr
+            any::posologyr
+          dependencies: 'c("Depends", "Imports", "LinkingTo")'
+          install-pandoc: false
+      - name: Create exact source-built validation library
+        run: Rscript tools/create-validation-library.R --source
+      - name: Require population, particle, and individualisation comparators
+        run: >-
+          Rscript validation/external-comparators/run-validation.R
+          --groups=state-space,population,dosing --strict
+          --output=validation/external-comparators/results/population-particle-dosing
+      - name: Upload population comparator evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: population-particle-dosing-${{ github.sha }}
+          path: validation/external-comparators/results/population-particle-dosing

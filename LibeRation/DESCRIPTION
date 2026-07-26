@@ -25,7 +25,10 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 Depends: R (>= 4.1.0)
 Imports:
+    callr,
+    coro,
     digest,
+    ellmer (>= 0.4.2),
     graphics,
     grDevices,
     htmltools,
@@ -33,6 +36,7 @@ Imports:
     jsonlite,
     LibeRtAD (>= 0.7.9),
     parallel,
+    promises,
     R6,
     Rcpp,
     reactR,
@@ -44,7 +48,6 @@ LinkingTo:
     Rcpp,
     LibeRtAD
 Suggests:
-    callr,
     knitr,
     LibeRary (>= 0.7.5),
     LibeRties (>= 0.7.3),
@@ -53,6 +56,7 @@ Suggests:
     shinytest2,
     testthat (>= 3.0.0)
 VignetteBuilder: knitr
-SystemRequirements: C++17; optional WebGPU-capable browser for local AI
+SystemRequirements: C++17; optional WebGPU-capable browser or local Ollama
+    service for AI assistance
 Config/testthat/edition: 3
 Config/roxygen2/version: 8.0.0

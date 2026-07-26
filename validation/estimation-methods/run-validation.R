@@ -16,10 +16,7 @@ root <- normalizePath(
 source(file.path(root, "tools", "validation-runtime.R"), local = TRUE)
 
 option_value <- function(name, default = NULL) {
-  prefix <- paste0("--", name, "=")
-  value <- args[startsWith(args, prefix)]
-  if (!length(value)) default else
-    sub(prefix, "", value[[length(value)]], fixed = TRUE)
+  liber_validation_option(name, default, args = args)
 }
 validation_runtime <- liber_validation_library(
   root, c("LibeRtAD", "LibeRation"),
@@ -574,9 +571,6 @@ if (run_nonmem) {
 }
 
 comparison <- do.call(rbind, results)
-utils::write.csv(
-  comparison, file.path(output, "comparisons.csv"), row.names = FALSE, na = ""
-)
 coverage <- do.call(rbind, lapply(expected_methods, function(method) {
   rows <- comparison[comparison$method == method, , drop = FALSE]
   data.frame(
@@ -593,9 +587,6 @@ coverage <- do.call(rbind, lapply(expected_methods, function(method) {
     stringsAsFactors = FALSE
   )
 }))
-utils::write.csv(
-  coverage, file.path(output, "coverage.csv"), row.names = FALSE
-)
 passed <- !any(comparison$status == "failed")
 complete <- passed && !any(comparison$status == "not-run")
 
@@ -627,25 +618,20 @@ provenance <- liber_validation_provenance(
     posterior_mean = posterior_mean,
     posterior_sd = posterior_sd,
     passed = passed, complete = complete
-  ),
-  output = file.path(output, "provenance.json")
+  )
 )
-jsonlite::write_json(
-  list(
-    schema = "liber.estimation-method-validation/1",
-    passed = passed, complete = complete,
-    profile = if (quick) "quick" else "release",
-    references = list(
-      exact_marginal_mle = exact_mle,
-      posterior_mean = posterior_mean, posterior_sd = posterior_sd,
-      posterior_quantile = as.list(posterior_quantile)
-    ),
-    coverage = split(coverage, seq_len(nrow(coverage))),
-    comparisons = split(comparison, seq_len(nrow(comparison))),
-    provenance = provenance
+summary <- list(
+  schema = "liber.estimation-method-validation/1",
+  passed = passed, complete = complete,
+  profile = if (quick) "quick" else "release",
+  references = list(
+    exact_marginal_mle = exact_mle,
+    posterior_mean = posterior_mean, posterior_sd = posterior_sd,
+    posterior_quantile = as.list(posterior_quantile)
   ),
-  file.path(output, "summary.json"),
-  auto_unbox = TRUE, pretty = TRUE, null = "null", digits = 17
+  coverage = split(coverage, seq_len(nrow(coverage))),
+  comparisons = split(comparison, seq_len(nrow(comparison))),
+  provenance = provenance
 )
 
 markdown_table <- function(frame) {
@@ -678,7 +664,10 @@ report <- c(
   "Detailed numerical comparisons are in `comparisons.csv`; exact environment, ",
   "source, seed, dependency, tolerance, and input hashes are in `provenance.json`."
 )
-writeLines(report, file.path(output, "REPORT.md"), useBytes = TRUE)
+liber_validation_write_evidence(
+  output, comparisons = comparison, coverage = coverage, summary = summary,
+  provenance = provenance, report = report
+)
 cat("Estimation validation evidence:", normalizePath(output, winslash = "/"), "\n")
 if (!passed) {
   stop("One or more estimation-method validation checks failed.", call. = FALSE)

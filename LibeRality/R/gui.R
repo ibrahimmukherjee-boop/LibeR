@@ -64,15 +64,19 @@ liberality_gui <- function(design = NULL, criterion = lity_criterion_D(), queue 
     htmltools::tags$body(liberalityWorkbenchOutput("liberality_workbench"))
   )
   server <- function(input, output, session) {
+    tasks <- .liber_shared_task_registry(session)
+    task_signal <- shiny::reactiveVal(0L)
     state <- shiny::reactiveValues(
       design = design, criterion = criterion, evaluation = NULL,
       optimisation = NULL, simulation = NULL,
+      revision = 0L,
       status = list(level = "info", text = "Design workbench ready")
     )
     output$liberality_workbench <- renderLiberalityWorkbench({
       liberality_workbench(.lity_gui_payload(
         state$design, state$criterion, state$evaluation, state$optimisation,
-        state$simulation, state$status, favicon_href, !is.null(queue)
+        state$simulation, state$status, favicon_href, !is.null(queue),
+        .liber_shared_task_snapshot(tasks)
       ))
     })
     shiny::observeEvent(input$liberality_workbench_event, {
@@ -81,12 +85,26 @@ liberality_gui <- function(design = NULL, criterion = lity_criterion_D(), queue 
       tryCatch({
         if (action == "set_criterion") {
           state$criterion <- .lity_gui_criterion(as.character(event$type), state$design)
+          state$revision <- state$revision + 1L
           state$status <- list(level = "info", text = paste("Selected", state$criterion$name))
         } else if (action == "evaluate") {
-          state$status <- list(level = "working", text = "Calculating scenario information and criteria...")
-          state$evaluation <- lity_evaluate(state$design, state$criterion)
-          state$optimisation <- NULL
-          state$status <- list(level = "success", text = paste("Evaluation completed in", round(state$evaluation$elapsed_seconds, 2), "seconds"))
+          .liber_shared_task_start(
+            tasks, "LibeRality", ".lity_gui_background_task",
+            args = list(
+              operation = "evaluate",
+              arguments = list(
+                design = state$design, criterion = state$criterion
+              )
+            ),
+            label = "Design evaluation",
+            metadata = list(
+              operation = "evaluate", revision = state$revision
+            )
+          )
+          task_signal(task_signal() + 1L)
+          .liber_shared_task_notify(
+            session, "liberality_workbench", tasks
+          )
         } else if (action == "edit_arm") {
           arm_id <- as.character(event$id); arm <- state$design$arms[[arm_id]]
           if (is.null(arm)) .lity_stop("Unknown arm.")
@@ -99,22 +117,55 @@ liberality_gui <- function(design = NULL, criterion = lity_criterion_D(), queue 
           arm$events <- arm$events[order(arm$events$TIME, -arm$events$EVID), , drop = FALSE]
           state$design$arms[[arm_id]] <- arm
           state$evaluation <- state$optimisation <- state$simulation <- NULL
+          state$revision <- state$revision + 1L
           state$status <- list(level = "success", text = paste("Updated", arm$name))
         } else if (action == "optimise") {
           method <- as.character(event$method %||% "auto")
           maxit <- as.integer(event$maxit %||% 40L)
-          state$status <- list(level = "working", text = paste("Running", method, "optimisation..."))
-          state$optimisation <- lity_optimise(state$design, state$criterion, method = method,
-                                               control = list(maxit = maxit, particles = min(30L, max(12L, 3L * length(state$design$variables)))))
-          state$design <- state$optimisation$design
-          state$evaluation <- state$optimisation$evaluation
-          state$status <- list(level = "success", text = paste("Optimisation completed after", state$optimisation$evaluations, "evaluations"))
+          .liber_shared_task_start(
+            tasks, "LibeRality", ".lity_gui_background_task",
+            args = list(
+              operation = "optimise",
+              arguments = list(
+                design = state$design, criterion = state$criterion,
+                method = method,
+                control = list(
+                  maxit = maxit,
+                  particles = min(
+                    30L, max(12L, 3L * length(state$design$variables))
+                  )
+                )
+              )
+            ),
+            label = paste(method, "design optimisation"),
+            metadata = list(
+              operation = "optimise", revision = state$revision
+            )
+          )
+          task_signal(task_signal() + 1L)
+          .liber_shared_task_notify(
+            session, "liberality_workbench", tasks
+          )
         } else if (action == "simulate") {
           n <- as.integer(event$n %||% 20L); fit <- isTRUE(event$fit)
-          state$status <- list(level = "working", text = paste("Simulating", n, "complete trials..."))
-          state$simulation <- lity_simulate_trials(state$design, n = n, fit = fit,
-                                                    method = as.character(event$method %||% "FOCEI"), retain_data = FALSE)
-          state$status <- list(level = "success", text = paste(n, "trial simulations completed"))
+          .liber_shared_task_start(
+            tasks, "LibeRality", ".lity_gui_background_task",
+            args = list(
+              operation = "simulate",
+              arguments = list(
+                design = state$design, n = n, fit = fit,
+                method = as.character(event$method %||% "FOCEI")
+              )
+            ),
+            label = paste(n, "trial simulations"),
+            metadata = list(
+              operation = "simulate", revision = state$revision, n = n
+            )
+          )
+          task_signal(task_signal() + 1L)
+          .liber_shared_task_notify(
+            session, "liberality_workbench", tasks
+          )
         } else if (action == "queue") {
           if (is.null(queue)) .lity_stop("No queue was supplied to liberality_gui().")
           job <- lity_job(state$design, state$criterion,
@@ -130,21 +181,106 @@ liberality_gui <- function(design = NULL, criterion = lity_criterion_D(), queue 
           loaded <- readRDS(as.character(event$path)); validation <- lity_validate(loaded)
           if (!validation$valid) .lity_stop("Saved design is invalid.")
           state$design <- loaded; state$evaluation <- state$optimisation <- state$simulation <- NULL
+          state$revision <- state$revision + 1L
           state$status <- list(level = "success", text = paste("Loaded", loaded$name))
         } else if (action == "report") {
           path <- as.character(event$path %||% tempfile("LibeRality-report-", fileext = ".html"))
           source <- state$optimisation %||% state$evaluation %||% state$design
-          state$status <- list(level = "success", text = paste("Report written to", lity_report(source, path)))
+          .liber_shared_task_start(
+            tasks, "LibeRality", ".lity_gui_background_task",
+            args = list(
+              operation = "report",
+              arguments = list(source = source, path = path)
+            ),
+            label = "Design report",
+            metadata = list(
+              operation = "report", revision = state$revision, path = path
+            )
+          )
+          task_signal(task_signal() + 1L)
+          .liber_shared_task_notify(
+            session, "liberality_workbench", tasks
+          )
         } else if (action == "reset") {
           state$design <- lity_example()$design; state$criterion <- lity_criterion_D()
           state$evaluation <- state$optimisation <- state$simulation <- NULL
+          state$revision <- state$revision + 1L
           state$status <- list(level = "info", text = "Teaching example restored")
+        } else if (action == "cancel_task") {
+          if (.liber_shared_task_cancel_all(tasks)) {
+            state$status <- list(
+              level = "warning", text = "Background calculation cancelled"
+            )
+            .liber_shared_task_notify(
+              session, "liberality_workbench", tasks
+            )
+          }
         }
       }, error = function(error) {
         state$status <- list(level = "error", text = conditionMessage(error))
         shiny::showNotification(conditionMessage(error), type = "error", duration = 9)
       })
     }, ignoreInit = TRUE)
+    shiny::observe({
+      task_signal()
+      if (!.liber_shared_task_active(tasks)) return()
+      shiny::invalidateLater(100, session)
+      .liber_shared_task_poll(tasks)
+      completed <- .liber_shared_task_take_completed(tasks)
+      if (!length(completed)) return()
+      for (job in completed) {
+        if (identical(job$status, "failed")) {
+          state$status <- list(level = "error", text = job$error)
+          shiny::showNotification(job$error, type = "error", duration = 9)
+          next
+        }
+        if (!identical(job$status, "completed")) next
+        operation <- job$metadata$operation
+        if (!identical(operation, "report") &&
+            !identical(job$metadata$revision, state$revision)) {
+          state$status <- list(
+            level = "warning",
+            text = "The design changed; the stale background result was discarded"
+          )
+          next
+        }
+        if (identical(operation, "evaluate")) {
+          state$evaluation <- job$result
+          state$optimisation <- NULL
+          state$status <- list(
+            level = "success",
+            text = paste(
+              "Evaluation completed in",
+              round(state$evaluation$elapsed_seconds, 2), "seconds"
+            )
+          )
+        } else if (identical(operation, "optimise")) {
+          state$optimisation <- job$result
+          state$design <- state$optimisation$design
+          state$evaluation <- state$optimisation$evaluation
+          state$revision <- state$revision + 1L
+          state$status <- list(
+            level = "success",
+            text = paste(
+              "Optimisation completed after",
+              state$optimisation$evaluations, "evaluations"
+            )
+          )
+        } else if (identical(operation, "simulate")) {
+          state$simulation <- job$result
+          state$status <- list(
+            level = "success",
+            text = paste(job$metadata$n, "trial simulations completed")
+          )
+        } else if (identical(operation, "report")) {
+          state$status <- list(
+            level = "success",
+            text = paste("Report written to", job$result)
+          )
+        }
+      }
+      .liber_shared_task_notify(session, "liberality_workbench", tasks)
+    })
   }
   app <- shiny::shinyApp(ui, server)
   if (is.null(launch.browser)) return(app)

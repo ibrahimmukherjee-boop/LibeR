@@ -19,16 +19,7 @@
 }
 
 .ad_default_benchmark_output <- function() {
-  if (.Platform$OS.type == "windows") {
-    profile <- Sys.getenv("USERPROFILE", unset = "")
-    if (!nzchar(profile)) profile <- path.expand("~")
-    documents <- if (tolower(basename(normalizePath(profile, winslash = "/", mustWork = FALSE))) == "documents") {
-      profile
-    } else file.path(profile, "Documents")
-    file.path(documents, "LibeR", "benchmarks")
-  } else {
-    file.path(path.expand("~"), "LibeR", "benchmarks")
-  }
+  .liber_shared_user_root("benchmarks")
 }
 
 .ad_gui_ecosystem_result <- function(output, exit_status) {
@@ -94,15 +85,38 @@ libertad_gui <- function(benchmark_root = NULL, host = "127.0.0.1", port = NULL,
   )
 
   server <- function(input, output, session) {
+    tasks <- .liber_shared_task_registry(session)
+    task_signal <- shiny::reactiveVal(0L)
     state <- shiny::reactiveValues(
       native = NULL, process = NULL, ecosystem = NULL,
       ecosystem_log = character(), ecosystem_output = NULL,
       status = list(level = "info", text = "Benchmark laboratory ready")
     )
+    append_ecosystem_log <- function(lines) {
+      lines <- as.character(lines)
+      lines <- lines[nzchar(lines)]
+      if (!length(lines)) return(invisible(FALSE))
+      state$ecosystem_log <- c(shiny::isolate(state$ecosystem_log), lines)
+      session$sendCustomMessage(
+        "libertad-workbench-patch",
+        list(inputId = "libertad_workbench", ecosystemLogAppend = lines)
+      )
+      invisible(TRUE)
+    }
+    reset_ecosystem_log <- function(lines = character()) {
+      lines <- as.character(lines)
+      state$ecosystem_log <- lines
+      session$sendCustomMessage(
+        "libertad-workbench-patch",
+        list(inputId = "libertad_workbench", ecosystemLog = lines)
+      )
+      invisible(TRUE)
+    }
     output$libertad_workbench <- renderLibertadWorkbench({
       libertad_workbench(.ad_gui_payload(
-        state$native, state$ecosystem, state$ecosystem_log,
-        benchmark_script, !is.null(state$process), state$status, favicon_href
+        state$native, state$ecosystem, shiny::isolate(state$ecosystem_log),
+        benchmark_script, !is.null(state$process), state$status, favicon_href,
+        .liber_shared_task_snapshot(tasks)
       ))
     })
 
@@ -111,18 +125,29 @@ libertad_gui <- function(benchmark_root = NULL, host = "127.0.0.1", port = NULL,
       action <- as.character(event$action %||% "")
       tryCatch({
         if (action == "run_native") {
-          state$status <- list(level = "working", text = "Running C++ tape benchmark...")
-          state$native <- ad_benchmark(
-            case = as.character(event$case %||% "rosenbrock"),
-            iterations = as.integer(event$iterations %||% 1000L),
-            warmups = as.integer(event$warmups %||% 50L),
-            optimize = isTRUE(event$optimize),
-            finite_difference = isTRUE(event$finite_difference)
+          if (!is.null(state$process) && state$process$is_alive()) {
+            .ad_stop("Wait for the ecosystem benchmark to finish or cancel it first.")
+          }
+          .liber_shared_task_start(
+            tasks, "LibeRtAD", ".ad_gui_background_task",
+            args = list(
+              case = as.character(event$case %||% "rosenbrock"),
+              iterations = as.integer(event$iterations %||% 1000L),
+              warmups = as.integer(event$warmups %||% 50L),
+              optimize = isTRUE(event$optimize),
+              finite_difference = isTRUE(event$finite_difference)
+            ),
+            label = "C++ tape benchmark",
+            metadata = list(operation = "native")
           )
-          state$status <- list(level = "success", text = paste("Completed", state$native$label))
+          task_signal(task_signal() + 1L)
+          .liber_shared_task_notify(
+            session, "libertad_workbench", tasks
+          )
         } else if (action == "run_ecosystem") {
           if (is.null(benchmark_script)) .ad_stop("The repository benchmark harness is not available.")
           if (!is.null(state$process) && state$process$is_alive()) .ad_stop("A benchmark is already running.")
+          if (.liber_shared_task_active(tasks)) .ad_stop("A native benchmark is already running.")
           profile <- match.arg(as.character(event$profile %||% "smoke"), c("smoke", "quick", "standard"))
           scenario <- match.arg(as.character(event$scenario %||% "iv-bolus"),
                                 c("iv-bolus", "oral", "two-compartment", "three-compartment",
@@ -150,21 +175,38 @@ libertad_gui <- function(benchmark_root = NULL, host = "127.0.0.1", port = NULL,
           )
           if (!isTRUE(event$covariance)) args <- c(args, "--no-covariance")
           if (!isTRUE(event$simulation)) args <- c(args, "--no-simulation")
-          state$ecosystem_log <- c(
+          reset_ecosystem_log(c(
             paste("Launching:", rscript, paste(args, collapse = " ")),
             paste("Output:", output_directory)
-          )
+          ))
           state$ecosystem <- NULL
           state$ecosystem_output <- output_directory
-          state$process <- processx::process$new(
-            rscript, args = args, wd = dirname(benchmark_script),
-            stdout = "|", stderr = "2>&1", cleanup = TRUE, windows_hide_window = TRUE
-          )
+          state$process <- if (requireNamespace("LibeRties", quietly = TRUE)) {
+            LibeRties::ls_process_supervisor(
+              rscript, args = args, wd = dirname(benchmark_script),
+              stdout = "|", stderr = "2>&1", cleanup = TRUE,
+              windows_hide_window = TRUE,
+              label = paste(profile, scenario, "ecosystem benchmark")
+            )
+          } else {
+            processx::process$new(
+              rscript, args = args, wd = dirname(benchmark_script),
+              stdout = "|", stderr = "2>&1", cleanup = TRUE,
+              windows_hide_window = TRUE
+            )
+          }
           state$status <- list(level = "working", text = paste("Running", profile, scenario, "ecosystem benchmark..."))
         } else if (action == "stop_ecosystem") {
           if (!is.null(state$process) && state$process$is_alive()) {
             state$process$kill()
             state$status <- list(level = "warning", text = "Benchmark cancellation requested")
+          }
+        } else if (action == "cancel_task") {
+          if (.liber_shared_task_cancel_all(tasks)) {
+            state$status <- list(level = "warning", text = "Native benchmark cancelled")
+            .liber_shared_task_notify(
+              session, "libertad_workbench", tasks
+            )
           }
         }
       }, error = function(error) {
@@ -174,15 +216,37 @@ libertad_gui <- function(benchmark_root = NULL, host = "127.0.0.1", port = NULL,
     }, ignoreInit = TRUE)
 
     shiny::observe({
+      task_signal()
+      if (!.liber_shared_task_active(tasks)) return()
+      shiny::invalidateLater(100, session)
+      .liber_shared_task_poll(tasks)
+      completed <- .liber_shared_task_take_completed(tasks)
+      if (!length(completed)) return()
+      for (job in completed) {
+        if (identical(job$status, "completed")) {
+          state$native <- job$result
+          state$status <- list(
+            level = "success",
+            text = paste("Completed", state$native$label)
+          )
+        } else if (identical(job$status, "failed")) {
+          state$status <- list(level = "error", text = job$error)
+          shiny::showNotification(job$error, type = "error", duration = 9)
+        }
+      }
+      .liber_shared_task_notify(session, "libertad_workbench", tasks)
+    })
+
+    shiny::observe({
       process <- state$process
       if (is.null(process)) return()
       shiny::invalidateLater(500, session)
       tryCatch({
         lines <- tryCatch(process$read_output_lines(), error = function(error) character())
-        if (length(lines)) state$ecosystem_log <- c(state$ecosystem_log, lines)
+        append_ecosystem_log(lines)
         if (!process$is_alive()) {
           lines <- tryCatch(process$read_all_output_lines(), error = function(error) character())
-          if (length(lines)) state$ecosystem_log <- c(state$ecosystem_log, lines)
+          append_ecosystem_log(lines)
           status <- process$get_exit_status()
           state$ecosystem <- .ad_gui_ecosystem_result(state$ecosystem_output, status)
           state$process <- NULL
@@ -191,12 +255,15 @@ libertad_gui <- function(benchmark_root = NULL, host = "127.0.0.1", port = NULL,
           } else list(level = "error", text = paste("Ecosystem benchmark exited with status", status))
         }
       }, error = function(error) {
-        state$ecosystem_log <- c(state$ecosystem_log, paste("GUI polling error:", conditionMessage(error)))
+        append_ecosystem_log(paste("GUI polling error:", conditionMessage(error)))
         state$process <- NULL
         state$status <- list(level = "error", text = paste("Unable to collect benchmark results:", conditionMessage(error)))
       })
     })
-    session$onSessionEnded(function() .ad_gui_stop_process(state))
+    session$onSessionEnded(function() {
+      .ad_gui_stop_process(state)
+      .liber_shared_task_cancel_all(tasks)
+    })
   }
   app <- shiny::shinyApp(ui, server)
   if (is.null(launch.browser)) return(app)

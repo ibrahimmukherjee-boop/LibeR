@@ -11,10 +11,7 @@ root <- normalizePath(file.path(fixture_dir, "..", ".."),
 source(file.path(root, "tools", "validation-runtime.R"), local = TRUE)
 
 option_value <- function(name, default = NULL) {
-  prefix <- paste0("--", name, "=")
-  value <- args[startsWith(args, prefix)]
-  if (!length(value)) default else
-    sub(prefix, "", value[[length(value)]], fixed = TRUE)
+  liber_validation_option(name, default, args = args)
 }
 
 validation_runtime <- liber_validation_library(
@@ -691,12 +688,6 @@ if (!grepl("^(?:[A-Za-z]:[/\\\\]|/)", output, perl = TRUE)) {
   output <- file.path(root, output)
 }
 dir.create(output, recursive = TRUE, showWarnings = FALSE)
-utils::write.csv(
-  results, file.path(output, "comparisons.csv"), row.names = FALSE
-)
-utils::write.csv(
-  coverage, file.path(output, "coverage.csv"), row.names = FALSE
-)
 
 input_files <- list.files(
   fixture_dir, pattern = "[.](R|dat|mod|tab)$", full.names = TRUE
@@ -713,19 +704,14 @@ provenance <- liber_validation_provenance(
     nonmem_skipped = skip_nonmem,
     comparisons = nrow(results), executed_comparisons = sum(executed),
     passed = passed, complete = complete
-  ),
-  output = file.path(output, "provenance.json")
+  )
 )
-jsonlite::write_json(
-  list(
-    schema = "liber.nonpk-validation/1", passed = passed,
-    complete = complete,
-    comparisons = split(results, seq_len(nrow(results))),
-    coverage = split(coverage, seq_len(nrow(coverage))),
-    provenance = provenance
-  ),
-  file.path(output, "summary.json"), auto_unbox = TRUE,
-  pretty = TRUE, null = "null", digits = 17
+summary <- list(
+  schema = "liber.nonpk-validation/1", passed = passed,
+  complete = complete,
+  comparisons = split(results, seq_len(nrow(results))),
+  coverage = split(coverage, seq_len(nrow(coverage))),
+  provenance = provenance
 )
 
 reference_counts <- table(results$reference_class, useNA = "ifany")
@@ -758,7 +744,10 @@ report <- c(
     "simulation-calibration campaigns are complete."
   )
 )
-writeLines(report, file.path(output, "REPORT.md"))
+liber_validation_write_evidence(
+  output, comparisons = results, coverage = coverage, summary = summary,
+  provenance = provenance, report = report
+)
 
 cat("Non-PK validation evidence:",
     normalizePath(output, winslash = "/"), "\n")

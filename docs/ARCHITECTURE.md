@@ -206,6 +206,30 @@ LibeRtAD installs a small supported C++ header/API. LibeRation does not call
 unexported R internals. LibeRties treats a LibeRation job specification as data
 and never evaluates arbitrary submitted R expressions on the server.
 
+The packages remain separately installable, so common runtime code is
+maintained as a small number of canonical, generated contracts rather than a
+new required package dependency:
+
+- `tools/shared/liber-durability.R` owns atomic publication, recoverable reads,
+  directory locks, and safe path components;
+- `tools/shared/liber-paths.R` owns user-data root conventions;
+- `tools/shared/gui/` owns cross-package browser theme and accessibility
+  primitives;
+- `ecosystem.json` and the external-validation baseline manifest are canonical
+  packaged contracts.
+
+Run `tools/sync-shared-runtime.R`, `tools/sync-gui-assets.R`, and
+`tools/sync-packaged-contracts.R` after editing a canonical source. Generated
+package copies carry a warning header and CI/release checks fail if they drift.
+This keeps duplication mechanical and verified while avoiding dependency
+cycles between independently distributed packages.
+
+LibeRties also owns the common background-process supervision façade. It wraps
+`processx` or `callr` processes with one lifecycle API for polling, output,
+exit status, cancellation, and process-tree termination. Packages may use it
+when LibeRties is installed and retain a local fallback where making LibeRties
+a hard dependency would create an inappropriate package edge.
+
 LibeRary owns literature acquisition, structured evidence, review state, and
 catalogue versions. Its literature path is staged and resumable:
 

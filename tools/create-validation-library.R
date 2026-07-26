@@ -4,21 +4,7 @@ script <- if (length(script_arg)) sub("^--file=", "", script_arg[[1L]]) else
   file.path("tools", "create-validation-library.R")
 root <- normalizePath(file.path(dirname(script), ".."), winslash = "/", mustWork = TRUE)
 source(file.path(root, "tools", "validation-runtime.R"), local = TRUE)
-
-if (.Platform$OS.type == "windows") {
-  rtools <- "C:/rtools45"
-  compiler <- file.path(rtools, "x86_64-w64-mingw32.static.posix", "bin", "g++.exe")
-  if (file.exists(compiler)) {
-    Sys.setenv(
-      PATH = paste(
-        normalizePath(c(file.path(rtools, "x86_64-w64-mingw32.static.posix", "bin"),
-                        file.path(rtools, "usr", "bin")), winslash = "/"),
-        Sys.getenv("PATH"), collapse = .Platform$path.sep
-      ),
-      R_MAKEVARS_USER = file.path(root, "tools", "Makevars.rtools45")
-    )
-  }
-}
+liber_validation_configure_rtools(root)
 
 manifest <- liber_validation_manifest(root)
 packages <- names(manifest$packages)

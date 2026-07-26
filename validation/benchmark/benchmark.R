@@ -6,26 +6,18 @@ script_path <- if (length(script_arg)) sub("^--file=", "", script_arg[[1L]]) els
   file.path("validation", "benchmark", "benchmark.R")
 benchmark_dir <- normalizePath(dirname(script_path), winslash = "/", mustWork = TRUE)
 root <- normalizePath(file.path(benchmark_dir, "..", ".."), winslash = "/", mustWork = TRUE)
+source(file.path(root, "tools", "validation-runtime.R"), local = TRUE)
 
 option_value <- function(name, default = NULL) {
-  prefix <- paste0("--", name, "=")
-  value <- args[startsWith(args, prefix)]
-  if (!length(value)) return(default)
-  sub(prefix, "", value[[length(value)]], fixed = TRUE)
+  liber_validation_option(name, default, args = args)
 }
 option_flag <- function(name, default = FALSE) {
-  positive <- paste0("--", name)
-  negative <- paste0("--no-", name)
-  if (negative %in% args) return(FALSE)
-  if (positive %in% args) return(TRUE)
-  default
+  liber_validation_flag(name, default, args = args)
 }
 split_option <- function(value) {
-  value <- trimws(strsplit(as.character(value), ",", fixed = TRUE)[[1L]])
-  toupper(value[nzchar(value)])
+  liber_validation_split_option(value, uppercase = TRUE)
 }
 
-source(file.path(root, "tools", "validation-runtime.R"), local = TRUE)
 validation_runtime <- liber_validation_library(
   root, c("LibeRtAD", "LibeRation"),
   library = option_value("library", Sys.getenv("LIBER_VALIDATION_LIBRARY", ""))

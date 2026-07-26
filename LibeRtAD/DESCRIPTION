@@ -21,6 +21,7 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 Depends: R (>= 4.1.0)
 Imports:
+    callr,
     htmltools,
     htmlwidgets,
     processx,
@@ -32,6 +33,7 @@ LinkingTo:
     Rcpp
 Suggests:
     knitr,
+    LibeRties (>= 0.7.4),
     rmarkdown,
     shinytest2,
     testthat (>= 3.0.0)

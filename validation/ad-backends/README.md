@@ -19,7 +19,14 @@ The script always runs LibeRtAD. TMB and CmdStan are reported as `skipped`
 unless their R packages and, for CmdStanR, a configured CmdStan installation
 are already available. A backend compile or runtime error is retained as
 `failed`; it never silently removes a competitor. Results are written to
-`validation/ad-backends/results/benchmark.csv` and `.rds`.
+`validation/ad-backends/results/benchmark.csv`, `.rds`, and `summary.json`.
+Value, gradient, and Hessian tolerances are executable gates. Use
+`--require-cmdstan` for an independent Stan Math gate; TMB remains useful
+cross-frontend evidence but shares CppAD ancestry with LibeRtAD.
+
+The runner requires the same immutable source-built validation library as the
+other evidence campaigns. `--library=<path>` and `--output=<path>` are
+available for CI and retained validation artifacts.
 
 The adapters follow the official [TMB compile/`MakeADFun`
 workflow](https://kaskr.github.io/adcomp/Introduction.html) and CmdStanR's

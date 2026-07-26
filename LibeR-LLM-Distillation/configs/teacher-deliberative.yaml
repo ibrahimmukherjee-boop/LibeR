@@ -1,0 +1,7 @@
+# Optional high-cost pass. Ollama returns reasoning separately, and it counts
+# toward num_predict, so this profile needs a large output budget and timeout.
+generation:
+  think: true
+  num_predict: 8192
+  request_timeout_seconds: 1800
+  max_retries: 2

@@ -34,6 +34,62 @@ estimates is a failed validation, not a speed result.
 6. **Queue parity**: the same serialized job must produce equivalent local and
    LibeRties-worker results, with package/version fingerprints recorded.
 
+## Independent software comparators
+
+`validation/external-comparators/` adds a versioned registry and a portable
+open-source comparison gate. It distinguishes direct compatibility references,
+independent implementations, component comparators, licensed software, and
+deployment verification frameworks. Missing software is recorded as
+`not-run`; an unavailable comparator is never converted into a pass.
+
+The executable portable campaign currently compares:
+
+- the linear Gaussian state-space objective, filtered states, and filtered
+  uncertainty with KFAS;
+- Bernoulli and zero-inflated Poisson objectives and fitted parameters with
+  glmmTMB;
+- HMM objective, smoothed probabilities, and Viterbi path with hmmTMB when
+  installed;
+- replicated particle objectives with pomp and bssm against an exact matched
+  linear-Gaussian likelihood;
+- QSP reaction-network trajectories and conservation with deSolve;
+- nonlinear Brusselator QSP trajectories with headless COPASI when installed;
+- ADVAN14 stiff ODE, SDE, DDE, nonlinear DAE, and QSP trajectories or moments
+  with Julia SciML/Sundials when installed;
+- FO, FOCE, and FOCEI population parameters and conditional modes with
+  nlmixr2, including freely estimated OMEGA/SIGMA, full correlated OMEGA,
+  IOV, M3/M4 BLQ likelihoods, and time-varying covariates;
+- subject-level finite mixtures and normal, log-normal, half-normal, and
+  inverse-gamma priors against independent analytic likelihoods; and
+- MAP individual ETA estimates with mapbayr and posologyr.
+
+The LibeRtAD backend runner now gates values, gradients, and Hessians and can
+require CmdStan/Stan Math with `--require-cmdstan`. TMB remains useful
+cross-frontend evidence but is not independent at the AD-library layer because
+it also uses CppAD. PopED/PFIM and NONMEM retain their dedicated suites.
+
+Run the open-source gate against the exact source tree:
+
+```text
+Rscript validation/external-comparators/install-dependencies.R
+Rscript validation/external-comparators/install-dependencies.R --extended
+Rscript validation/external-comparators/install-cmdstan.R
+julia validation/external-comparators/install-sciml.jl
+Rscript tools/create-validation-library.R --source
+Rscript validation/external-comparators/run-validation.R
+```
+
+The complete registry also tracks NONMEM 7.4+ ADVAN14, Monolix, Pumas, Stan
+HMMs, ASReview, document-parser comparisons, and deployment isolation.
+nlmixr2, pomp/bssm, and posologyr now have executable optional gates. The
+nlmixr2 gate deliberately separates its fixed-variance algorithm fixture from
+advanced feature fixtures so a parameterisation mismatch cannot hide a
+regression in the core estimator. OWASP ZAP
+and k6 have a scheduled disposable-service harness under
+`validation/liberties/deployment/`; deployment-specific saturation, restart,
+TLS, and hostile-code isolation remain manual. Missing prerequisites never
+become a pass.
+
 ## Estimation-method validation
 
 `validation/estimation-methods/run-validation.R` is the release gate for every

@@ -1,0 +1,39 @@
+sources:
+  - id: liberation
+    path: ../../LibeRation
+    license: MIT
+    rights_basis: owned
+    redistributable: true
+    description: LibeRation source, manuals and vignettes.
+    include:
+      - README.md
+      - R/**/*.R
+      - man/**/*.Rd
+      - vignettes/**/*
+      - inst/docs/**/*
+      - src/**/*.cpp
+      - src/**/*.h
+    exclude:
+      - src/RcppExports.cpp
+      - R/RcppExports.R
+      - inst/include/vendor/**/*
+  - id: libertad
+    path: ../../LibeRtAD
+    license: MIT
+    rights_basis: owned
+    redistributable: true
+    description: LibeRtAD source, manuals and vignettes.
+    include:
+      - README.md
+      - R/**/*.R
+      - man/**/*.Rd
+      - vignettes/**/*
+      - src/**/*.cpp
+      - src/**/*.h
+    exclude:
+      - src/RcppExports.cpp
+      - R/RcppExports.R
+      - inst/include/vendor/**/*
+
+# Add other sources only after recording a license/rights basis. Keep private or
+# non-redistributable source text out of published datasets and model cards.

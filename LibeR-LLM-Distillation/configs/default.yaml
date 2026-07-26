@@ -1,0 +1,126 @@
+project:
+  name: liber-pmx-assistant
+  seed: 26072026
+  system_prompt: >-
+    You are the LibeR pharmacometrics assistant. Give technically accurate,
+    concise and actionable answers. Distinguish facts from interpretation,
+    never invent run results, and state when evidence is insufficient.
+
+paths:
+  source_manifest: manifests/sources.yaml
+  work_dir: data/work
+  dataset_dir: data/datasets
+  run_dir: runs
+  export_dir: exports
+
+ingestion:
+  chunk_characters: 9000
+  overlap_characters: 900
+  include_extensions:
+    - .md
+    - .txt
+    - .R
+    - .Rd
+    - .Rmd
+    - .qmd
+    - .cpp
+    - .hpp
+    - .h
+  exclude_globs:
+    - "**/.git/**"
+    - "**/renv/**"
+    - "**/RcppExports.*"
+    - "**/src/RcppExports.cpp"
+    - "**/inst/include/vendor/**"
+    - "**/node_modules/**"
+    - "**/*.min.js"
+
+generation:
+  base_url: http://127.0.0.1:11434
+  teacher_model: qwen3.6:27b
+  judge_model: qwen3.5:9b
+  temperature: 0.25
+  judge_temperature: 0.0
+  num_ctx: 16384
+  num_predict: 4096
+  think: false
+  seed: 26072026
+  questions_per_chunk: 3
+  categories:
+    - model_coding
+    - estimation
+    - diagnostics
+    - simulation
+    - workflow
+    - troubleshooting
+    - interpretation
+  request_timeout_seconds: 900
+  max_retries: 3
+  resume: true
+
+quality:
+  minimum_judge_score: 0.82
+  minimum_groundedness: 0.85
+  require_exact_evidence: true
+  maximum_answer_characters: 6000
+  reject_if_personal_data: true
+  reject_absolute_local_paths: true
+  near_duplicate_similarity: 0.92
+
+split:
+  train_fraction: 0.80
+  validation_fraction: 0.10
+  test_fraction: 0.10
+  group_by: document
+
+training:
+  student_model: Qwen/Qwen3-1.7B
+  max_sequence_length: 2048
+  output_dir: runs/qwen3-1.7b-liber-sft
+  load_in_4bit: true
+  bf16: true
+  fp16: false
+  epochs: 2
+  learning_rate: 0.0002
+  per_device_train_batch_size: 1
+  per_device_eval_batch_size: 1
+  gradient_accumulation_steps: 16
+  warmup_ratio: 0.05
+  weight_decay: 0.01
+  logging_steps: 5
+  eval_steps: 100
+  save_steps: 100
+  lora_rank: 32
+  lora_alpha: 64
+  lora_dropout: 0.05
+  target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+
+preference_training:
+  enabled: false
+  output_dir: runs/qwen3-1.7b-liber-dpo
+  epochs: 1
+  learning_rate: 0.000005
+  beta: 0.1
+
+evaluation:
+  maximum_regression_fraction: 0.02
+  minimum_pass_rate: 0.90
+  judge_model: qwen3.6:27b
+  smoke_prompts: manifests/evaluation_prompts.jsonl
+
+export:
+  merged_dir: exports/liber-pmx-assistant-hf
+  gguf_dir: exports/liber-pmx-assistant-gguf
+  ollama_model_name: liber-pmx-assistant
+  gguf_quantization: Q4_K_M
+  mlc_dir: exports/liber-pmx-assistant-webllm
+  mlc_quantization: q4f16_1
+  mlc_context_window_size: 8192
+  mlc_prefill_chunk_size: 1024

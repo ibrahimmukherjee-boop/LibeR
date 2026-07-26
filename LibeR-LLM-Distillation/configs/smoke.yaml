@@ -1,0 +1,93 @@
+project:
+  name: liber-distill-smoke
+  seed: 42
+  system_prompt: You are a concise pharmacometrics assistant.
+
+paths:
+  source_manifest: tests/fixtures/sources.yaml
+  work_dir: data/work/smoke
+  dataset_dir: data/datasets/smoke
+  run_dir: runs/smoke
+  export_dir: exports/smoke
+
+ingestion:
+  chunk_characters: 700
+  overlap_characters: 80
+  include_extensions: [.md]
+  exclude_globs: []
+
+generation:
+  base_url: http://127.0.0.1:11434
+  teacher_model: qwen3.6:27b
+  judge_model: qwen3.5:9b
+  temperature: 0.0
+  judge_temperature: 0.0
+  num_ctx: 4096
+  num_predict: 1024
+  think: false
+  seed: 42
+  questions_per_chunk: 1
+  categories: [model_coding]
+  request_timeout_seconds: 120
+  max_retries: 1
+  resume: true
+
+quality:
+  minimum_judge_score: 0.8
+  minimum_groundedness: 0.8
+  require_exact_evidence: true
+  maximum_answer_characters: 2500
+  reject_if_personal_data: true
+  reject_absolute_local_paths: true
+  near_duplicate_similarity: 0.92
+
+split:
+  train_fraction: 0.8
+  validation_fraction: 0.1
+  test_fraction: 0.1
+  group_by: document
+
+training:
+  student_model: Qwen/Qwen3-0.6B
+  max_sequence_length: 512
+  output_dir: runs/smoke/sft
+  load_in_4bit: false
+  bf16: false
+  fp16: false
+  epochs: 1
+  learning_rate: 0.0002
+  per_device_train_batch_size: 1
+  per_device_eval_batch_size: 1
+  gradient_accumulation_steps: 1
+  warmup_ratio: 0.0
+  weight_decay: 0.0
+  logging_steps: 1
+  eval_steps: 2
+  save_steps: 2
+  lora_rank: 8
+  lora_alpha: 16
+  lora_dropout: 0.05
+  target_modules: [q_proj, k_proj, v_proj, o_proj]
+
+preference_training:
+  enabled: false
+  output_dir: runs/smoke/dpo
+  epochs: 1
+  learning_rate: 0.000005
+  beta: 0.1
+
+evaluation:
+  maximum_regression_fraction: 0.1
+  minimum_pass_rate: 0.8
+  judge_model: qwen3.6:27b
+  smoke_prompts: manifests/evaluation_prompts.jsonl
+
+export:
+  merged_dir: exports/smoke/hf
+  gguf_dir: exports/smoke/gguf
+  ollama_model_name: liber-pmx-smoke
+  gguf_quantization: Q4_K_M
+  mlc_dir: exports/smoke/webllm
+  mlc_quantization: q4f16_1
+  mlc_context_window_size: 4096
+  mlc_prefill_chunk_size: 512

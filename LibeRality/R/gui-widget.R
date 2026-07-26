@@ -1,7 +1,9 @@
 .lity_gui_payload <- function(design, criterion, evaluation = NULL,
                               optimisation = NULL, simulation = NULL,
                               status = list(level = "info", text = "Design workbench ready"),
-                              icon = NULL, queue = FALSE) {
+                              icon = NULL, queue = FALSE,
+                              task = list(running = FALSE, id = "", label = "",
+                                          cancellable = FALSE)) {
   arms <- lapply(names(design$arms), function(id) {
     arm <- design$arms[[id]]; observed <- arm$events$EVID == 0 & arm$events$MDV == 0
     list(id = id, name = arm$name, size = arm$size, allocation = arm$allocation,
@@ -72,7 +74,7 @@
       message = optimisation$message, evaluations = optimisation$evaluations,
       elapsed = optimisation$elapsed_seconds, trace = trace
     ),
-    simulation = simulation_payload, status = status, icon = icon,
+    simulation = simulation_payload, status = status, icon = icon, task = task,
     queueAvailable = isTRUE(queue), packageVersion = tryCatch(
       as.character(utils::packageVersion("LibeRality")), error = function(e) "0.1.2"
     ), criterionTypes = .lity_criterion_types, researchOnly = TRUE

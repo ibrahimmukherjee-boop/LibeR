@@ -7,9 +7,7 @@ fixture_dir <- normalizePath(dirname(script), winslash = "/", mustWork = TRUE)
 root <- normalizePath(file.path(fixture_dir, "..", ".."), winslash = "/", mustWork = TRUE)
 source(file.path(root, "tools", "validation-runtime.R"), local = TRUE)
 option_value <- function(name, default = NULL) {
-  prefix <- paste0("--", name, "=")
-  value <- args[startsWith(args, prefix)]
-  if (!length(value)) default else sub(prefix, "", value[[length(value)]], fixed = TRUE)
+  liber_validation_option(name, default, args = args)
 }
 validation_runtime <- liber_validation_library(
   root, c("LibeRtAD", "LibeRation"),
@@ -347,7 +345,6 @@ if (!grepl("^(?:[A-Za-z]:[/\\\\]|/)", output, perl = TRUE)) {
 }
 dir.create(output, recursive = TRUE, showWarnings = FALSE)
 results <- do.call(rbind, validation_results)
-utils::write.csv(results, file.path(output, "comparisons.csv"), row.names = FALSE)
 executed <- !is.na(results$passed)
 all_executed_passed <- any(executed) && all(results$passed[executed])
 complete <- all(executed)
@@ -371,14 +368,14 @@ provenance <- liber_validation_provenance(
     cases = nrow(results), executed_cases = sum(executed),
     all_executed_passed = all_executed_passed,
     complete = complete
-  ),
-  output = file.path(output, "provenance.json")
+  )
 )
-jsonlite::write_json(
-  list(schema = "liber.nonmem-validation/1", passed = all_executed_passed,
-       complete = complete,
-       comparisons = split(results, seq_len(nrow(results))), provenance = provenance),
-  file.path(output, "summary.json"), auto_unbox = TRUE, pretty = TRUE,
-  null = "null", digits = 17
+summary <- list(
+  schema = "liber.nonmem-validation/1", passed = all_executed_passed,
+  complete = complete,
+  comparisons = split(results, seq_len(nrow(results))), provenance = provenance
+)
+liber_validation_write_evidence(
+  output, comparisons = results, summary = summary, provenance = provenance
 )
 cat("Validation evidence:", normalizePath(output, winslash = "/"), "\n")

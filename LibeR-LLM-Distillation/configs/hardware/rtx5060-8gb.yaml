@@ -1,0 +1,16 @@
+# Merge these values into configs/default.yaml for the local RTX 5060 8 GB.
+# This is intentionally conservative and prioritises reliable runs.
+generation:
+  num_ctx: 16384
+  num_predict: 4096
+
+training:
+  student_model: Qwen/Qwen3-1.7B
+  max_sequence_length: 2048
+  load_in_4bit: true
+  bf16: true
+  fp16: false
+  per_device_train_batch_size: 1
+  per_device_eval_batch_size: 1
+  gradient_accumulation_steps: 16
+  lora_rank: 32

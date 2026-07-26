@@ -7,13 +7,15 @@
 }
 
 .ls_safe_component <- function(x, what = "path component") {
-  x <- as.character(x)
-  if (length(x) != 1L || is.na(x) || !nzchar(x) ||
-      !grepl("^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$", x) ||
-      x %in% c(".", "..")) {
-    .ls_stop("Invalid ", what, ": use 1-128 ASCII letters, digits, '.', '_', or '-'.")
-  }
-  x
+  .liber_shared_component(
+    x, what = what, max_length = 128L,
+    error = function(message) {
+      .ls_stop(
+        "Invalid ", what,
+        ": use 1-128 ASCII letters, digits, '.', '_', or '-'."
+      )
+    }
+  )
 }
 
 .ls_default_root <- function() {
@@ -135,49 +137,25 @@
 }
 
 .ls_atomic_save_rds <- function(object, path) {
-  dir <- .ls_ensure_dir(dirname(path))
-  tmp <- tempfile("write-", tmpdir = dir, fileext = ".rds")
-  backup <- paste0(path, ".previous")
-  on.exit(unlink(tmp, force = TRUE), add = TRUE)
-  saveRDS(.ls_storage_wrap(object), tmp, version = 3)
-  if (file.exists(path)) {
-    unlink(backup, force = TRUE)
-    if (!file.rename(path, backup)) .ls_stop("Unable to rotate metadata file: ", path)
-  }
-  if (!file.rename(tmp, path)) {
-    if (file.exists(backup)) file.rename(backup, path)
-    .ls_stop("Unable to publish file: ", path)
-  }
-  if (.Platform$OS.type != "windows") Sys.chmod(path, mode = "0600")
-  unlink(backup, force = TRUE)
-  invisible(path)
+  .liber_shared_atomic_publish(
+    path,
+    writer = function(temporary) {
+      saveRDS(.ls_storage_wrap(object), temporary, version = 3)
+    },
+    prefix = "write-", fileext = ".rds",
+    error = function(message) .ls_stop(message)
+  )
 }
 
 .ls_read_rds <- function(path, attempts = 4L) {
-  last <- NULL
-  for (i in seq_len(attempts)) {
-    candidates <- c(path, paste0(path, ".previous"))
-    candidates <- unique(candidates[file.exists(candidates)])
-    for (candidate in candidates) {
-      value <- tryCatch(
-        .ls_storage_unwrap(suppressWarnings(readRDS(candidate))),
-        error = function(error) {
-          last <<- error
-          NULL
-        }
-      )
-      if (!is.null(value)) {
-        if (!identical(candidate, path)) {
-          warning("Recovered interrupted durable write from ", basename(candidate), ".",
-                  call. = FALSE)
-        }
-        return(value)
-      }
-    }
-    if (i < attempts) Sys.sleep(0.01)
-  }
-  detail <- if (inherits(last, "condition")) conditionMessage(last) else "file is absent"
-  .ls_stop("Unable to read ", path, ": ", detail)
+  .liber_shared_durable_read(
+    path,
+    reader = function(candidate) {
+      .ls_storage_unwrap(suppressWarnings(readRDS(candidate)))
+    },
+    attempts = attempts, delay = 0.01,
+    error = function(message) .ls_stop(message)
+  )
 }
 
 .ls_meta_path <- function(job_dir) file.path(job_dir, "metadata.rds")
@@ -228,22 +206,10 @@
 
 .ls_with_job_lock <- function(job_dir, operation, timeout = 5, stale_after = 30) {
   lock <- file.path(job_dir, ".metadata.lock")
-  started <- proc.time()[["elapsed"]]
-  repeat {
-    if (dir.create(lock, showWarnings = FALSE)) break
-    age <- tryCatch(as.numeric(difftime(Sys.time(), file.info(lock)$mtime, units = "secs")),
-                    error = function(e) 0)
-    if (is.finite(age) && age > stale_after) {
-      unlink(lock, recursive = TRUE, force = TRUE)
-      next
-    }
-    if (proc.time()[["elapsed"]] - started >= timeout) {
-      .ls_stop("Timed out acquiring job metadata lock: ", basename(job_dir), ".")
-    }
-    Sys.sleep(0.01)
-  }
-  on.exit(unlink(lock, recursive = TRUE, force = TRUE), add = TRUE)
-  operation()
+  .liber_shared_with_lock(
+    lock, operation, timeout = timeout, stale_after = stale_after,
+    error = function(message) .ls_stop(message)
+  )
 }
 
 .ls_update_meta <- function(job_dir, update, allowed_status = NULL) {

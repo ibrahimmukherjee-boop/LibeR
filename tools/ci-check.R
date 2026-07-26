@@ -1,5 +1,35 @@
 packages <- c("LibeRtAD", "LibeRation", "LibeRary", "LibeRator", "LibeRality", "LibeRties")
 root <- normalizePath(getwd(), winslash = "/", mustWork = TRUE)
+source(file.path(root, "tools", "validation-runtime.R"), local = TRUE)
+liber_validation_assert_repository_hygiene(root)
+installer_status <- system2(
+  file.path(R.home("bin"), "Rscript"),
+  c(file.path(root, "tools", "installer-check.R"), root)
+)
+if (!identical(installer_status, 0L)) {
+  stop("Installer validation failed.", call. = FALSE)
+}
+shared_status <- system2(
+  file.path(R.home("bin"), "Rscript"),
+  c(file.path(root, "tools", "sync-shared-runtime.R"), "--check")
+)
+if (!identical(shared_status, 0L)) {
+  stop("Generated shared runtime validation failed.", call. = FALSE)
+}
+gui_asset_status <- system2(
+  file.path(R.home("bin"), "Rscript"),
+  c(file.path(root, "tools", "sync-gui-assets.R"), "--check")
+)
+if (!identical(gui_asset_status, 0L)) {
+  stop("Generated GUI design-system validation failed.", call. = FALSE)
+}
+contract_status <- system2(
+  file.path(R.home("bin"), "Rscript"),
+  c(file.path(root, "tools", "sync-packaged-contracts.R"), "--check")
+)
+if (!identical(contract_status, 0L)) {
+  stop("Packaged contract synchronization failed.", call. = FALSE)
+}
 if (.Platform$OS.type == "windows") {
   rtools_roots <- unique(Filter(nzchar, c(
     Sys.getenv("RTOOLS45_HOME"), Sys.getenv("RTOOLS_HOME"), "C:/rtools45"

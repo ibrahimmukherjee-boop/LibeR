@@ -8,5 +8,6 @@ liber_gui(
   workspace = file.path(tempdir(), "LibeRation-shinyapps"),
   queue = FALSE,
   session_workspace = TRUE,
+  allow_ollama = FALSE,
   launch.browser = NULL
 )

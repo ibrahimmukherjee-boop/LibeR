@@ -6,7 +6,7 @@
 #include <LibeRtAD/sparse_hessian.hpp>
 #include <unsupported/Eigen/MatrixFunctions>
 #include <LibeRtAD/program.hpp>
-#include "eigen_solver.h"
+#include <LibeRtAD/eigen_solver.hpp>
 
 #include <algorithm>
 #include <cstdint>
@@ -7192,7 +7192,7 @@ class PopulationObjective {
       std::vector<double> current_point = objective_point(parameters, eta_eigen);
       Matrix hessian = objective_eta_hessian(
         *primary_[index], current_point, positions);
-      auto eigen = liberation::detail::self_adjoint_eigen(hessian, false);
+      auto eigen = libertad::detail::self_adjoint_eigen(hessian, false);
       if (eigen.info != Eigen::Success) return;
       const double largest = std::max(eigen.values.cwiseAbs().maxCoeff(), 1.0);
       const double jitter = std::max(0.0, largest * 1e-12 -
@@ -7513,7 +7513,7 @@ class PopulationObjective {
           eta_hessian = Matrix::Zero(0, 0);
         }
         if (n_eta_) {
-          auto eigen = liberation::detail::self_adjoint_eigen(eta_hessian, false);
+          auto eigen = libertad::detail::self_adjoint_eigen(eta_hessian, false);
           if (eigen.info != Eigen::Success) {
             throw std::runtime_error("Conditional ETA curvature decomposition failed.");
           }
@@ -8140,7 +8140,7 @@ Rcpp::List kalman_filter(
 Matrix covariance_sampling_root(const Matrix& covariance,
                                 const std::string& context) {
   const Matrix symmetric = 0.5 * (covariance + covariance.transpose()).eval();
-  auto eigen = liberation::detail::self_adjoint_eigen(symmetric, true);
+  auto eigen = libertad::detail::self_adjoint_eigen(symmetric, true);
   if (eigen.info != Eigen::Success) {
     throw std::runtime_error(context + " eigen decomposition failed.");
   }
@@ -9120,7 +9120,7 @@ Rcpp::List liberation_nested_population_gradient(
     }
     double jitter = 0.0;
     if (n_eta) {
-      auto eigen = liberation::detail::self_adjoint_eigen(eta_hessian, false);
+      auto eigen = libertad::detail::self_adjoint_eigen(eta_hessian, false);
       if (eigen.info != Eigen::Success) {
         Rcpp::stop("Conditional ETA curvature eigen decomposition failed.");
       }

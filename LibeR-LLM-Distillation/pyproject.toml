@@ -1,0 +1,54 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "liber-llm-distillation"
+version = "0.1.0"
+description = "Standalone, provenance-aware response-distillation pipeline for a compact LibeR pharmacometrics assistant."
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.11,<3.13"
+authors = [
+  { name = "Sven C. van Dijkman" }
+]
+dependencies = [
+  "httpx>=0.27,<1",
+  "pydantic>=2.9,<3",
+  "PyYAML>=6.0.2,<7",
+  "rich>=13.9,<15"
+]
+
+[project.optional-dependencies]
+train = [
+  "accelerate>=1.2,<2",
+  "bitsandbytes>=0.48,<1",
+  "datasets>=3.2,<5",
+  "peft>=0.14,<1",
+  "safetensors>=0.5,<1",
+  "torch>=2.7,<3",
+  "transformers>=4.51,<6",
+  "trl>=0.26,<1"
+]
+test = [
+  "pytest>=8.3,<10",
+  "pytest-cov>=6,<8",
+  "ruff>=0.9,<1"
+]
+
+[project.scripts]
+liber-distill = "liber_distill.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/liber_distill"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]

@@ -6,21 +6,10 @@
   function num(x) { var n = Number(x); return isFinite(n) ? n : null; }
   function fmt(x, digits) { var n = Number(x); digits = typeof digits === "number" ? digits : 3; return isFinite(n) ? n.toFixed(digits).replace(/\.0+$/, "") : "--"; }
   function initialDarkTheme(legacyKey) {
-    try {
-      var shared = localStorage.getItem("liber.theme");
-      if (shared === "dark" || shared === "light") return shared === "dark";
-      var legacy = localStorage.getItem(legacyKey);
-      if (legacy === "dark" || legacy === "1") return true;
-      if (legacy === "light" || legacy === "0") return false;
-    } catch (_) {}
-    return !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    return window.LibeRDesign.theme.initialDark(legacyKey);
   }
   function storeTheme(dark, legacyKey) {
-    try {
-      localStorage.setItem("liber.theme", dark ? "dark" : "light");
-      localStorage.setItem(legacyKey, dark ? "dark" : "light");
-      document.documentElement.setAttribute("data-liber-theme", dark ? "dark" : "light");
-    } catch (_) {}
+    window.LibeRDesign.theme.store(dark, legacyKey, false);
   }
   function useDialogFocus(onClose) {
     var dialog = React.useRef(null), close = React.useRef(onClose);
@@ -54,7 +43,7 @@
   function Logo() { return e("span", { className: "ly-logo ly-logo-fallback", "aria-hidden": "true" }, "L"); }
   function Modal(p) { var dialog = useDialogFocus(p.onClose); return e("div", { className: "ly-modal-layer", onMouseDown: function (x) { if (x.target === x.currentTarget) p.onClose(); } }, e("section", { ref: dialog, tabIndex: -1, className: "ly-modal", role: "dialog", "aria-modal": "true", "aria-label": p.title }, e("header", null, e("div", null, e("strong", null, p.title), p.subtitle ? e("span", null, p.subtitle) : null), e(Button, { className: "ly-icon", ariaLabel: "Close", onClick: p.onClose }, "×")), e("div", { className: "ly-modal-body" }, p.children))); }
   function Field(p) { return e("label", { className: "ly-field " + val(p.className, "") }, e("span", null, p.label), p.children, p.help ? e("small", null, p.help) : null); }
-  function Status(p) { var s = p.status || {}; return e("div", { className: "ly-status ly-status-" + val(s.level, "info") }, e("i", null), e("span", null, val(s.text, "Ready"))); }
+  function Status(p) { var s = p.status || {}, task = s.task || {}; return e("div", { className: "ly-status ly-status-" + val(s.level, "info") }, e("i", null), e("span", null, task.running ? val(task.label, "Background calculation") + " is running" : val(s.text, "Ready")), task.running && task.cancellable ? e(Button, { className: "ly-task-cancel", onClick: function () { emit({ inputId: s.inputId }, "cancel_task", { id: task.id }); } }, "Cancel") : null); }
   function Metric(p) { return e("div", { className: "ly-metric" }, e("span", null, p.label), e("strong", null, p.value), p.detail ? e("small", null, p.detail) : null); }
   function Table(p) { var rows = list(p.rows); if (!rows.length) return e(Empty, { title: val(p.empty, "No results"), detail: "Run the corresponding analysis to populate this view." }); var cols = p.columns || Object.keys(rows[0]); return e("div", { className: "ly-table-wrap" }, e("table", { className: "ly-table" }, e("thead", null, e("tr", null, cols.map(function (c) { return e("th", { key: c.key || c }, c.label || c); }))), e("tbody", null, rows.map(function (r, i) { return e("tr", { key: i }, cols.map(function (c) { var key = c.key || c, value = r[key]; if (c.format) value = c.format(value, r); return e("td", { key: key }, value === null || value === undefined ? "--" : String(value)); })); })))); }
   function ArmModal(p) {
@@ -104,6 +93,10 @@
   function App(props) {
     var stored = initialDarkTheme("LibeRality.theme");
     var dark = React.useState(stored), tab = React.useState("overview"), modal = React.useState(null), selectedArm = React.useState(list(props.arms)[0] ? props.arms[0].id : null);
+    var task = window.LibeRDesign.taskState.use(React, props.inputId, props.task);
+    props.status = Object.assign({}, props.status || {}, {
+      task: task, inputId: props.inputId
+    });
     React.useEffect(function () { storeTheme(dark[0], "LibeRality.theme"); }, [dark[0]]);
     var design = props.design || {}, evaluation = props.evaluation || {}, info = evaluation.information || {}, optimisation = props.optimisation || {}, simulation = props.simulation;
     var arm = list(props.arms).filter(function (x) { return x.id === selectedArm[0]; })[0] || list(props.arms)[0];

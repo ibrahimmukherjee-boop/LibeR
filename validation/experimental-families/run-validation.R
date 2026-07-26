@@ -8,10 +8,7 @@ root <- normalizePath(file.path(fixture_dir, "..", ".."),
 source(file.path(root, "tools", "validation-runtime.R"), local = TRUE)
 
 option_value <- function(name, default = NULL) {
-  prefix <- paste0("--", name, "=")
-  value <- args[startsWith(args, prefix)]
-  if (!length(value)) default else
-    sub(prefix, "", value[[length(value)]], fixed = TRUE)
+  liber_validation_option(name, default, args = args)
 }
 
 validation_runtime <- liber_validation_library(
@@ -612,14 +609,8 @@ if (!grepl("^(?:[A-Za-z]:[/\\\\]|/)", output, perl = TRUE)) {
 }
 dir.create(output, recursive = TRUE, showWarnings = FALSE)
 utils::write.csv(
-  results, file.path(output, "comparisons.csv"), row.names = FALSE
-)
-utils::write.csv(
   convergence_results, file.path(output, "convergence.csv"),
   row.names = FALSE
-)
-utils::write.csv(
-  coverage, file.path(output, "coverage.csv"), row.names = FALSE
 )
 
 provenance <- liber_validation_provenance(
@@ -637,23 +628,18 @@ provenance <- liber_validation_provenance(
     comparisons = nrow(results), passed = passed,
     sde_subjects = simulation_subjects,
     sde_substeps = simulation_substeps
-  ),
-  output = file.path(output, "provenance.json")
+  )
 )
-jsonlite::write_json(
-  list(
-    schema = "liber.experimental-family-validation/1",
-    passed = passed,
-    complete = TRUE,
-    comparisons = split(results, seq_len(nrow(results))),
-    convergence = split(
-      convergence_results, seq_len(nrow(convergence_results))
-    ),
-    coverage = split(coverage, seq_len(nrow(coverage))),
-    provenance = provenance
+summary <- list(
+  schema = "liber.experimental-family-validation/1",
+  passed = passed,
+  complete = TRUE,
+  comparisons = split(results, seq_len(nrow(results))),
+  convergence = split(
+    convergence_results, seq_len(nrow(convergence_results))
   ),
-  file.path(output, "summary.json"), auto_unbox = TRUE,
-  pretty = TRUE, null = "null", digits = 17
+  coverage = split(coverage, seq_len(nrow(coverage))),
+  provenance = provenance
 )
 
 report <- c(
@@ -675,7 +661,10 @@ report <- c(
     "complete."
   )
 )
-writeLines(report, file.path(output, "REPORT.md"))
+liber_validation_write_evidence(
+  output, comparisons = results, coverage = coverage, summary = summary,
+  provenance = provenance, report = report
+)
 cat(
   "Experimental-family validation evidence:",
   normalizePath(output, winslash = "/"), "\n"

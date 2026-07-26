@@ -1,0 +1,78 @@
+sources:
+  - id: ecosystem-docs
+    path: ../..
+    license: MIT
+    rights_basis: owned
+    redistributable: true
+    description: Consolidated LibeR architecture and contributor documentation.
+    include:
+      - README.md
+      - CONTRIBUTING.md
+      - SECURITY.md
+      - SUPPORT.md
+      - docs/**/*.md
+    exclude: []
+
+  - id: liberation
+    path: ../../LibeRation
+    license: MIT
+    rights_basis: owned
+    redistributable: true
+    description: Population PK/PD modelling, estimation, simulation and GUI.
+    include: &package_includes
+      - README.md
+      - R/**/*.R
+      - man/**/*.Rd
+      - vignettes/**/*
+      - inst/docs/**/*
+      - src/**/*.cpp
+      - src/**/*.h
+    exclude: &package_excludes
+      - src/RcppExports.cpp
+      - R/RcppExports.R
+      - inst/include/vendor/**/*
+
+  - id: libertad
+    path: ../../LibeRtAD
+    license: MIT
+    rights_basis: owned
+    redistributable: true
+    description: Automatic differentiation and numerical benchmark engine.
+    include: *package_includes
+    exclude: *package_excludes
+
+  - id: liberality
+    path: ../../LibeRality
+    license: MIT
+    rights_basis: owned
+    redistributable: true
+    description: Optimal clinical-trial design.
+    include: *package_includes
+    exclude: *package_excludes
+
+  - id: liberator
+    path: ../../LibeRator
+    license: MIT
+    rights_basis: owned
+    redistributable: true
+    description: Research and teaching workflows for adaptive therapeutic optimisation.
+    include: *package_includes
+    exclude: *package_excludes
+
+  - id: liberary
+    path: ../../LibeRary
+    license: MIT
+    rights_basis: owned
+    redistributable: true
+    description: Literature discovery and model extraction.
+    include: *package_includes
+    exclude: *package_excludes
+
+  - id: liberties
+    path: ../../LibeRties
+    license: MIT
+    rights_basis: owned
+    redistributable: true
+    description: Local and remote job execution infrastructure.
+    include: *package_includes
+    exclude: *package_excludes

@@ -73,6 +73,20 @@ CppAD 20260000.0 and Eigen 5.0.1 header releases, so neither needs to be
 installed separately. After installing the other declared R dependencies, install the packages in dependency order
 from the repository root:
 
+```r
+source("https://raw.githubusercontent.com/svdijkman/LibeR/main/tools/install-ecosystem.R")
+liber_install()                    # newest published release, including research betas
+# liber_install(channel = "stable") # newest non-prerelease
+```
+
+For a development checkout, install the exact local sources with:
+
+```text
+Rscript tools/install-local-stack.R
+```
+
+The equivalent manual package order is:
+
 ```text
 R CMD INSTALL LibeRtAD
 R CMD INSTALL LibeRation
@@ -92,6 +106,12 @@ LibeRation::liber_support_matrix()
 
 Create a redacted diagnostic archive for a bug report with
 `LibeRation::liber_support_bundle()`.
+
+The ecosystem-wide evidence campaigns, including independent comparisons with
+KFAS, glmmTMB/hmmTMB, deSolve, SciML/Sundials, COPASI, pomp/bssm, advanced
+nlmixr2 population fixtures, mapbayr/posologyr, PopED/PFIM, CmdStan when
+configured, and NONMEM when licensed, are documented in
+[`docs/VALIDATION.md`](docs/VALIDATION.md).
 
 ## Quick start
 

@@ -4,10 +4,22 @@ test_that("administration GUI retains shared theme and version branding", {
     system.file("admin-assets", "admin.css", package = "LibeRties"),
     warn = FALSE
   ), collapse = "\n")
+  design <- paste(readLines(
+    system.file("admin-assets", "liber-design-system.js", package = "LibeRties"),
+    warn = FALSE
+  ), collapse = "\n")
+  design_css <- paste(readLines(
+    system.file("admin-assets", "liber-design-system.css", package = "LibeRties"),
+    warn = FALSE
+  ), collapse = "\n")
 
-  expect_match(source, "localStorage.getItem('liber.theme')", fixed = TRUE)
+  expect_match(design, 'localStorage\\.getItem\\("liber\\.theme"\\)')
+  expect_match(source, "LibeRDesign.theme", fixed = TRUE)
   expect_match(source, "package_version", fixed = TRUE)
   expect_match(source, "la-version-pill", fixed = TRUE)
+  expect_match(source, "identical(shiny::isolate(jobs()), next_jobs)", fixed = TRUE)
+  expect_match(source, "identical(shiny::isolate(logs()), next_logs)", fixed = TRUE)
+  expect_match(design_css, ".shiny-bound-output.recalculating", fixed = TRUE)
   expect_match(css, "focus-visible", fixed = TRUE)
   expect_match(css, ".la-header { min-height:58px", fixed = TRUE)
   expect_match(css, ".la-message-bar { min-height:32px", fixed = TRUE)

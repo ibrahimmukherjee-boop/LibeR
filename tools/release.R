@@ -3,6 +3,28 @@ source(file.path(root, "tools", "validation-runtime.R"), local = TRUE)
 manifest <- jsonlite::fromJSON(file.path(root, "ecosystem.json"), simplifyVector = FALSE)
 packages <- names(manifest$packages)
 versions <- vapply(manifest$packages, `[[`, character(1), "version")
+liber_validation_assert_repository_hygiene(root)
+shared_status <- system2(
+  file.path(R.home("bin"), "Rscript"),
+  c(file.path(root, "tools", "sync-shared-runtime.R"), "--check")
+)
+if (!identical(shared_status, 0L)) {
+  stop("Generated shared runtime validation failed.", call. = FALSE)
+}
+gui_asset_status <- system2(
+  file.path(R.home("bin"), "Rscript"),
+  c(file.path(root, "tools", "sync-gui-assets.R"), "--check")
+)
+if (!identical(gui_asset_status, 0L)) {
+  stop("Generated GUI design-system validation failed.", call. = FALSE)
+}
+contract_status <- system2(
+  file.path(R.home("bin"), "Rscript"),
+  c(file.path(root, "tools", "sync-packaged-contracts.R"), "--check")
+)
+if (!identical(contract_status, 0L)) {
+  stop("Packaged contract synchronization failed.", call. = FALSE)
+}
 git_state <- liber_validation_git(root)
 if (!isTRUE(git_state$tracked_worktree_clean) &&
     !identical(tolower(Sys.getenv("LIBER_RELEASE_ALLOW_DIRTY", "false")), "true")) {

@@ -7,10 +7,48 @@ script <- if (length(file_arg)) {
 }
 root <- normalizePath(file.path(dirname(script), "..", ".."), mustWork = TRUE)
 harness <- file.path(root, "validation", "ad-backends")
-output <- file.path(harness, "results")
+if (.Platform$OS.type == "windows") {
+  compilers <- Sys.glob(
+    "C:/rtools*/x86_64-w64-mingw32.static.posix/bin/g++.exe"
+  )
+  if (length(compilers)) {
+    git_directory <- dirname(Sys.which("git"))
+    git_directory <- git_directory[
+      nzchar(git_directory) & dir.exists(git_directory)
+    ]
+    compiler_directory <- dirname(tail(sort(compilers), 1L))
+    rtools_root <- dirname(dirname(compiler_directory))
+    rscript_directory <- dirname(file.path(R.home("bin"), "Rscript.exe"))
+    # Windows may expose both `Path` and `PATH`. Remove the inherited alias so
+    # CmdStan's nested make process cannot discover an old NONMEM toolchain
+    # before the selected Rtools compiler.
+    Sys.unsetenv("Path")
+    Sys.setenv(
+      PATH = paste(c(
+        normalizePath(c(
+          compiler_directory, file.path(rtools_root, "usr", "bin")
+        ), winslash = "/", mustWork = TRUE),
+        git_directory, rscript_directory,
+        "C:/Windows/System32", "C:/Windows"
+      ), collapse = .Platform$path.sep),
+      COMPILER_PATH = compiler_directory,
+      BINPREF = paste0(gsub("\\\\", "/", compiler_directory), "/"),
+      R_MAKEVARS_USER = file.path(root, "tools", "Makevars.rtools45")
+    )
+  }
+}
+source(file.path(root, "tools", "validation-runtime.R"), local = TRUE)
+trailing <- commandArgs(trailingOnly = TRUE)
+value_after <- function(name, default = NULL) {
+  liber_validation_option(name, default, args = trailing)
+}
+output <- value_after("output", file.path(harness, "results"))
+if (!grepl("^(?:[A-Za-z]:[/\\\\]|/)", output, perl = TRUE)) {
+  output <- file.path(root, output)
+}
 dir.create(output, recursive = TRUE, showWarnings = FALSE)
 
-iterations_arg <- grep("^--iterations=", commandArgs(trailingOnly = TRUE), value = TRUE)
+iterations_arg <- grep("^--iterations=", trailing, value = TRUE)
 iterations <- if (length(iterations_arg)) {
   as.integer(sub("^--iterations=", "", iterations_arg[[1L]]))
 } else {
@@ -18,11 +56,20 @@ iterations <- if (length(iterations_arg)) {
 }
 if (is.na(iterations) || iterations < 1L) stop("--iterations must be positive.")
 
-local_library <- file.path(root, ".testlib-current")
-if (dir.exists(local_library)) .libPaths(c(local_library, .libPaths()))
-if (!requireNamespace("LibeRtAD", quietly = TRUE)) {
-  stop("Install LibeRtAD before running the external AD benchmark.")
-}
+runtime <- liber_validation_library(
+  root, "LibeRtAD",
+  library = value_after("library", Sys.getenv("LIBER_VALIDATION_LIBRARY", ""))
+)
+external_library <- value_after(
+  "external-library", file.path(root, ".external-comparator-lib")
+)
+.libPaths(unique(c(
+  runtime$path,
+  if (dir.exists(external_library)) {
+    normalizePath(external_library, winslash = "/", mustWork = TRUE)
+  } else character(),
+  .libPaths()
+)))
 
 elapsed <- function(expression) {
   started <- proc.time()[["elapsed"]]
@@ -102,6 +149,7 @@ result_row <- function(case_name, backend, status = "completed", message = NA_ch
                        compile_seconds = NA_real_, tape_seconds = NA_real_,
                        value_gradient_us = NA_real_, hessian_us = NA_real_,
                        value = NA_real_, max_gradient_difference = NA_real_,
+                       max_hessian_difference = NA_real_,
                        object_bytes = NA_real_, tape_bytes_proxy = NA_real_,
                        version = NA_character_) {
   data.frame(
@@ -110,6 +158,7 @@ result_row <- function(case_name, backend, status = "completed", message = NA_ch
     value_gradient_microseconds = value_gradient_us,
     hessian_microseconds = hessian_us, value = value,
     max_gradient_difference = max_gradient_difference,
+    max_hessian_difference = max_hessian_difference,
     object_bytes = object_bytes, tape_bytes_proxy = tape_bytes_proxy,
     version = version, stringsAsFactors = FALSE
   )
@@ -128,7 +177,8 @@ for (case_name in names(cases)) {
   evaluation <- model$value_gradient(case$point)
   references[[case_name]] <- list(
     value = unname(evaluation$value[[1L]]),
-    gradient = unname(evaluation$gradient)
+    gradient = unname(evaluation$gradient),
+    hessian = unname(model$hessian(case$point))
   )
   info <- model$tape_info()
   results[[length(results) + 1L]] <- result_row(
@@ -138,6 +188,7 @@ for (case_name in names(cases)) {
     hessian_us = timed_calls(function() model$hessian(case$point)),
     value = references[[case_name]]$value,
     max_gradient_difference = 0,
+    max_hessian_difference = 0,
     object_bytes = as.numeric(object.size(model)),
     tape_bytes_proxy = info$resident_bytes_proxy,
     version = as.character(utils::packageVersion("LibeRtAD"))
@@ -190,6 +241,7 @@ if (!requireNamespace("TMB", quietly = TRUE)) {
     objective <- taped$value
     value <- objective$fn(case$point)
     gradient <- objective$gr(case$point)
+    hessian <- objective$he(case$point)
     results[[length(results) + 1L]] <- result_row(
       case_name, "TMB", compile_seconds = compiled$seconds,
       tape_seconds = taped$seconds,
@@ -201,6 +253,9 @@ if (!requireNamespace("TMB", quietly = TRUE)) {
       max_gradient_difference = max(abs(
         gradient - references[[case_name]]$gradient
       )),
+      max_hessian_difference = max(abs(
+        hessian - references[[case_name]]$hessian
+      )),
       object_bytes = as.numeric(object.size(objective)),
       version = as.character(utils::packageVersion("TMB"))
     )
@@ -210,6 +265,20 @@ if (!requireNamespace("TMB", quietly = TRUE)) {
   }
 }
 
+if (requireNamespace("cmdstanr", quietly = TRUE)) {
+  local_cmdstan_root <- file.path(root, ".external-tools", "cmdstan")
+  local_cmdstan <- if (dir.exists(local_cmdstan_root)) {
+    list.dirs(local_cmdstan_root, recursive = FALSE, full.names = TRUE)
+  } else {
+    character()
+  }
+  local_cmdstan <- local_cmdstan[
+    grepl("^cmdstan-[0-9]", basename(local_cmdstan))
+  ]
+  if (length(local_cmdstan)) {
+    cmdstanr::set_cmdstan_path(tail(sort(local_cmdstan), 1L))
+  }
+}
 cmdstan_available <- requireNamespace("cmdstanr", quietly = TRUE) &&
   tryCatch(nzchar(cmdstanr::cmdstan_path()), error = function(error) FALSE)
 if (!cmdstan_available) {
@@ -220,9 +289,17 @@ if (!cmdstan_available) {
     )
   }
 } else {
+  stan_build_dir <- file.path(output, "stan-build")
+  dir.create(stan_build_dir, recursive = TRUE, showWarnings = FALSE)
+  stan_source <- file.path(stan_build_dir, "stan_objective.stan")
+  file.copy(
+    file.path(harness, "stan_objective.stan"), stan_source,
+    overwrite = TRUE
+  )
   stan_build <- tryCatch(
     elapsed(cmdstanr::cmdstan_model(
-      file.path(harness, "stan_objective.stan"), quiet = TRUE
+      stan_source, quiet = TRUE,
+      compile_model_methods = TRUE, force_recompile = TRUE
     )),
     error = identity
   )
@@ -241,7 +318,7 @@ if (!cmdstan_available) {
     )
     initialized <- tryCatch(elapsed({
       fit <- stan_build$value$optimize(
-        data = data, init = list(beta = unname(case$point)),
+        data = data, init = list(list(beta = unname(case$point))),
         iter = 1L, refresh = 0L
       )
       fit$init_model_methods(verbose = FALSE, hessian = TRUE)
@@ -256,6 +333,14 @@ if (!cmdstan_available) {
     }
     fit <- initialized$value
     gradient <- fit$grad_log_prob(case$point, jacobian = FALSE)
+    hessian_result <- fit$hessian(case$point, jacobian = FALSE)
+    hessian <- if (is.list(hessian_result) &&
+                   !is.null(hessian_result$hessian)) {
+      hessian_result$hessian
+    } else {
+      hessian_result
+    }
+    hessian <- as.matrix(hessian)
     value <- -as.numeric(attr(gradient, "log_prob"))
     results[[length(results) + 1L]] <- result_row(
       case_name, "CmdStan", compile_seconds = stan_build$seconds,
@@ -270,6 +355,9 @@ if (!cmdstan_available) {
       max_gradient_difference = max(abs(
         -as.numeric(gradient) - references[[case_name]]$gradient
       )),
+      max_hessian_difference = max(abs(
+        -as.matrix(hessian) - references[[case_name]]$hessian
+      )),
       object_bytes = as.numeric(object.size(fit)),
       version = paste0(
         utils::packageVersion("cmdstanr"), " / CmdStan ",
@@ -280,13 +368,49 @@ if (!cmdstan_available) {
 }
 
 table <- do.call(rbind, results)
+table$value_difference <- ave(
+  table$value, table$case,
+  FUN = function(value) abs(value - value[[1L]])
+)
+tolerances <- list(value = 1e-8, gradient = 1e-7, hessian = 2e-6)
+table$validation_passed <- ifelse(
+  table$status == "skipped", NA,
+  table$status == "completed" &
+    is.finite(table$value_difference) &
+    table$value_difference <= tolerances$value &
+    is.finite(table$max_gradient_difference) &
+    table$max_gradient_difference <= tolerances$gradient &
+    is.finite(table$max_hessian_difference) &
+    table$max_hessian_difference <= tolerances$hessian
+)
+bad <- table$status == "completed" & !table$validation_passed
+table$status[bad] <- "failed"
+table$message[bad] <- paste(
+  "Numerical value or derivative agreement exceeded a declared tolerance."
+)
+require_cmdstan <- "--require-cmdstan" %in% trailing
+cmdstan_complete <- all(
+  table$status[table$backend == "CmdStan"] == "completed"
+)
+passed <- !any(table$status == "failed") &&
+  (!require_cmdstan || cmdstan_complete)
 manifest <- list(
+  schema = "libertad.external-ad-validation/1",
   generated_at = format(Sys.time(), tz = "UTC", usetz = TRUE),
   R = R.version.string,
   platform = R.version$platform,
   iterations = iterations,
+  passed = passed,
+  complete = !require_cmdstan || cmdstan_complete,
+  require_cmdstan = require_cmdstan,
+  tolerances = tolerances,
   results = table
 )
 utils::write.csv(table, file.path(output, "benchmark.csv"), row.names = FALSE)
 saveRDS(manifest, file.path(output, "benchmark.rds"), version = 3L)
+jsonlite::write_json(
+  manifest, file.path(output, "summary.json"), auto_unbox = TRUE,
+  pretty = TRUE, null = "null", digits = 17
+)
 print(table, row.names = FALSE)
+if (!passed) quit(status = 1L)

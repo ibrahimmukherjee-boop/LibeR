@@ -1,0 +1,79 @@
+name: deployment-validation
+
+on:
+  schedule:
+    - cron: "41 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ephemeral-api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          packages: |
+            any::testthat
+            any::jsonlite
+            any::openssl
+            any::knitr
+            any::rmarkdown
+            any::sessioninfo
+          dependencies: 'c("Depends", "Imports", "LinkingTo")'
+          install-pandoc: false
+      - uses: grafana/setup-k6-action@v1.2.1
+        with:
+          k6-version: 'v2.1.0'
+      - name: Create exact source-built validation library
+        run: Rscript tools/create-validation-library.R --source
+      - name: Start disposable LibeRties API
+        shell: bash
+        run: |
+          mkdir -p .external-tools/deployment-server
+          LIBRARY="$(Rscript -e "source('tools/validation-runtime.R'); cat(file.path(normalizePath('.', winslash='/'), '.validation-libraries', liber_validation_library_name(normalizePath('.', winslash='/'))))")"
+          echo "LIBER_VALIDATION_LIBRARY=$LIBRARY" >> "$GITHUB_ENV"
+          nohup Rscript validation/liberties/deployment/start-test-server.R \
+            "--library=$LIBRARY" \
+            "--root=$PWD/.external-tools/deployment-server/root" \
+            "--token-file=$PWD/.external-tools/deployment-server/token.txt" \
+            --port=8000 \
+            > .external-tools/deployment-server/server.log 2>&1 &
+          echo "$!" > .external-tools/deployment-server/server.pid
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:8000/v1/health >/dev/null &&
+               test -s .external-tools/deployment-server/token.txt; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat .external-tools/deployment-server/server.log
+          exit 1
+      - name: Run read-only k6 API contract
+        shell: bash
+        run: |
+          export LIBERTIES_URL=http://127.0.0.1:8000
+          export LIBERTIES_TOKEN="$(cat .external-tools/deployment-server/token.txt)"
+          export LIBERTIES_VUS=4
+          export LIBERTIES_DURATION=15s
+          k6 run --summary-export=.external-tools/deployment-server/k6-summary.json \
+            validation/liberties/deployment/k6.js
+      - name: Run OWASP ZAP baseline
+        run: >-
+          Rscript validation/liberties/deployment/run-zap.R
+          --target=http://127.0.0.1:8000
+          --output=.external-tools/deployment-server/zap
+      - name: Upload deployment evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: liberties-deployment-validation-${{ github.sha }}
+          path: |
+            .external-tools/deployment-server/k6-summary.json
+            .external-tools/deployment-server/zap
+            .external-tools/deployment-server/server.log

@@ -3,7 +3,7 @@
 #include <Rcpp.h>
 #include <LibeRtAD/eigen.hpp>
 #include <LibeRtAD/program.hpp>
-#include "eigen_solver.h"
+#include <LibeRtAD/eigen_solver.hpp>
 
 #include <algorithm>
 #include <chrono>

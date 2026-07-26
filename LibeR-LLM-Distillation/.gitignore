@@ -1,0 +1,24 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Licensed source material, generated datasets, checkpoints and exported models
+data/raw/*
+!data/raw/.gitkeep
+data/work/*
+!data/work/.gitkeep
+data/datasets/*
+!data/datasets/.gitkeep
+runs/*
+!runs/.gitkeep
+exports/*
+!exports/.gitkeep
+
+# Local configuration and credentials
+.env
+configs/local.yaml
+manifests/sources.local.yaml

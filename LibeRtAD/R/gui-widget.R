@@ -10,7 +10,9 @@
                             benchmark_script = NULL,
                             ecosystem_running = FALSE,
                             status = list(level = "info", text = "Benchmark laboratory ready"),
-                            icon = NULL) {
+                            icon = NULL,
+                            task = list(running = FALSE, id = "", label = "",
+                                        cancellable = FALSE)) {
   engine <- ad_engine_info()
   list(
     cases = .ad_gui_rows(ad_benchmark_cases()),
@@ -26,7 +28,7 @@
     benchmarkScript = benchmark_script,
     ecosystemRunning = isTRUE(ecosystem_running),
     defaultOutput = .ad_default_benchmark_output(),
-    status = status, icon = icon,
+    status = status, icon = icon, task = task,
     packageVersion = tryCatch(as.character(utils::packageVersion("LibeRtAD")),
                               error = function(error) "0.7.3")
   )

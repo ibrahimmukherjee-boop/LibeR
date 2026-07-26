@@ -1,0 +1,4 @@
+# Optional broader curriculum. Apply with:
+#   --overlay configs/ecosystem-sources.yaml
+paths:
+  source_manifest: manifests/sources-ecosystem.yaml

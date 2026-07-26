@@ -3,13 +3,13 @@ script_arg <- grep("^--file=", commandArgs(), value = TRUE)
 script_path <- if (length(script_arg)) sub("^--file=", "", script_arg[[1L]]) else
   file.path("validation", "benchmark", "run-matrix.R")
 benchmark_dir <- normalizePath(dirname(script_path), winslash = "/", mustWork = TRUE)
+root <- normalizePath(file.path(benchmark_dir, "..", ".."),
+                      winslash = "/", mustWork = TRUE)
 source(file.path(benchmark_dir, "scenarios.R"), local = TRUE)
+source(file.path(root, "tools", "validation-runtime.R"), local = TRUE)
 
 option_value <- function(name, default = NULL) {
-  prefix <- paste0("--", name, "=")
-  value <- args[startsWith(args, prefix)]
-  if (!length(value)) return(default)
-  sub(prefix, "", value[[length(value)]], fixed = TRUE)
+  liber_validation_option(name, default, args = args)
 }
 
 profile <- option_value("profile", "smoke")

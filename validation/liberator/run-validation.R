@@ -1,16 +1,14 @@
 #!/usr/bin/env Rscript
 
 arguments <- commandArgs(trailingOnly = TRUE)
-value_after <- function(prefix, default = NULL) {
-  hit <- arguments[startsWith(arguments, paste0("--", prefix, "="))]
-  if (!length(hit)) return(default)
-  sub(paste0("^--", prefix, "="), "", hit[[1L]])
-}
 
 script_argument <- grep("^--file=", commandArgs(FALSE), value = TRUE)
 script_path <- if (length(script_argument)) sub("^--file=", "", script_argument[[1L]]) else "validation/liberator/run-validation.R"
 root <- normalizePath(file.path(dirname(script_path), "..", ".."), winslash = "/", mustWork = TRUE)
 source(file.path(root, "tools", "validation-runtime.R"), local = TRUE)
+value_after <- function(name, default = NULL) {
+  liber_validation_option(name, default, args = arguments, occurrence = "first")
+}
 
 packages <- c("LibeRtAD", "LibeRation", "LibeRator")
 validation_library <- liber_validation_library(

@@ -58,9 +58,11 @@ diagnostics. Fitted hidden Markov models gain a lazy HMM results tab with
 filtered, retrospectively smoothed, Viterbi, and combined probability/path
 views by subject, sequence, and hidden state. State-space models gain a lazy
 States tab with filter/smoother trajectories, uncertainty bands, innovations,
-and likelihood contributions. Optional modelling help and report drafting use a consented,
-lazy-loaded WebGPU language model in a dedicated browser worker; inference is
-local and the worker's network APIs are disabled after its weights load.
+and likelihood contributions. Optional modelling help and report drafting use
+either a consented, lazy-loaded WebLLM model in a dedicated browser worker or
+an installed Ollama model streamed asynchronously through `ellmer`. Both are
+local-only: Ollama is loopback-restricted and unavailable to hosted or remote
+browser sessions.
 
 Advanced nonlinear model starts are available with `nm_model_template()` for
 nonlinear elimination, transit/dual absorption, parent-metabolite,

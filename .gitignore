@@ -4,6 +4,9 @@
 *.Rcheck/
 *.tar.gz
 *.zip
+# NONMEM listings may contain installation or licence metadata. Keep raw
+# comparator output local; publish only the derived validation evidence.
+*.lst
 **/src/*.o
 **/src/*.obj
 **/src/*.so
@@ -21,6 +24,7 @@ dist/
 workspace/
 validation/benchmark/results/
 validation/ad-backends/results/
+validation/external-comparators/results/
 validation/nonmem/results/
 validation/liberator/results/
 validation/liberality/external/results/
@@ -33,6 +37,9 @@ validation/*preview*.png
 benchmarks/*/liberation/
 benchmarks/*/nonmem/
 .external-validation-lib/
+.external-comparator-lib/
+.external-tools/
+validation/ad-backends/*.exe
 .litylib/
 tools/pandoc-*/
 tools/pandoc-*.zip

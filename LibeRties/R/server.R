@@ -18,16 +18,10 @@
 
 .ls_with_registry_lock <- function(root, operation, timeout = 5) {
   lock <- paste0(.ls_registry_path(root), ".lock")
-  started <- proc.time()[["elapsed"]]
-  repeat {
-    if (dir.create(lock, showWarnings = FALSE)) break
-    if (proc.time()[["elapsed"]] - started >= timeout) {
-      .ls_stop("Timed out acquiring the LibeRties user-registry lock.")
-    }
-    Sys.sleep(0.01)
-  }
-  on.exit(unlink(lock, recursive = TRUE, force = TRUE), add = TRUE)
-  operation()
+  .liber_shared_with_lock(
+    lock, operation, timeout = timeout,
+    error = function(message) .ls_stop(message)
+  )
 }
 
 .ls_default_limits <- function() {

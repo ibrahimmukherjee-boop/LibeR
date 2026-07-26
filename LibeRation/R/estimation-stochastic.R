@@ -171,9 +171,16 @@
 }
 
 .nm_imp_subject_proposal <- function(evaluator, parameters, normals,
-                                     eta_maxit, tolerance) {
+                                     eta_maxit, tolerance, start = NULL) {
+  if (!is.null(start)) {
+    start <- as.numeric(start)
+    if (length(start) != evaluator$n_eta || any(!is.finite(start))) {
+      .nm_stop("Adaptive proposal ETA starts must match the subject ETA dimension and be finite.")
+    }
+  }
   mode <- evaluator$eta_mode(
     parameters$theta, parameters$sigma, parameters$omega,
+    start = start %||% rep(0, evaluator$n_eta),
     maxit = eta_maxit, tolerance = tolerance
   )
   if (mode$convergence != 0L) {
@@ -323,13 +330,25 @@
 }
 
 .nm_imp_prepare_proposals <- function(context, parameters, normals,
-                                      eta_maxit, tolerance, adaptive = TRUE) {
-  prepare_chunk <- function(evaluators, chunk_normals) {
+                                      eta_maxit, tolerance, adaptive = TRUE,
+                                      initial_eta = NULL) {
+  if (!is.null(initial_eta)) {
+    initial_eta <- as.matrix(initial_eta)
+    expected <- c(context$n_subjects, context$n_eta)
+    if (!identical(dim(initial_eta), expected) || any(!is.finite(initial_eta))) {
+      .nm_stop(
+        "`initial_eta` must be a finite ", expected[[1L]], " x ",
+        expected[[2L]], " subject-by-ETA matrix."
+      )
+    }
+  }
+  prepare_chunk <- function(evaluators, chunk_normals, chunk_starts = NULL) {
     lapply(seq_along(evaluators), function(subject) {
       if (isTRUE(adaptive)) {
         .nm_imp_subject_proposal(
           evaluators[[subject]], parameters, chunk_normals[[subject]],
-          eta_maxit, tolerance
+          eta_maxit, tolerance,
+          start = if (is.null(chunk_starts)) NULL else chunk_starts[subject, ]
         )
       } else {
         .nm_gq_fixed_subject_proposal(
@@ -339,13 +358,19 @@
     })
   }
   if (is.null(context$parallel)) {
-    return(prepare_chunk(context$subjects, normals))
+    return(prepare_chunk(context$subjects, normals, initial_eta))
   }
   chunks <- context$parallel$chunks
   normal_chunks <- lapply(chunks, function(rows) normals[rows])
+  start_chunks <- if (is.null(initial_eta)) {
+    rep(list(NULL), length(chunks))
+  } else {
+    lapply(chunks, function(rows) initial_eta[rows, , drop = FALSE])
+  }
   pieces <- parallel::clusterApply(
     context$parallel$cluster, seq_along(chunks),
-      function(index, chunks, parameters, eta_maxit, tolerance, adaptive) {
+      function(index, normal_chunks, start_chunks, parameters,
+               eta_maxit, tolerance, adaptive) {
         evaluators <- get(".liber_parallel_subjects", envir = .GlobalEnv)
         prepare <- get(
           if (isTRUE(adaptive)) ".nm_imp_subject_proposal" else
@@ -355,14 +380,21 @@
         lapply(seq_along(evaluators), function(subject) {
           if (isTRUE(adaptive)) {
             prepare(
-              evaluators[[subject]], parameters, chunks[[index]][[subject]],
-              eta_maxit, tolerance
+              evaluators[[subject]], parameters,
+              normal_chunks[[index]][[subject]], eta_maxit, tolerance,
+              start = if (is.null(start_chunks[[index]])) {
+                NULL
+              } else start_chunks[[index]][subject, ]
             )
           } else {
-            prepare(evaluators[[subject]], parameters, chunks[[index]][[subject]])
+            prepare(
+              evaluators[[subject]], parameters,
+              normal_chunks[[index]][[subject]]
+            )
           }
         })
-      }, chunks = normal_chunks, parameters = parameters,
+      }, normal_chunks = normal_chunks, start_chunks = start_chunks,
+      parameters = parameters,
       eta_maxit = eta_maxit, tolerance = tolerance, adaptive = adaptive
   )
   unlist(pieces, recursive = FALSE)
