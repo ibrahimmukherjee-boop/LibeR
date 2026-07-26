@@ -46,6 +46,13 @@ The command refuses a dirty tracked monorepo or an existing package tag. It
 preserves repository-specific `.github` metadata while replacing every package
 source file from the corresponding tagged monorepo subdirectory.
 
+For a source-only synchronization between releases, update the six package
+default branches without creating or rewriting immutable version tags:
+
+```text
+Rscript tools/sync-package-mirrors.R --push --branches-only
+```
+
 Scientific validation uses a separate immutable library named from the
 consolidated release, Git commit, and dirty-source hash:
 

@@ -1,8 +1,15 @@
 args <- commandArgs(trailingOnly = TRUE)
 push <- "--push" %in% args
 publish <- "--publish-releases" %in% args
+branches_only <- "--branches-only" %in% args
 if (publish && !push) {
   stop("`--publish-releases` requires `--push`.", call. = FALSE)
+}
+if (publish && branches_only) {
+  stop(
+    "`--publish-releases` cannot be combined with `--branches-only`.",
+    call. = FALSE
+  )
 }
 
 root <- normalizePath(getwd(), winslash = "/", mustWork = TRUE)
@@ -133,6 +140,10 @@ for (package in packages) {
 
   if (push) {
     run("git", c("push", "origin", "HEAD:main"), clone)
+    if (branches_only) {
+      message("  branch synchronized; existing release tags were left unchanged")
+      next
+    }
     tag <- paste0("v", versions[[package]])
     remote_tag <- run(
       "git", c("ls-remote", "--tags", "origin", paste0("refs/tags/", tag)),
