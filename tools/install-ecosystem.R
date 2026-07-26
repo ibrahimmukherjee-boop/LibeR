@@ -1,24 +1,139 @@
 # Install one exact LibeR compatibility set from a consolidated GitHub release.
 #
 # From a trusted R session:
-# source("https://raw.githubusercontent.com/svdijkman/LibeR/v0.9.0-research-beta.3/tools/install-ecosystem.R")
+# source("https://raw.githubusercontent.com/svdijkman/LibeR/main/tools/install-ecosystem.R")
 # liber_install()
 
+.liber_configure_repositories <- function() {
+  mirror <- Sys.getenv("LIBER_CRAN_MIRROR", "https://cloud.r-project.org")
+  if (!nzchar(mirror) || !grepl("^https?://", mirror, ignore.case = TRUE)) {
+    stop(
+      "LIBER_CRAN_MIRROR must be a non-empty HTTP(S) URL.",
+      call. = FALSE
+    )
+  }
+  repositories <- getOption("repos")
+  if (is.null(repositories) || !length(repositories)) {
+    repositories <- c(CRAN = mirror)
+  } else {
+    invalid <- is.na(repositories) | !nzchar(repositories) |
+      repositories == "@CRAN@"
+    repositories[invalid] <- mirror
+    if (is.null(names(repositories))) {
+      names(repositories) <- rep("", length(repositories))
+    }
+    if (!"CRAN" %in% names(repositories)) {
+      repositories <- c(CRAN = mirror, repositories)
+    }
+  }
+  options(repos = repositories)
+  invisible(repositories)
+}
+
+.liber_choose_release_tag <- function(releases, channel = "latest") {
+  channel <- match.arg(channel, c("latest", "stable", "prerelease"))
+  eligible <- Filter(function(release) {
+    draft <- isTRUE(release$draft)
+    prerelease <- isTRUE(release$prerelease)
+    !draft && switch(
+      channel,
+      latest = TRUE,
+      stable = !prerelease,
+      prerelease = prerelease
+    )
+  }, releases)
+  if (!length(eligible)) {
+    stop(
+      "No published LibeR release is available for channel '", channel, "'.",
+      call. = FALSE
+    )
+  }
+  published <- vapply(eligible, function(release) {
+    value <- release$published_at
+    if (is.null(value) || !nzchar(value)) value <- release$created_at
+    if (is.null(value) || !nzchar(value)) ""
+    else as.character(value)
+  }, character(1))
+  selected <- eligible[[order(published, decreasing = TRUE)[[1L]]]]
+  tag <- selected$tag_name
+  if (is.null(tag) || length(tag) != 1L || !nzchar(tag)) {
+    stop("The selected GitHub release has no usable tag.", call. = FALSE)
+  }
+  tag
+}
+
+.liber_resolve_release_tag <- function(repository, channel = "latest") {
+  if (!grepl("^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$", repository)) {
+    stop("repository must have the form 'owner/name'.", call. = FALSE)
+  }
+  endpoint <- paste0(
+    "https://api.github.com/repos/", repository, "/releases?per_page=100"
+  )
+  destination <- tempfile(fileext = ".json")
+  on.exit(unlink(destination, force = TRUE), add = TRUE)
+  headers <- c(
+    Accept = "application/vnd.github+json",
+    `X-GitHub-Api-Version` = "2022-11-28"
+  )
+  token <- Sys.getenv("GH_TOKEN", Sys.getenv("GITHUB_TOKEN", ""))
+  if (nzchar(token)) {
+    headers <- c(headers, Authorization = paste("Bearer", token))
+  }
+  status <- tryCatch(
+    utils::download.file(
+      endpoint, destination, mode = "wb", quiet = TRUE, headers = headers
+    ),
+    error = identity,
+    warning = identity
+  )
+  size <- if (file.exists(destination)) file.info(destination)$size else NA_real_
+  if (inherits(status, "condition") || !identical(status, 0L) ||
+      is.na(size) || size <= 0) {
+    detail <- if (inherits(status, "condition")) conditionMessage(status)
+    else paste0("download status ", status)
+    stop(
+      "Unable to discover the latest LibeR release from GitHub (", detail,
+      "). Pass an explicit tag, for example ",
+      "liber_install(tag = \"v0.9.0-research-beta.4\").",
+      call. = FALSE
+    )
+  }
+  releases <- jsonlite::fromJSON(destination, simplifyVector = FALSE)
+  .liber_choose_release_tag(releases, channel = channel)
+}
+
 liber_install <- function(
-    tag = "v0.9.0-research-beta.3",
+    tag = NULL,
+    channel = Sys.getenv("LIBER_RELEASE_CHANNEL", "latest"),
     library = .libPaths()[[1L]],
     binary = FALSE,
     repository = "svdijkman/LibeR") {
   if (getRversion() < "4.1.0") stop("LibeR requires R 4.1 or newer.", call. = FALSE)
+  channel <- match.arg(channel, c("latest", "stable", "prerelease"))
   library <- path.expand(library)
   if (!dir.exists(library) && !dir.create(library, recursive = TRUE, showWarnings = FALSE)) {
     stop("Unable to create R library: ", library, call. = FALSE)
   }
   library <- normalizePath(library, winslash = "/", mustWork = TRUE)
-  if (!requireNamespace("jsonlite", quietly = TRUE)) {
-    install.packages("jsonlite", lib = library)
-  }
   .libPaths(unique(c(library, .libPaths())))
+  .liber_configure_repositories()
+  if (!requireNamespace("jsonlite", quietly = TRUE)) {
+    utils::install.packages("jsonlite", lib = library)
+  }
+  requested_tag <- if (is.null(tag) || !length(tag)) "" else as.character(tag[[1L]])
+  environment_tag <- Sys.getenv("LIBER_RELEASE_TAG", "")
+  if (!nzchar(requested_tag) && nzchar(environment_tag)) {
+    requested_tag <- environment_tag
+  }
+  if (tolower(requested_tag) %in% c("auto", "latest")) requested_tag <- ""
+  if (!nzchar(requested_tag)) {
+    requested_tag <- .liber_resolve_release_tag(repository, channel = channel)
+  }
+  if (!grepl("^[A-Za-z0-9._/-]+$", requested_tag)) {
+    stop("The release tag contains unsupported characters.", call. = FALSE)
+  }
+  tag <- requested_tag
+  message("Resolved LibeR release tag: ", tag, " (channel: ", channel, ")")
 
   raw_root <- paste0("https://raw.githubusercontent.com/", repository, "/", tag)
   manifest_path <- tempfile(fileext = ".json")

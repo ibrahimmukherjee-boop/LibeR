@@ -5,10 +5,11 @@ versions from different release dates.
 
 ## Compatibility-checked installer
 
-Run the installer from the release tag you intend to install:
+Source the current installer and let it resolve the newest published release.
+The default `latest` channel includes research prereleases:
 
 ```r
-source("https://raw.githubusercontent.com/svdijkman/LibeR/v0.9.0-research-beta.3/tools/install-ecosystem.R")
+source("https://raw.githubusercontent.com/svdijkman/LibeR/main/tools/install-ecosystem.R")
 liber_install()
 ```
 
@@ -18,18 +19,30 @@ TRUE)`. Source packages are the portable default. On Windows with the matching
 R release, `liber_install(binary = TRUE)` uses the published precompiled
 packages.
 
-## Local source checkout
-
-For development from the repository root, source the installer and install
-from the current release manifest:
+Select the newest stable release only, or pin an exact compatibility set for a
+reproducible environment:
 
 ```r
-source("tools/install-ecosystem.R")
-liber_install()
+liber_install(channel = "stable")
+liber_install(tag = "v0.9.0-research-beta.4")
 ```
 
-The file defines `liber_install()` when sourced; release installation remains
-explicit so opening the script never changes an R library unexpectedly.
+`LIBER_RELEASE_CHANNEL` and `LIBER_RELEASE_TAG` provide equivalent
+non-interactive overrides. `LIBER_CRAN_MIRROR` changes the dependency mirror;
+it defaults to `https://cloud.r-project.org`.
+
+## Local source checkout
+
+For development from the repository root, install the package sources in the
+current checkout:
+
+```text
+Rscript tools/install-local-stack.R
+```
+
+This local command does not select a GitHub release: the checkout itself is the
+version being installed. Use `--dependencies-only` to install only its missing
+external R dependencies.
 
 ## Diagnose an installation
 

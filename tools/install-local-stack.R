@@ -4,6 +4,12 @@ script <- if (length(script_arg)) sub("^--file=", "", script_arg[[1L]]) else
   file.path("tools", "install-local-stack.R")
 root <- normalizePath(file.path(dirname(script), ".."), winslash = "/",
                       mustWork = TRUE)
+installer_helpers <- new.env(parent = globalenv())
+sys.source(
+  file.path(root, "tools", "install-ecosystem.R"),
+  envir = installer_helpers
+)
+installer_helpers$.liber_configure_repositories()
 dependencies_only <- "--dependencies-only" %in% args
 if (.Platform$OS.type == "windows") {
   rtools_roots <- unique(Filter(nzchar, c(
