@@ -1,3 +1,9 @@
+# LibeRties 0.7.5
+
+- Updates admin users, jobs, and logs only when their persisted state changes,
+  preventing unchanged queue polling from blocking or fading the interface.
+- Applies the shared responsive busy-state behavior throughout the admin GUI.
+
 # LibeRties 0.7.4
 
 - Uses LibeRation model contract v3 so direct `$PRED` and combined

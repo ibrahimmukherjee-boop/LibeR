@@ -1,3 +1,10 @@
+# LibeRtAD 0.7.10
+
+- Streams benchmark runtime-log updates without rebuilding the full React
+  workbench and adopts the shared non-fading busy-state behavior.
+- Increments the htmlwidget dependency version so browsers cannot reuse a
+  cached pre-asynchronous workbench bundle after upgrading.
+
 # LibeRtAD 0.7.9
 
 - Publishes LibeRtAD in the LibeR 0.9 research-beta compatibility set with an

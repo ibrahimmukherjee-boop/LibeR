@@ -1,3 +1,10 @@
+# LibeRality 0.2.5
+
+- Applies the ecosystem-wide non-fading busy-state behavior while retaining
+  the existing asynchronous design-analysis task channel.
+- Increments the workbench asset version to invalidate cached GUI resources
+  after upgrading.
+
 # LibeRality 0.2.4
 
 - Removes generated native build products from the standalone source mirror

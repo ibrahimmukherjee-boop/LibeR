@@ -1,7 +1,7 @@
 Package: LibeRtAD
 Type: Package
 Title: C++ Automatic Differentiation Engine for LibeR
-Version: 0.7.9
+Version: 0.7.10
 Authors@R: person("Sven C.", "van Dijkman",
     email = "svdijkman@users.noreply.github.com", role = c("aut", "cre"))
 Author: Sven C. van Dijkman [aut, cre]
@@ -33,7 +33,7 @@ LinkingTo:
     Rcpp
 Suggests:
     knitr,
-    LibeRties (>= 0.7.4),
+    LibeRties (>= 0.7.5),
     rmarkdown,
     shinytest2,
     testthat (>= 3.0.0)
