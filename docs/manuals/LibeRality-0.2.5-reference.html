@@ -1,0 +1,1743 @@
+<!doctype html>
+<html lang='en'><head><meta charset='utf-8'>
+<title>LibeRality 0.2.5 reference manual</title>
+<style>
+@page { size: A4; margin: 17mm 16mm 18mm; }
+body { font-family: 'Segoe UI', Arial, sans-serif; color:#172033; line-height:1.42; max-width:980px; margin:0 auto; }
+h1 { color:#173f73; font-size:30px; margin-bottom:4px; }
+h2 { color:#173f73; border-bottom:2px solid #d9e4f2; padding-bottom:5px; break-before:page; }
+h3 { color:#315d89; margin-top:1.2em; }
+code, pre { font-family: Consolas, 'Courier New', monospace; }
+pre { background:#f5f7fa; border:1px solid #d8dee8; border-radius:4px; padding:10px; overflow-wrap:anywhere; white-space:pre-wrap; }
+table { border-collapse:collapse; width:100%; } td { vertical-align:top; border-bottom:1px solid #e5e9ef; padding:6px; }
+.cover { min-height:235mm; display:flex; flex-direction:column; justify-content:center; }
+.subtitle { color:#516175; font-size:18px; } .meta { margin-top:30px; color:#68778b; }
+.toc { columns:2; column-gap:32px; } .toc li { break-inside:avoid; margin:3px 0; }
+a { color:#175c9c; text-decoration:none; }
+</style></head><body>
+<section class='cover'>
+<h1>LibeRality reference manual</h1>
+<div class='subtitle'>Model-Informed Optimal Clinical Trial Design</div>
+<div class='meta'>Version 0.2.5<br>Generated 2026-07-26<br>32 help topics</div>
+</section>
+<section><h2>Contents</h2><ul class='toc'>
+<li><a href='#liberality_gui'>liberality_gui</a></li>
+<li><a href='#liberality_workbench'>liberality_workbench</a></li>
+<li><a href='#liberalityWorkbenchOutput'>liberalityWorkbenchOutput</a></li>
+<li><a href='#lity_arm'>lity_arm</a></li>
+<li><a href='#lity_constraint'>lity_constraint</a></li>
+<li><a href='#lity_constraint_check'>lity_constraint_check</a></li>
+<li><a href='#lity_contract_restore'>lity_contract_restore</a></li>
+<li><a href='#lity_criterion'>lity_criterion</a></li>
+<li><a href='#lity_design'>lity_design</a></li>
+<li><a href='#lity_endpoint'>lity_endpoint</a></li>
+<li><a href='#lity_endpoint_from_liberator'>lity_endpoint_from_liberator</a></li>
+<li><a href='#lity_evaluate'>lity_evaluate</a></li>
+<li><a href='#lity_example'>lity_example</a></li>
+<li><a href='#lity_external_validate'>lity_external_validate</a></li>
+<li><a href='#lity_external_validation_fixtures'>lity_external_validation_fixtures</a></li>
+<li><a href='#lity_external_validation_report'>lity_external_validation_report</a></li>
+<li><a href='#lity_information'>lity_information</a></li>
+<li><a href='#lity_job'>lity_job</a></li>
+<li><a href='#lity_model_from_liberary'>lity_model_from_liberary</a></li>
+<li><a href='#lity_operating_characteristics'>lity_operating_characteristics</a></li>
+<li><a href='#lity_optimise'>lity_optimise</a></li>
+<li><a href='#lity_pareto'>lity_pareto</a></li>
+<li><a href='#lity_population'>lity_population</a></li>
+<li><a href='#lity_report'>lity_report</a></li>
+<li><a href='#lity_scenario'>lity_scenario</a></li>
+<li><a href='#lity_schedule'>lity_schedule</a></li>
+<li><a href='#lity_simulate_trials'>lity_simulate_trials</a></li>
+<li><a href='#lity_to_liberation'>lity_to_liberation</a></li>
+<li><a href='#lity_validate'>lity_validate</a></li>
+<li><a href='#lity_variable'>lity_variable</a></li>
+<li><a href='#lity_worker_task'>lity_worker_task</a></li>
+<li><a href='#renderLiberalityWorkbench'>renderLiberalityWorkbench</a></li>
+</ul></section>
+<h2 id='liberality_gui'>Launch the LibeRality optimal-design workbench</h2><span id='topic+liberality_gui'></span>
+
+<h3>Description</h3>
+
+<p>Launch the LibeRality optimal-design workbench
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>liberality_gui(
+  design = NULL,
+  criterion = lity_criterion_D(),
+  queue = NULL,
+  host = "127.0.0.1",
+  port = NULL,
+  launch.browser = TRUE
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="liberality_gui_+3A_design">design</code></td>
+<td>
+<p>Initial design; the teaching example is used when omitted.</p>
+</td></tr>
+<tr><td><code id="liberality_gui_+3A_criterion">criterion</code></td>
+<td>
+<p>Initial criterion.</p>
+</td></tr>
+<tr><td><code id="liberality_gui_+3A_queue">queue</code></td>
+<td>
+<p>Optional LibeRties local or remote queue.</p>
+</td></tr>
+<tr><td><code id="liberality_gui_+3A_host">host</code>, <code id="liberality_gui_+3A_port">port</code>, <code id="liberality_gui_+3A_launch.browser">launch.browser</code></td>
+<td>
+<p>Passed to [shiny::runApp()]. Set
+'launch.browser = NULL' to return the Shiny application object for hosted
+deployment.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Invisibly, the Shiny app.
+</p>
+
+<h2 id='liberality_workbench'>LibeRality React workbench widget</h2><span id='topic+liberality_workbench'></span>
+
+<h3>Description</h3>
+
+<p>LibeRality React workbench widget
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>liberality_workbench(
+  payload,
+  input_id = "liberality_workbench",
+  width = NULL,
+  height = "100vh",
+  elementId = NULL
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="liberality_workbench_+3A_payload">payload</code></td>
+<td>
+<p>Workbench payload.</p>
+</td></tr>
+<tr><td><code id="liberality_workbench_+3A_input_id">input_id</code></td>
+<td>
+<p>Shiny event prefix.</p>
+</td></tr>
+<tr><td><code id="liberality_workbench_+3A_width">width</code>, <code id="liberality_workbench_+3A_height">height</code></td>
+<td>
+<p>Widget dimensions.</p>
+</td></tr>
+<tr><td><code id="liberality_workbench_+3A_elementId">elementId</code></td>
+<td>
+<p>Optional element id.</p>
+</td></tr>
+</table>
+
+<h2 id='liberalityWorkbenchOutput'>Shiny output for the LibeRality workbench</h2><span id='topic+liberalityWorkbenchOutput'></span>
+
+<h3>Description</h3>
+
+<p>Shiny output for the LibeRality workbench
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>liberalityWorkbenchOutput(outputId, width = "100%", height = "100vh")
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="liberalityWorkbenchOutput_+3A_outputId">outputId</code></td>
+<td>
+<p>Output id.</p>
+</td></tr>
+<tr><td><code id="liberalityWorkbenchOutput_+3A_width">width</code>, <code id="liberalityWorkbenchOutput_+3A_height">height</code></td>
+<td>
+<p>CSS dimensions.</p>
+</td></tr>
+</table>
+
+<h2 id='lity_arm'>Define a trial arm or elementary design</h2><span id='topic+lity_arm'></span>
+
+<h3>Description</h3>
+
+<p>Define a trial arm or elementary design
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lity_arm(
+  name,
+  events,
+  size = 1L,
+  allocation = 1,
+  population = "default",
+  costs = list(),
+  sample_volume = 0,
+  metadata = list()
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lity_arm_+3A_name">name</code></td>
+<td>
+<p>Arm name.</p>
+</td></tr>
+<tr><td><code id="lity_arm_+3A_events">events</code></td>
+<td>
+<p>Event records, commonly from [lity_schedule()].</p>
+</td></tr>
+<tr><td><code id="lity_arm_+3A_size">size</code></td>
+<td>
+<p>Exact number of subjects assigned to the arm.</p>
+</td></tr>
+<tr><td><code id="lity_arm_+3A_allocation">allocation</code></td>
+<td>
+<p>Approximate allocation weight.</p>
+</td></tr>
+<tr><td><code id="lity_arm_+3A_population">population</code></td>
+<td>
+<p>Population/stratum name.</p>
+</td></tr>
+<tr><td><code id="lity_arm_+3A_costs">costs</code></td>
+<td>
+<p>Named fixed, per-subject, per-visit, per-sample, and assay costs.</p>
+</td></tr>
+<tr><td><code id="lity_arm_+3A_sample_volume">sample_volume</code></td>
+<td>
+<p>Blood/sample volume per observation.</p>
+</td></tr>
+<tr><td><code id="lity_arm_+3A_metadata">metadata</code></td>
+<td>
+<p>Additional metadata.</p>
+</td></tr>
+</table>
+
+<h2 id='lity_constraint'>Define a design constraint</h2><span id='topic+lity_constraint'></span>
+
+<h3>Description</h3>
+
+<p>Define a design constraint
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lity_constraint(
+  name,
+  type = c("min_separation", "max_samples", "total_subjects", "total_cost",
+    "max_blood_volume", "max_duration", "arm_size", "allocation", "max_rse",
+    "minimum_power", "exposure", "custom"),
+  limit,
+  arm = NULL,
+  endpoint = NULL,
+  parameters = NULL,
+  lower = NULL,
+  upper = NULL,
+  function_value = NULL,
+  metadata = list()
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lity_constraint_+3A_name">name</code></td>
+<td>
+<p>Constraint name.</p>
+</td></tr>
+<tr><td><code id="lity_constraint_+3A_type">type</code></td>
+<td>
+<p>Constraint type.</p>
+</td></tr>
+<tr><td><code id="lity_constraint_+3A_limit">limit</code></td>
+<td>
+<p>Upper or lower limit, depending on 'type'.</p>
+</td></tr>
+<tr><td><code id="lity_constraint_+3A_arm">arm</code></td>
+<td>
+<p>Optional arm.</p>
+</td></tr>
+<tr><td><code id="lity_constraint_+3A_endpoint">endpoint</code></td>
+<td>
+<p>Optional endpoint.</p>
+</td></tr>
+<tr><td><code id="lity_constraint_+3A_parameters">parameters</code></td>
+<td>
+<p>Optional parameter selection for precision constraints.</p>
+</td></tr>
+<tr><td><code id="lity_constraint_+3A_lower">lower</code>, <code id="lity_constraint_+3A_upper">upper</code></td>
+<td>
+<p>Optional interval bounds.</p>
+</td></tr>
+<tr><td><code id="lity_constraint_+3A_function_value">function_value</code></td>
+<td>
+<p>Custom function accepting a design and returning a scalar.</p>
+</td></tr>
+<tr><td><code id="lity_constraint_+3A_metadata">metadata</code></td>
+<td>
+<p>Additional metadata.</p>
+</td></tr>
+</table>
+
+<h2 id='lity_constraint_check'>Evaluate all design constraints</h2><span id='topic+lity_constraint_check'></span>
+
+<h3>Description</h3>
+
+<p>Evaluate all design constraints
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lity_constraint_check(design, evaluation = NULL)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lity_constraint_check_+3A_design">design</code></td>
+<td>
+<p>Design object.</p>
+</td></tr>
+<tr><td><code id="lity_constraint_check_+3A_evaluation">evaluation</code></td>
+<td>
+<p>Optional cached design evaluation.</p>
+</td></tr>
+</table>
+
+<h2 id='lity_contract_restore'>Restore a LibeRality object from its semantic contract</h2><span id='topic+lity_contract_restore'></span>
+
+<h3>Description</h3>
+
+<p>Remote JSON transport deliberately discards arbitrary R attributes. This
+function rebuilds LibeRality classes exclusively from validated
+'liberality.*' schema identifiers, including classes nested inside results.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lity_contract_restore(x)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lity_contract_restore_+3A_x">x</code></td>
+<td>
+<p>A list decoded from a LibeRality wire result.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>The recursively reconstructed LibeRality object.
+</p>
+
+<h2 id='lity_criterion'>Define an optimal-design criterion</h2><span id='topic+lity_criterion'></span><span id='topic+lity_criterion_D'></span><span id='topic+lity_criterion_A'></span><span id='topic+lity_criterion_E'></span><span id='topic+lity_criterion_Ds'></span><span id='topic+lity_criterion_c'></span><span id='topic+lity_criterion_L'></span><span id='topic+lity_criterion_rse'></span><span id='topic+lity_criterion_prediction'></span><span id='topic+lity_criterion_bayesian'></span><span id='topic+lity_criterion_robust'></span><span id='topic+lity_criterion_minimax'></span><span id='topic+lity_criterion_maximin'></span><span id='topic+lity_criterion_model_average'></span><span id='topic+lity_criterion_precision_probability'></span><span id='topic+lity_criterion_discrimination'></span><span id='topic+lity_criterion_power'></span><span id='topic+lity_criterion_target'></span><span id='topic+lity_criterion_correct_dose'></span><span id='topic+lity_criterion_expected_utility'></span><span id='topic+lity_criterion_cost'></span><span id='topic+lity_criterion_burden'></span><span id='topic+lity_criterion_compound'></span><span id='topic+lity_criterion_pareto'></span>
+
+<h3>Description</h3>
+
+<p>Define an optimal-design criterion
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lity_criterion(
+  type = .lity_criterion_types,
+  name = NULL,
+  parameters = NULL,
+  weights = NULL,
+  contrast = NULL,
+  matrix = NULL,
+  target = NULL,
+  threshold = NULL,
+  alpha = 0.05,
+  alternative = c("two.sided", "greater", "less"),
+  margin = 0,
+  effect = NULL,
+  base = NULL,
+  components = NULL,
+  direction = NULL,
+  scale = NULL,
+  reference = NULL,
+  nsim = 250L,
+  seed = 7301L,
+  utility = NULL,
+  metadata = list()
+)
+
+lity_criterion_D(parameters = NULL, ...)
+
+lity_criterion_A(parameters = NULL, weights = NULL, ...)
+
+lity_criterion_E(parameters = NULL, ...)
+
+lity_criterion_Ds(parameters, ...)
+
+lity_criterion_c(contrast, ...)
+
+lity_criterion_L(matrix, weights = NULL, ...)
+
+lity_criterion_rse(
+  parameters = NULL,
+  weights = NULL,
+  summary = c("weighted", "max", "mean"),
+  ...
+)
+
+lity_criterion_prediction(gradient, ...)
+
+lity_criterion_bayesian(base = lity_criterion_D(), weights = NULL, ...)
+
+lity_criterion_robust(base = lity_criterion_D(), weights = NULL, ...)
+
+lity_criterion_minimax(base = lity_criterion_A(), ...)
+
+lity_criterion_maximin(base = lity_criterion_D(), ...)
+
+lity_criterion_model_average(base = lity_criterion_D(), weights = NULL, ...)
+
+lity_criterion_precision_probability(parameters = NULL, threshold = 20, ...)
+
+lity_criterion_discrimination(
+  method = c("KL", "T", "model_discrimination"),
+  weights = NULL,
+  ...
+)
+
+lity_criterion_power(
+  contrast,
+  effect = NULL,
+  alpha = 0.05,
+  alternative = c("two.sided", "greater", "less"),
+  margin = 0,
+  kind = c("power", "superiority", "noninferiority"),
+  ...
+)
+
+lity_criterion_target(target, nsim = 250L, seed = 7301L, ...)
+
+lity_criterion_correct_dose(target, nsim = 250L, seed = 7301L, ...)
+
+lity_criterion_expected_utility(
+  target = NULL,
+  utility = NULL,
+  weights = NULL,
+  nsim = 250L,
+  seed = 7301L,
+  ...
+)
+
+lity_criterion_cost(...)
+
+lity_criterion_burden(weights = NULL, ...)
+
+lity_criterion_compound(
+  components,
+  weights = NULL,
+  scale = NULL,
+  reference = NULL,
+  ...
+)
+
+lity_criterion_pareto(components, ...)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lity_criterion_+3A_type">type</code></td>
+<td>
+<p>Criterion type.</p>
+</td></tr>
+<tr><td><code id="lity_criterion_+3A_name">name</code></td>
+<td>
+<p>Display name.</p>
+</td></tr>
+<tr><td><code id="lity_criterion_+3A_parameters">parameters</code></td>
+<td>
+<p>Parameter subset.</p>
+</td></tr>
+<tr><td><code id="lity_criterion_+3A_weights">weights</code></td>
+<td>
+<p>Parameter, scenario, component, or loss weights.</p>
+</td></tr>
+<tr><td><code id="lity_criterion_+3A_contrast">contrast</code></td>
+<td>
+<p>Contrast/gradient vector.</p>
+</td></tr>
+<tr><td><code id="lity_criterion_+3A_matrix">matrix</code></td>
+<td>
+<p>L-criterion matrix.</p>
+</td></tr>
+<tr><td><code id="lity_criterion_+3A_target">target</code></td>
+<td>
+<p>Clinical, precision, or decision target.</p>
+</td></tr>
+<tr><td><code id="lity_criterion_+3A_threshold">threshold</code></td>
+<td>
+<p>Criterion threshold.</p>
+</td></tr>
+<tr><td><code id="lity_criterion_+3A_alpha">alpha</code></td>
+<td>
+<p>Type-I error for power criteria.</p>
+</td></tr>
+<tr><td><code id="lity_criterion_+3A_alternative">alternative</code></td>
+<td>
+<p>One- or two-sided alternative.</p>
+</td></tr>
+<tr><td><code id="lity_criterion_+3A_margin">margin</code></td>
+<td>
+<p>Non-inferiority/superiority margin.</p>
+</td></tr>
+<tr><td><code id="lity_criterion_+3A_effect">effect</code></td>
+<td>
+<p>Assumed effect; defaults to the contrast applied to nominal parameters.</p>
+</td></tr>
+<tr><td><code id="lity_criterion_+3A_base">base</code></td>
+<td>
+<p>Base criterion for Bayesian/robust aggregation.</p>
+</td></tr>
+<tr><td><code id="lity_criterion_+3A_components">components</code></td>
+<td>
+<p>Criteria combined into a compound or Pareto objective.</p>
+</td></tr>
+<tr><td><code id="lity_criterion_+3A_direction">direction</code></td>
+<td>
+<p>Optimisation direction.</p>
+</td></tr>
+<tr><td><code id="lity_criterion_+3A_scale">scale</code>, <code id="lity_criterion_+3A_reference">reference</code></td>
+<td>
+<p>Compound-objective scaling.</p>
+</td></tr>
+<tr><td><code id="lity_criterion_+3A_nsim">nsim</code>, <code id="lity_criterion_+3A_seed">seed</code></td>
+<td>
+<p>Simulation controls for decision criteria.</p>
+</td></tr>
+<tr><td><code id="lity_criterion_+3A_utility">utility</code></td>
+<td>
+<p>Optional custom utility function; built-in serializable utility
+definitions are preferred for queue execution.</p>
+</td></tr>
+<tr><td><code id="lity_criterion_+3A_metadata">metadata</code></td>
+<td>
+<p>Additional metadata.</p>
+</td></tr>
+<tr><td><code id="lity_criterion_+3A_...">...</code></td>
+<td>
+<p>Additional arguments passed from a criterion-specific helper to
+[lity_criterion()].</p>
+</td></tr>
+<tr><td><code id="lity_criterion_+3A_summary">summary</code></td>
+<td>
+<p>RSE aggregation: weighted, maximum, or arithmetic mean.</p>
+</td></tr>
+<tr><td><code id="lity_criterion_+3A_gradient">gradient</code></td>
+<td>
+<p>Parameter gradient for expected prediction variance.</p>
+</td></tr>
+<tr><td><code id="lity_criterion_+3A_method">method</code></td>
+<td>
+<p>Model-discrimination distance: KL, T, or weighted general
+model discrimination.</p>
+</td></tr>
+<tr><td><code id="lity_criterion_+3A_kind">kind</code></td>
+<td>
+<p>Hypothesis criterion: power, superiority, or non-inferiority.</p>
+</td></tr>
+</table>
+
+<h2 id='lity_design'>Define a complete optimal-design problem</h2><span id='topic+lity_design'></span>
+
+<h3>Description</h3>
+
+<p>Define a complete optimal-design problem
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lity_design(
+  model,
+  arms,
+  endpoints = NULL,
+  population = lity_population(),
+  scenarios = NULL,
+  alternative_models = NULL,
+  variables = list(),
+  constraints = list(),
+  prior_fim = NULL,
+  name = "Optimal design",
+  description = "",
+  metadata = list()
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lity_design_+3A_model">model</code></td>
+<td>
+<p>Primary LibeRation 'nm_model'.</p>
+</td></tr>
+<tr><td><code id="lity_design_+3A_arms">arms</code></td>
+<td>
+<p>Named list of [lity_arm()] objects.</p>
+</td></tr>
+<tr><td><code id="lity_design_+3A_endpoints">endpoints</code></td>
+<td>
+<p>Named list of [lity_endpoint()] objects.</p>
+</td></tr>
+<tr><td><code id="lity_design_+3A_population">population</code></td>
+<td>
+<p>Population strata.</p>
+</td></tr>
+<tr><td><code id="lity_design_+3A_scenarios">scenarios</code></td>
+<td>
+<p>Parameter/model/operational scenarios.</p>
+</td></tr>
+<tr><td><code id="lity_design_+3A_alternative_models">alternative_models</code></td>
+<td>
+<p>Competing LibeRation models for discrimination.</p>
+</td></tr>
+<tr><td><code id="lity_design_+3A_variables">variables</code></td>
+<td>
+<p>Optimisable variables.</p>
+</td></tr>
+<tr><td><code id="lity_design_+3A_constraints">constraints</code></td>
+<td>
+<p>Design constraints.</p>
+</td></tr>
+<tr><td><code id="lity_design_+3A_prior_fim">prior_fim</code></td>
+<td>
+<p>Optional prior Fisher information matrix.</p>
+</td></tr>
+<tr><td><code id="lity_design_+3A_name">name</code>, <code id="lity_design_+3A_description">description</code></td>
+<td>
+<p>Human-readable identity.</p>
+</td></tr>
+<tr><td><code id="lity_design_+3A_metadata">metadata</code></td>
+<td>
+<p>Additional serializable metadata.</p>
+</td></tr>
+</table>
+
+<h2 id='lity_endpoint'>Define an outcome used by an optimal design</h2><span id='topic+lity_endpoint'></span>
+
+<h3>Description</h3>
+
+<p>Define an outcome used by an optimal design
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lity_endpoint(
+  name,
+  type = c("continuous", "binary", "ordinal", "count", "time_to_event",
+    "recurrent_event"),
+  dvid = 1L,
+  link = NULL,
+  scale = c("linear_predictor", "response"),
+  thresholds = NULL,
+  distribution = NULL,
+  dispersion = NULL,
+  target = NULL,
+  metadata = list()
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lity_endpoint_+3A_name">name</code></td>
+<td>
+<p>Outcome name.</p>
+</td></tr>
+<tr><td><code id="lity_endpoint_+3A_type">type</code></td>
+<td>
+<p>Continuous, binary, ordinal, count, time-to-event, or recurrent-event.</p>
+</td></tr>
+<tr><td><code id="lity_endpoint_+3A_dvid">dvid</code></td>
+<td>
+<p>Dataset outcome identifier.</p>
+</td></tr>
+<tr><td><code id="lity_endpoint_+3A_link">link</code></td>
+<td>
+<p>Link applied to model predictions for non-continuous outcomes.</p>
+</td></tr>
+<tr><td><code id="lity_endpoint_+3A_scale">scale</code></td>
+<td>
+<p>Whether model predictions are a linear predictor or already on
+the response scale.</p>
+</td></tr>
+<tr><td><code id="lity_endpoint_+3A_thresholds">thresholds</code></td>
+<td>
+<p>Ordered cut points for an ordinal outcome.</p>
+</td></tr>
+<tr><td><code id="lity_endpoint_+3A_distribution">distribution</code></td>
+<td>
+<p>Distribution detail, such as 'poisson', 'negative_binomial',
+'exponential', or 'weibull'.</p>
+</td></tr>
+<tr><td><code id="lity_endpoint_+3A_dispersion">dispersion</code></td>
+<td>
+<p>Optional count dispersion or Weibull shape.</p>
+</td></tr>
+<tr><td><code id="lity_endpoint_+3A_target">target</code></td>
+<td>
+<p>Optional clinical target definition.</p>
+</td></tr>
+<tr><td><code id="lity_endpoint_+3A_metadata">metadata</code></td>
+<td>
+<p>Additional serializable metadata.</p>
+</td></tr>
+</table>
+
+<h2 id='lity_endpoint_from_liberator'>Convert a LibeRator endpoint into a LibeRality design endpoint</h2><span id='topic+lity_endpoint_from_liberator'></span>
+
+<h3>Description</h3>
+
+<p>Convert a LibeRator endpoint into a LibeRality design endpoint
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lity_endpoint_from_liberator(endpoint, dvid = 1L, type = "continuous")
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lity_endpoint_from_liberator_+3A_endpoint">endpoint</code></td>
+<td>
+<p>A 'lator_endpoint'.</p>
+</td></tr>
+<tr><td><code id="lity_endpoint_from_liberator_+3A_dvid">dvid</code></td>
+<td>
+<p>Outcome identifier.</p>
+</td></tr>
+<tr><td><code id="lity_endpoint_from_liberator_+3A_type">type</code></td>
+<td>
+<p>Statistical response type used by the design model.</p>
+</td></tr>
+</table>
+
+<h2 id='lity_evaluate'>Evaluate one or more criteria for a design</h2><span id='topic+lity_evaluate'></span>
+
+<h3>Description</h3>
+
+<p>Evaluate one or more criteria for a design
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lity_evaluate(
+  design,
+  criteria = lity_criterion_D(),
+  tolerance = 1e-10,
+  check_constraints = TRUE
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lity_evaluate_+3A_design">design</code></td>
+<td>
+<p>Design object.</p>
+</td></tr>
+<tr><td><code id="lity_evaluate_+3A_criteria">criteria</code></td>
+<td>
+<p>Criterion or named list of criteria.</p>
+</td></tr>
+<tr><td><code id="lity_evaluate_+3A_tolerance">tolerance</code></td>
+<td>
+<p>Numerical rank tolerance.</p>
+</td></tr>
+<tr><td><code id="lity_evaluate_+3A_check_constraints">check_constraints</code></td>
+<td>
+<p>Evaluate constraints after criteria.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A 'lity_evaluation'.
+</p>
+
+<h2 id='lity_example'>A complete teaching example</h2><span id='topic+lity_example'></span>
+
+<h3>Description</h3>
+
+<p>Creates a two-arm oral PK design with sampling-time and allocation variables,
+parameter uncertainty, operational constraints, and representative criteria.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lity_example()
+</code></pre>
+
+
+<h3>Value</h3>
+
+<p>A list containing model, design, and criteria.
+</p>
+
+
+<h3>Examples</h3>
+
+<pre><code class='language-R'>example &lt;- lity_example()
+result &lt;- lity_evaluate(example$design, lity_criterion_D())
+result$criterion
+</code></pre>
+
+<h2 id='lity_external_validate'>Validate LibeRality against PopED and PFIM</h2><span id='topic+lity_external_validate'></span><span id='topic+print.lity_external_validation'></span>
+
+<h3>Description</h3>
+
+<p>Runs matched population-FO designs through LibeRality, PopED and PFIM,
+transforms residual-error parameters to a common variance scale, and compares
+complete Fisher matrices, RSEs, determinants and runtimes.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lity_external_validate(
+  fixtures = lity_external_validation_fixtures(),
+  engines = c("PopED", "PFIM"),
+  repetitions = 3L,
+  tolerance = list(absolute = 1e-05, relative = 1e-04, rse = 0.01),
+  output_dir = NULL,
+  design_search = TRUE
+)
+
+## S3 method for class 'lity_external_validation'
+print(x, ...)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lity_external_validate_+3A_fixtures">fixtures</code></td>
+<td>
+<p>Fixture identifiers returned by <code>lity_external_validation_fixtures()</code>.</p>
+</td></tr>
+<tr><td><code id="lity_external_validate_+3A_engines">engines</code></td>
+<td>
+<p>External engines to run in addition to LibeRality.</p>
+</td></tr>
+<tr><td><code id="lity_external_validate_+3A_repetitions">repetitions</code></td>
+<td>
+<p>Number of warm-core and end-to-end timing repetitions.</p>
+</td></tr>
+<tr><td><code id="lity_external_validate_+3A_tolerance">tolerance</code></td>
+<td>
+<p>Named list containing absolute, relative and RSE tolerances. RSE is measured in percentage points.</p>
+</td></tr>
+<tr><td><code id="lity_external_validate_+3A_output_dir">output_dir</code></td>
+<td>
+<p>Optional output directory for RDS, CSV, JSON, matrix and HTML artifacts.</p>
+</td></tr>
+<tr><td><code id="lity_external_validate_+3A_design_search">design_search</code></td>
+<td>
+<p>Whether to run the matched D-optimal candidate-grid search.</p>
+</td></tr>
+<tr><td><code id="lity_external_validate_+3A_x">x</code></td>
+<td>
+<p>External-validation result.</p>
+</td></tr>
+<tr><td><code id="lity_external_validate_+3A_...">...</code></td>
+<td>
+<p>Unused.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>An object of class <code>lity_external_validation</code>.</p>
+
+<h2 id='lity_external_validation_fixtures'>List external-validation fixtures</h2><span id='topic+lity_external_validation_fixtures'></span>
+
+<h3>Description</h3>
+
+<p>Lists matched designs available for PopED and PFIM cross-validation.</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lity_external_validation_fixtures()</code></pre>
+
+
+<h3>Value</h3>
+
+<p>Character vector of versioned fixture identifiers.</p>
+
+<h2 id='lity_external_validation_report'>Write an external-validation report</h2><span id='topic+lity_external_validation_report'></span>
+
+<h3>Description</h3>
+
+<p>Writes a self-contained HTML summary of numerical agreement, coverage and runtimes.</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lity_external_validation_report(x, file)</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lity_external_validation_report_+3A_x">x</code></td>
+<td>
+<p>A <code>lity_external_validation</code> object.</p>
+</td></tr>
+<tr><td><code id="lity_external_validation_report_+3A_file">file</code></td>
+<td>
+<p>Output HTML file.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Normalized report path.</p>
+
+<h2 id='lity_information'>Calculate expected information for a design</h2><span id='topic+lity_information'></span>
+
+<h3>Description</h3>
+
+<p>Continuous outcomes use the multivariate-normal population FIM, including
+mean/covariance cross-information and exact LibeRation prediction
+sensitivities. Non-continuous outcomes use distribution-aware working
+moments, allowing shared random effects and variance-component information.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lity_information(
+  design,
+  scenario = 1L,
+  model = NULL,
+  tolerance = 1e-10,
+  approximation = c("full_gaussian", "fo_block")
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lity_information_+3A_design">design</code></td>
+<td>
+<p>LibeRality design.</p>
+</td></tr>
+<tr><td><code id="lity_information_+3A_scenario">scenario</code></td>
+<td>
+<p>Scenario name, index, or object.</p>
+</td></tr>
+<tr><td><code id="lity_information_+3A_model">model</code></td>
+<td>
+<p>Optional model override.</p>
+</td></tr>
+<tr><td><code id="lity_information_+3A_tolerance">tolerance</code></td>
+<td>
+<p>Numerical rank tolerance.</p>
+</td></tr>
+<tr><td><code id="lity_information_+3A_approximation">approximation</code></td>
+<td>
+<p>Information approximation. '&quot;full_gaussian&quot;' includes
+covariance derivatives for fixed effects; '&quot;fo_block&quot;' uses the
+conventional block-diagonal population-FO form used by PopED and PFIM.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A 'lity_information' object.
+</p>
+
+<h2 id='lity_job'>Create a typed LibeRties optimal-design job</h2><span id='topic+lity_job'></span>
+
+<h3>Description</h3>
+
+<p>Create a typed LibeRties optimal-design job
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lity_job(
+  design,
+  criterion = lity_criterion_D(),
+  operation = c("optimise", "evaluate", "simulate", "pareto"),
+  arguments = list(),
+  label = NULL
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lity_job_+3A_design">design</code></td>
+<td>
+<p>Serializable design.</p>
+</td></tr>
+<tr><td><code id="lity_job_+3A_criterion">criterion</code></td>
+<td>
+<p>Criterion.</p>
+</td></tr>
+<tr><td><code id="lity_job_+3A_operation">operation</code></td>
+<td>
+<p>Evaluate, optimise, simulate, or Pareto exploration.</p>
+</td></tr>
+<tr><td><code id="lity_job_+3A_arguments">arguments</code></td>
+<td>
+<p>Additional operation arguments.</p>
+</td></tr>
+<tr><td><code id="lity_job_+3A_label">label</code></td>
+<td>
+<p>Job label.</p>
+</td></tr>
+</table>
+
+<h2 id='lity_model_from_liberary'>Import a reviewed LibeRary model</h2><span id='topic+lity_model_from_liberary'></span>
+
+<h3>Description</h3>
+
+<p>Import a reviewed LibeRary model
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lity_model_from_liberary(library_id, root = NULL, allow_draft = FALSE)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lity_model_from_liberary_+3A_library_id">library_id</code></td>
+<td>
+<p>Catalogue identifier.</p>
+</td></tr>
+<tr><td><code id="lity_model_from_liberary_+3A_root">root</code></td>
+<td>
+<p>Optional catalogue root.</p>
+</td></tr>
+<tr><td><code id="lity_model_from_liberary_+3A_allow_draft">allow_draft</code></td>
+<td>
+<p>Permit a draft entry.</p>
+</td></tr>
+</table>
+
+<h2 id='lity_operating_characteristics'>Summarise empirical operating characteristics</h2><span id='topic+lity_operating_characteristics'></span>
+
+<h3>Description</h3>
+
+<p>Summarise empirical operating characteristics
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lity_operating_characteristics(simulation, alpha = 0.05)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lity_operating_characteristics_+3A_simulation">simulation</code></td>
+<td>
+<p>A result from [lity_simulate_trials()].</p>
+</td></tr>
+<tr><td><code id="lity_operating_characteristics_+3A_alpha">alpha</code></td>
+<td>
+<p>Confidence interval alpha.</p>
+</td></tr>
+</table>
+
+<h2 id='lity_optimise'>Optimise a LibeRality design</h2><span id='topic+lity_optimise'></span>
+
+<h3>Description</h3>
+
+<p>Optimise a LibeRality design
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lity_optimise(
+  design,
+  criterion = lity_criterion_D(),
+  method = c("auto", "L-BFGS-B", "Nelder-Mead", "pso", "coordinate_exchange", "hybrid",
+    "multiplicative", "fedorov_wynn"),
+  control = list(),
+  penalty = 1e+08,
+  seed = 7301L,
+  progress = NULL,
+  cancel = NULL,
+  checkpoint = NULL
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lity_optimise_+3A_design">design</code></td>
+<td>
+<p>Design with [lity_variable()] definitions.</p>
+</td></tr>
+<tr><td><code id="lity_optimise_+3A_criterion">criterion</code></td>
+<td>
+<p>Scalar criterion. Compound criteria are supported directly;
+use [lity_pareto()] for an unscalarised Pareto criterion.</p>
+</td></tr>
+<tr><td><code id="lity_optimise_+3A_method">method</code></td>
+<td>
+<p>Automatic, gradient-based, simplex, particle-swarm, coordinate
+exchange, hybrid, multiplicative, or Fedorov-Wynn optimisation.</p>
+</td></tr>
+<tr><td><code id="lity_optimise_+3A_control">control</code></td>
+<td>
+<p>Named optimiser controls.</p>
+</td></tr>
+<tr><td><code id="lity_optimise_+3A_penalty">penalty</code></td>
+<td>
+<p>Quadratic constraint-violation penalty.</p>
+</td></tr>
+<tr><td><code id="lity_optimise_+3A_seed">seed</code></td>
+<td>
+<p>Reproducible seed.</p>
+</td></tr>
+<tr><td><code id="lity_optimise_+3A_progress">progress</code></td>
+<td>
+<p>Optional callback receiving every evaluation record.</p>
+</td></tr>
+<tr><td><code id="lity_optimise_+3A_cancel">cancel</code></td>
+<td>
+<p>Optional function returning 'TRUE' to cancel.</p>
+</td></tr>
+<tr><td><code id="lity_optimise_+3A_checkpoint">checkpoint</code></td>
+<td>
+<p>Optional RDS checkpoint path.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A 'lity_optimisation' result.
+</p>
+
+<h2 id='lity_pareto'>Explore the Pareto frontier of a multi-objective design</h2><span id='topic+lity_pareto'></span>
+
+<h3>Description</h3>
+
+<p>Explore the Pareto frontier of a multi-objective design
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lity_pareto(
+  design,
+  criterion,
+  n = 250L,
+  control = list(),
+  seed = 7301L,
+  progress = NULL
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lity_pareto_+3A_design">design</code></td>
+<td>
+<p>Design object.</p>
+</td></tr>
+<tr><td><code id="lity_pareto_+3A_criterion">criterion</code></td>
+<td>
+<p>Pareto criterion.</p>
+</td></tr>
+<tr><td><code id="lity_pareto_+3A_n">n</code></td>
+<td>
+<p>Number of candidate designs.</p>
+</td></tr>
+<tr><td><code id="lity_pareto_+3A_control">control</code></td>
+<td>
+<p>Optional controls; 'n' overrides the argument.</p>
+</td></tr>
+<tr><td><code id="lity_pareto_+3A_seed">seed</code></td>
+<td>
+<p>Reproducible seed.</p>
+</td></tr>
+<tr><td><code id="lity_pareto_+3A_progress">progress</code></td>
+<td>
+<p>Optional callback.</p>
+</td></tr>
+</table>
+
+<h2 id='lity_population'>Define populations and covariate strata</h2><span id='topic+lity_population'></span>
+
+<h3>Description</h3>
+
+<p>Define populations and covariate strata
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lity_population(
+  strata = data.frame(name = "default", weight = 1),
+  name = "Population",
+  metadata = list()
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lity_population_+3A_strata">strata</code></td>
+<td>
+<p>Data frame with a stratum 'name', 'weight', and optional model covariates.</p>
+</td></tr>
+<tr><td><code id="lity_population_+3A_name">name</code></td>
+<td>
+<p>Population set name.</p>
+</td></tr>
+<tr><td><code id="lity_population_+3A_metadata">metadata</code></td>
+<td>
+<p>Additional metadata.</p>
+</td></tr>
+</table>
+
+<h2 id='lity_report'>Generate a reproducible optimal-design report</h2><span id='topic+lity_report'></span>
+
+<h3>Description</h3>
+
+<p>Generate a reproducible optimal-design report
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lity_report(
+  x,
+  file = tempfile("LibeRality-report-", fileext = ".html"),
+  title = NULL
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lity_report_+3A_x">x</code></td>
+<td>
+<p>Design, evaluation, optimisation, Pareto, or simulation result.</p>
+</td></tr>
+<tr><td><code id="lity_report_+3A_file">file</code></td>
+<td>
+<p>Output HTML path.</p>
+</td></tr>
+<tr><td><code id="lity_report_+3A_title">title</code></td>
+<td>
+<p>Optional report title.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Normalized report path, invisibly.
+</p>
+
+<h2 id='lity_scenario'>Define a parameter, model, or operational scenario</h2><span id='topic+lity_scenario'></span>
+
+<h3>Description</h3>
+
+<p>Define a parameter, model, or operational scenario
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lity_scenario(
+  name,
+  theta = NULL,
+  omega = NULL,
+  sigma = NULL,
+  model = NULL,
+  probability = 1,
+  covariates = list(),
+  dropout = 0,
+  adherence = 1,
+  missed_sample = 0,
+  metadata = list()
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lity_scenario_+3A_name">name</code></td>
+<td>
+<p>Scenario name.</p>
+</td></tr>
+<tr><td><code id="lity_scenario_+3A_theta">theta</code>, <code id="lity_scenario_+3A_omega">omega</code>, <code id="lity_scenario_+3A_sigma">sigma</code></td>
+<td>
+<p>Optional model parameter values.</p>
+</td></tr>
+<tr><td><code id="lity_scenario_+3A_model">model</code></td>
+<td>
+<p>Optional alternative LibeRation model.</p>
+</td></tr>
+<tr><td><code id="lity_scenario_+3A_probability">probability</code></td>
+<td>
+<p>Scenario probability.</p>
+</td></tr>
+<tr><td><code id="lity_scenario_+3A_covariates">covariates</code></td>
+<td>
+<p>Named covariate overrides.</p>
+</td></tr>
+<tr><td><code id="lity_scenario_+3A_dropout">dropout</code>, <code id="lity_scenario_+3A_adherence">adherence</code>, <code id="lity_scenario_+3A_missed_sample">missed_sample</code></td>
+<td>
+<p>Operational probabilities.</p>
+</td></tr>
+<tr><td><code id="lity_scenario_+3A_metadata">metadata</code></td>
+<td>
+<p>Additional metadata.</p>
+</td></tr>
+</table>
+
+<h2 id='lity_schedule'>Create a NONMEM-style trial schedule</h2><span id='topic+lity_schedule'></span>
+
+<h3>Description</h3>
+
+<p>Create a NONMEM-style trial schedule
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lity_schedule(
+  sampling_times,
+  dose = 0,
+  dose_times = 0,
+  dose_cmt = 1L,
+  observation_cmt = 1L,
+  rate = 0,
+  duration = NULL,
+  ii = 0,
+  addl = 0L,
+  ss = 0L,
+  route = "extravascular",
+  dvid = 1L,
+  covariates = list(),
+  id = 1L
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lity_schedule_+3A_sampling_times">sampling_times</code></td>
+<td>
+<p>Observation times, or a data frame containing 'TIME'
+and optional 'DVID' and 'CMT' columns.</p>
+</td></tr>
+<tr><td><code id="lity_schedule_+3A_dose">dose</code></td>
+<td>
+<p>Dose amount(s).</p>
+</td></tr>
+<tr><td><code id="lity_schedule_+3A_dose_times">dose_times</code></td>
+<td>
+<p>Dose administration times.</p>
+</td></tr>
+<tr><td><code id="lity_schedule_+3A_dose_cmt">dose_cmt</code>, <code id="lity_schedule_+3A_observation_cmt">observation_cmt</code></td>
+<td>
+<p>Dose and observation compartments.</p>
+</td></tr>
+<tr><td><code id="lity_schedule_+3A_rate">rate</code></td>
+<td>
+<p>Infusion rate. Zero represents a bolus or extravascular dose.</p>
+</td></tr>
+<tr><td><code id="lity_schedule_+3A_duration">duration</code></td>
+<td>
+<p>Optional infusion duration; converted to 'rate'.</p>
+</td></tr>
+<tr><td><code id="lity_schedule_+3A_ii">ii</code>, <code id="lity_schedule_+3A_addl">addl</code></td>
+<td>
+<p>NONMEM repeat-dose interval and additional-dose count.</p>
+</td></tr>
+<tr><td><code id="lity_schedule_+3A_ss">ss</code></td>
+<td>
+<p>NONMEM steady-state flag.</p>
+</td></tr>
+<tr><td><code id="lity_schedule_+3A_route">route</code></td>
+<td>
+<p>Descriptive administration route.</p>
+</td></tr>
+<tr><td><code id="lity_schedule_+3A_dvid">dvid</code></td>
+<td>
+<p>Outcome identifier for vector 'sampling_times'.</p>
+</td></tr>
+<tr><td><code id="lity_schedule_+3A_covariates">covariates</code></td>
+<td>
+<p>Named constant covariates copied to every record.</p>
+</td></tr>
+<tr><td><code id="lity_schedule_+3A_id">id</code></td>
+<td>
+<p>Subject identifier used by the elementary design.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A NONMEM-style event data frame with design metadata.
+</p>
+
+<h2 id='lity_simulate_trials'>Simulate complete trials under a LibeRality design</h2><span id='topic+lity_simulate_trials'></span>
+
+<h3>Description</h3>
+
+<p>Simulate complete trials under a LibeRality design
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lity_simulate_trials(
+  design,
+  n = 100L,
+  scenarios = design$scenarios,
+  fit = FALSE,
+  method = "FOCEI",
+  seed = 7301L,
+  n_cores = 1L,
+  retain_data = TRUE,
+  progress = NULL
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lity_simulate_trials_+3A_design">design</code></td>
+<td>
+<p>Design object.</p>
+</td></tr>
+<tr><td><code id="lity_simulate_trials_+3A_n">n</code></td>
+<td>
+<p>Number of replicated trials.</p>
+</td></tr>
+<tr><td><code id="lity_simulate_trials_+3A_scenarios">scenarios</code></td>
+<td>
+<p>Scenario sampling probabilities; defaults to the design.</p>
+</td></tr>
+<tr><td><code id="lity_simulate_trials_+3A_fit">fit</code></td>
+<td>
+<p>Whether to re-estimate each simulated trial with LibeRation.</p>
+</td></tr>
+<tr><td><code id="lity_simulate_trials_+3A_method">method</code></td>
+<td>
+<p>Estimation method when 'fit = TRUE'.</p>
+</td></tr>
+<tr><td><code id="lity_simulate_trials_+3A_seed">seed</code></td>
+<td>
+<p>Reproducible seed.</p>
+</td></tr>
+<tr><td><code id="lity_simulate_trials_+3A_n_cores">n_cores</code></td>
+<td>
+<p>Simulation cores passed to LibeRation.</p>
+</td></tr>
+<tr><td><code id="lity_simulate_trials_+3A_retain_data">retain_data</code></td>
+<td>
+<p>Retain simulated datasets.</p>
+</td></tr>
+<tr><td><code id="lity_simulate_trials_+3A_progress">progress</code></td>
+<td>
+<p>Optional callback.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A 'lity_simulation' result.
+</p>
+
+<h2 id='lity_to_liberation'>Export a final design to LibeRation</h2><span id='topic+lity_to_liberation'></span>
+
+<h3>Description</h3>
+
+<p>Export a final design to LibeRation
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lity_to_liberation(
+  design,
+  simulate = FALSE,
+  seed = 7301L,
+  workspace = NULL,
+  project = NULL
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lity_to_liberation_+3A_design">design</code></td>
+<td>
+<p>Design or optimisation result.</p>
+</td></tr>
+<tr><td><code id="lity_to_liberation_+3A_simulate">simulate</code></td>
+<td>
+<p>Generate a stochastic dataset instead of event templates.</p>
+</td></tr>
+<tr><td><code id="lity_to_liberation_+3A_seed">seed</code></td>
+<td>
+<p>Simulation seed.</p>
+</td></tr>
+<tr><td><code id="lity_to_liberation_+3A_workspace">workspace</code></td>
+<td>
+<p>Optional LibeRation workspace.</p>
+</td></tr>
+<tr><td><code id="lity_to_liberation_+3A_project">project</code></td>
+<td>
+<p>Optional project id/name. A project and first model version
+are created when both workspace and project are supplied.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Dataset or project metadata.
+</p>
+
+<h2 id='lity_validate'>Validate a LibeRality design</h2><span id='topic+lity_validate'></span>
+
+<h3>Description</h3>
+
+<p>Validate a LibeRality design
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lity_validate(design, strict = FALSE)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lity_validate_+3A_design">design</code></td>
+<td>
+<p>Design object.</p>
+</td></tr>
+<tr><td><code id="lity_validate_+3A_strict">strict</code></td>
+<td>
+<p>Whether warnings should be returned as validation failures.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Validation report.
+</p>
+
+<h2 id='lity_variable'>Define an optimisable design variable</h2><span id='topic+lity_variable'></span>
+
+<h3>Description</h3>
+
+<p>Define an optimisable design variable
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lity_variable(
+  name,
+  target = c("sampling_time", "dose", "rate", "duration", "arm_size", "allocation",
+    "covariate"),
+  arm,
+  index = 1L,
+  lower = -Inf,
+  upper = Inf,
+  values = NULL,
+  initial = NULL,
+  type = c("continuous", "integer", "discrete", "categorical"),
+  covariate = NULL,
+  metadata = list()
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lity_variable_+3A_name">name</code></td>
+<td>
+<p>Variable name.</p>
+</td></tr>
+<tr><td><code id="lity_variable_+3A_target">target</code></td>
+<td>
+<p>'sampling_time', 'dose', 'rate', 'duration', 'arm_size',
+'allocation', or 'covariate'.</p>
+</td></tr>
+<tr><td><code id="lity_variable_+3A_arm">arm</code></td>
+<td>
+<p>Target arm name.</p>
+</td></tr>
+<tr><td><code id="lity_variable_+3A_index">index</code></td>
+<td>
+<p>Observation/dose index when relevant.</p>
+</td></tr>
+<tr><td><code id="lity_variable_+3A_lower">lower</code>, <code id="lity_variable_+3A_upper">upper</code></td>
+<td>
+<p>Bounds.</p>
+</td></tr>
+<tr><td><code id="lity_variable_+3A_values">values</code></td>
+<td>
+<p>Candidate values for discrete or categorical variables.</p>
+</td></tr>
+<tr><td><code id="lity_variable_+3A_initial">initial</code></td>
+<td>
+<p>Initial value; inferred from the design when omitted.</p>
+</td></tr>
+<tr><td><code id="lity_variable_+3A_type">type</code></td>
+<td>
+<p>Continuous, integer, discrete, or categorical.</p>
+</td></tr>
+<tr><td><code id="lity_variable_+3A_covariate">covariate</code></td>
+<td>
+<p>Covariate column for a covariate variable.</p>
+</td></tr>
+<tr><td><code id="lity_variable_+3A_metadata">metadata</code></td>
+<td>
+<p>Additional metadata.</p>
+</td></tr>
+</table>
+
+<h2 id='lity_worker_task'>Execute a typed LibeRality worker task</h2><span id='topic+lity_worker_task'></span>
+
+<h3>Description</h3>
+
+<p>Execute a typed LibeRality worker task
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lity_worker_task(model, design, arguments = list())
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lity_worker_task_+3A_model">model</code></td>
+<td>
+<p>Serialized primary model retained by the queue contract.</p>
+</td></tr>
+<tr><td><code id="lity_worker_task_+3A_design">design</code></td>
+<td>
+<p>Serialized design.</p>
+</td></tr>
+<tr><td><code id="lity_worker_task_+3A_arguments">arguments</code></td>
+<td>
+<p>Worker arguments.</p>
+</td></tr>
+</table>
+
+<h2 id='renderLiberalityWorkbench'>Render a LibeRality workbench</h2><span id='topic+renderLiberalityWorkbench'></span>
+
+<h3>Description</h3>
+
+<p>Render a LibeRality workbench
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>renderLiberalityWorkbench(expr, env = parent.frame(), quoted = FALSE)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="renderLiberalityWorkbench_+3A_expr">expr</code></td>
+<td>
+<p>Widget expression.</p>
+</td></tr>
+<tr><td><code id="renderLiberalityWorkbench_+3A_env">env</code></td>
+<td>
+<p>Evaluation environment.</p>
+</td></tr>
+<tr><td><code id="renderLiberalityWorkbench_+3A_quoted">quoted</code></td>
+<td>
+<p>Whether expression is quoted.</p>
+</td></tr>
+</table>
+
+</body></html>
