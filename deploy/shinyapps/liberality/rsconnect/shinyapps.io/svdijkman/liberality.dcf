@@ -5,6 +5,6 @@ account: svdijkman
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 17629103
-bundleId: 12322437
+bundleId: 12325860
 url: https://svdijkman.shinyapps.io/liberality/
 version: 1

@@ -66,3 +66,6 @@ stopifnot(
 )
 
 message("Installer mirror and release-channel checks passed.")
+
+source(file.path(root, "installer", "tests", "check-installer.R"))
+liber_installer_layout_check(root)

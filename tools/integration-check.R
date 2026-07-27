@@ -1,7 +1,9 @@
 packages <- c("LibeRtAD", "LibeRation", "LibeRary", "LibeRator", "LibeRality", "LibeRties")
 root <- normalizePath(getwd(), winslash = "/", mustWork = TRUE)
+source(file.path(root, "tools", "validation-runtime.R"), local = TRUE)
 local_library <- Sys.getenv(
-  "LIBER_INSTALL_LIBRARY", file.path(root, ".testlib-integration")
+  "LIBER_INSTALL_LIBRARY",
+  liber_validation_dev_cache(root, "r-libraries", "integration", create = TRUE)
 )
 dir.create(local_library, recursive = TRUE, showWarnings = FALSE)
 .libPaths(unique(c(local_library, .libPaths())))

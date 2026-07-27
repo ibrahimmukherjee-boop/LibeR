@@ -1,4 +1,5 @@
-.libPaths(c(file.path(getwd(), ".testlib"), file.path(getwd(), ".lib"), .libPaths()))
+source(file.path("tools", "validation-runtime.R"))
+.libPaths(c(liber_validation_library_path(getwd()), .libPaths()))
 library(LibeRation)
 
 model <- nm_model(

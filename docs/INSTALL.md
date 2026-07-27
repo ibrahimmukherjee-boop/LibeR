@@ -53,3 +53,25 @@ LibeRation::liber_support_matrix()
 
 The doctor reports the compatibility set, compiled CppAD/Eigen provenance,
 wire contracts, queue capabilities, and optional workspace health.
+
+## Bundled desktop runtime
+
+The bundled installer is a parallel deployment path for users who do not want
+to manage R or package libraries manually. It installs a private, versioned R
+runtime and exact LibeR package library under the user's local application
+directory. It does not modify a system R installation or take ownership of
+application data under `Documents`.
+
+Early research installers include an optional developer component with package
+sources, CppAD/Eigen and R headers, and a private C++ toolchain. The mature
+runtime profile uses the same layout but omits those files.
+
+Build and validate the Windows installer from a source checkout with:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass `
+  -File installer/scripts/build-windows.ps1 -Profile Research
+```
+
+See `installer/README.md` for staging, signing, integrity, and data-separation
+details.

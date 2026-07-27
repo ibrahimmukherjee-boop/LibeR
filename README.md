@@ -62,7 +62,8 @@ probe and refuses a production start when the boundary is incomplete.
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md),
 [docs/VALIDATION.md](docs/VALIDATION.md), [docs/REMOTE.md](docs/REMOTE.md),
-[SECURITY.md](SECURITY.md), [docs/RELEASE.md](docs/RELEASE.md), and the
+[SECURITY.md](SECURITY.md), [docs/RELEASE.md](docs/RELEASE.md),
+[docs/STORAGE.md](docs/STORAGE.md), and the
 [0.9 research-beta programme](docs/RESEARCH-BETA.md).
 
 ## Install

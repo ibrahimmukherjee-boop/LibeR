@@ -14,12 +14,14 @@ source(file.path(root, "tools", "validation-runtime.R"), local = TRUE)
 value_after <- function(name, default = NULL) {
   liber_validation_option(name, default, args = arguments)
 }
-external_library <- file.path(root, ".external-comparator-lib")
+external_library <- liber_validation_dev_cache(
+  root, "r-libraries", "external-comparators"
+)
 .libPaths(unique(c(external_library, .libPaths())))
 
 if (!requireNamespace("cmdstanr", quietly = TRUE)) {
   stop(
-    "Install cmdstanr into .external-comparator-lib before installing CmdStan.",
+    "Install cmdstanr into the LibeR external-comparator library before installing CmdStan.",
     call. = FALSE
   )
 }
@@ -41,7 +43,9 @@ if (.Platform$OS.type == "windows") {
   }
 }
 
-destination <- file.path(root, ".external-tools", "cmdstan")
+destination <- liber_validation_dev_cache(
+  root, "external-tools", "cmdstan", create = TRUE
+)
 dir.create(destination, recursive = TRUE, showWarnings = FALSE)
 version <- value_after("version", "2.39.0")
 if (!grepl("^[0-9]+[.][0-9]+[.][0-9]+$", version)) {

@@ -8,12 +8,19 @@ script_argument <- grep("^--file=", commandArgs(trailingOnly = FALSE), value = T
 script <- if (length(script_argument)) sub("^--file=", "", script_argument[[1L]]) else "run-validation.R"
 external_dir <- dirname(normalizePath(script, winslash = "/", mustWork = TRUE))
 root <- normalizePath(file.path(external_dir, "..", "..", ".."), winslash = "/", mustWork = TRUE)
+source(file.path(root, "tools", "validation-runtime.R"), local = TRUE)
 library_path <- normalizePath(
-  value_argument("library", file.path(root, ".external-validation-lib")),
+  value_argument(
+    "library",
+    liber_validation_dev_cache(root, "r-libraries", "liberality-external")
+  ),
   winslash = "/", mustWork = TRUE
 )
 package_library <- normalizePath(
-  value_argument("package-library", file.path(root, ".litylib")),
+  value_argument(
+    "package-library",
+    liber_validation_dev_cache(root, "r-libraries", "liberality-package")
+  ),
   winslash = "/", mustWork = TRUE
 )
 repetitions <- as.integer(value_argument("repetitions", "10"))

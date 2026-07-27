@@ -67,6 +67,10 @@ R CMD INSTALL .
 
 GPT-5.6 was used as an AI engineering collaborator to help review and implement
 the CppAD/Eigen integration, numerical kernels, benchmarks, tests, and documentation.
+
+The benchmark GUI writes new result sets to `Documents/LibeR-data/benchmarks`
+on Windows and `~/LibeR-data/benchmarks` elsewhere. Set
+`LIBERTAD_BENCHMARK_HOME` to use another persistent result directory.
 Scientific direction, architecture, validation criteria, and release decisions remain the responsibility of the project owner.
 
 LibeRtAD is MIT licensed. The bundled CppAD headers retain their EPL-2.0 or

@@ -72,7 +72,8 @@ Available scenarios are `iv-bolus`, `oral`, `two-compartment`,
 and `advan13`. Use `--engines=LIBERATION` for the current IOV case.
 
 PsN's `execute` command and LibeRation must be available to the R process. The
-script also recognises this repository's `.testlib` and `.lib` directories.
+script also recognises the external development cache selected by
+`LIBER_DEV_CACHE` (by default, the sibling directory `LibeR-dev-cache`).
 
 ## Outputs
 

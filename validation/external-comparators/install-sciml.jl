@@ -1,7 +1,12 @@
 using Pkg
 
 root = normpath(joinpath(@__DIR__, "..", ".."))
-environment = joinpath(root, ".external-tools", "julia-project")
+dev_cache = get(
+    ENV,
+    "LIBER_DEV_CACHE",
+    joinpath(dirname(root), basename(root) * "-dev-cache"),
+)
+environment = joinpath(dev_cache, "external-tools", "julia-project")
 mkpath(environment)
 Pkg.activate(environment)
 Pkg.add([

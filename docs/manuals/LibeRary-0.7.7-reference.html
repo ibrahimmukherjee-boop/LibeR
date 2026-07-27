@@ -2201,9 +2201,10 @@ in package files. The returned YAML path survives package upgrades.
 
 <h3>Description</h3>
 
-<p>Defaults to <code>Documents/LibeR/library</code> on Windows and <code style="white-space: pre;">&#8288;~/LibeR/library&#8288;</code> on
-Linux/macOS, alongside the default LibeRation workspace. Set
-<code>LIBERARY_HOME</code> to override it.
+<p>Defaults to <code>Documents/LibeR-data/library</code> on Windows and
+<code style="white-space: pre;">&#8288;~/LibeR-data/library&#8288;</code> on Linux/macOS. Existing installations continue to
+use a legacy <code>LibeR/library</code> directory when it exists and the new location
+does not. Set <code>LIBERARY_HOME</code> to override either default.
 </p>
 
 

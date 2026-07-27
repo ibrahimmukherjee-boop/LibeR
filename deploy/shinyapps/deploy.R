@@ -1,4 +1,7 @@
 arguments <- commandArgs(trailingOnly = TRUE)
+root <- normalizePath(getwd(), winslash = "/", mustWork = TRUE)
+source(file.path(root, "deploy", "shinyapps", "runtime.R"), local = TRUE)
+liber_shinyapps_use_library(root)
 if (length(arguments) != 1L || !arguments[[1L]] %in%
     c("liberation", "liberality", "liberator")) {
   stop("Usage: Rscript deploy/shinyapps/deploy.R <liberation|liberality|liberator>")
@@ -12,7 +15,7 @@ titles <- c(
 )
 
 rsconnect::deployApp(
-  appDir = file.path("deploy", "shinyapps", name),
+  appDir = file.path(root, "deploy", "shinyapps", name),
   appFiles = "app.R",
   appName = name,
   appTitle = unname(titles[[name]]),

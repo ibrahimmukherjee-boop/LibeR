@@ -8,9 +8,7 @@ liber_validation_configure_rtools(root)
 
 manifest <- liber_validation_manifest(root)
 packages <- names(manifest$packages)
-destination <- file.path(
-  root, ".validation-libraries", liber_validation_library_name(root)
-)
+destination <- liber_validation_library_path(root)
 force <- "--force" %in% args
 git <- liber_validation_git(root)
 use_source <- "--source" %in% args || !isTRUE(git$tracked_worktree_clean)
@@ -39,9 +37,12 @@ install_one <- function(package) {
                             dependencies = FALSE, quiet = TRUE)
   } else {
     command <- file.path(R.home("bin"), "R")
-    status <- system2(command, c("CMD", "INSTALL", "--preclean", "-l", shQuote(temporary),
-                                 shQuote(file.path(root, package))))
+    status <- system2(command, c(
+      "CMD", "INSTALL", "--preclean", "--clean", "-l", shQuote(temporary),
+      shQuote(file.path(root, package))
+    ))
     if (!identical(status, 0L)) stop("Unable to install ", package, call. = FALSE)
+    liber_validation_clean_native_source(file.path(root, package))
   }
   installed <- liber_validation_package_version(package, temporary)
   if (is.na(installed) || !identical(installed, version)) {

@@ -4,6 +4,7 @@ script <- if (length(script_arg)) sub("^--file=", "", script_arg[[1L]]) else
   file.path("tools", "install-local-stack.R")
 root <- normalizePath(file.path(dirname(script), ".."), winslash = "/",
                       mustWork = TRUE)
+source(file.path(root, "tools", "validation-runtime.R"), local = TRUE)
 installer_helpers <- new.env(parent = globalenv())
 sys.source(
   file.path(root, "tools", "install-ecosystem.R"),
@@ -80,10 +81,11 @@ for (package in packages) {
   message("Installing local package ", package)
   status <- system2(
     file.path(R.home("bin"), "R"),
-    c("CMD", "INSTALL", "--preclean", "-l", shQuote(library),
+    c("CMD", "INSTALL", "--preclean", "--clean", "-l", shQuote(library),
       shQuote(file.path(root, package)))
   )
   if (!identical(status, 0L)) {
     stop("Unable to install local package ", package, ".", call. = FALSE)
   }
+  liber_validation_clean_native_source(file.path(root, package))
 }

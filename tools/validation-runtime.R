@@ -29,6 +29,39 @@ liber_validation_configure_rtools <- function(root = NULL) {
   invisible(list(root = selected, paths = tool_paths, makevars = makevars))
 }
 
+liber_validation_clean_native_source <- function(package_dir) {
+  package_dir <- normalizePath(
+    package_dir, winslash = "/", mustWork = TRUE
+  )
+  if (!file.exists(file.path(package_dir, "DESCRIPTION"))) {
+    stop("Native-source cleanup requires an R package directory.", call. = FALSE)
+  }
+  source_dir <- file.path(package_dir, "src")
+  if (!dir.exists(source_dir)) return(invisible(character()))
+  generated <- list.files(
+    source_dir,
+    pattern = "[.](o|obj|dll|so|dylib)$",
+    full.names = TRUE,
+    recursive = FALSE,
+    ignore.case = TRUE
+  )
+  if (length(generated)) {
+    normalized <- normalizePath(
+      generated, winslash = "/", mustWork = TRUE
+    )
+    if (any(dirname(normalized) != source_dir)) {
+      stop("Refusing native cleanup outside the package src directory.",
+           call. = FALSE)
+    }
+    failed <- generated[!file.remove(generated)]
+    if (length(failed)) {
+      stop("Unable to remove native build residue: ",
+           paste(failed, collapse = ", "), call. = FALSE)
+    }
+  }
+  invisible(generated)
+}
+
 liber_validation_manifest <- function(root) {
   path <- file.path(root, "ecosystem.json")
   if (!file.exists(path)) stop("Missing ecosystem manifest: ", path, call. = FALSE)
@@ -196,6 +229,26 @@ liber_validation_sha256 <- function(path) {
   paste0(openssl::sha256(readBin(connection, "raw", n = file.info(path)$size)))
 }
 
+liber_validation_dev_cache <- function(root, ..., create = FALSE,
+                                       normalize = TRUE) {
+  root <- normalizePath(root, winslash = "/", mustWork = TRUE)
+  configured <- Sys.getenv("LIBER_DEV_CACHE", unset = "")
+  base <- if (nzchar(configured)) {
+    path.expand(configured)
+  } else {
+    file.path(dirname(root), paste0(basename(root), "-dev-cache"))
+  }
+  path <- file.path(base, ...)
+  if (isTRUE(create) && !dir.exists(path)) {
+    dir.create(path, recursive = TRUE, showWarnings = FALSE)
+  }
+  if (isTRUE(normalize)) {
+    normalizePath(path, winslash = "/", mustWork = FALSE)
+  } else {
+    path
+  }
+}
+
 liber_validation_library_name <- function(root) {
   manifest <- liber_validation_manifest(root)
   git <- liber_validation_git(root)
@@ -204,6 +257,12 @@ liber_validation_library_name <- function(root) {
     commit <- paste0(commit, "-dirty-", substr(git$tracked_diff_sha256, 1L, 12L))
   }
   paste0(gsub("[^A-Za-z0-9_.-]", "-", manifest$release), "-", commit)
+}
+
+liber_validation_library_path <- function(root) {
+  liber_validation_dev_cache(
+    root, "r-libraries", "validation", liber_validation_library_name(root)
+  )
 }
 
 liber_validation_library <- function(root, packages,
@@ -216,12 +275,12 @@ liber_validation_library <- function(root, packages,
     stop("Validation requested packages absent from ecosystem.json: ",
          paste(unknown, collapse = ", "), call. = FALSE)
   }
-  canonical <- file.path(
-    root, ".validation-libraries", liber_validation_library_name(root)
-  )
+  canonical <- liber_validation_library_path(root)
   candidates <- Filter(nzchar, c(library, canonical))
   if (isTRUE(allow_release_library)) {
-    candidates <- c(candidates, file.path(root, ".release-buildlib"))
+    candidates <- c(candidates, liber_validation_dev_cache(
+      root, "r-libraries", "release-build"
+    ))
   }
   candidates <- unique(candidates[dir.exists(candidates)])
   if (!length(candidates)) {

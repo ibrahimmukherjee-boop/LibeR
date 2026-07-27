@@ -3,8 +3,8 @@ source(file.path(root, "tools", "validation-runtime.R"), local = TRUE)
 packages <- c("LibeRtAD", "LibeRation", "LibeRality")
 runtime_path <- Sys.getenv("LIBER_VALIDATION_LIBRARY")
 if (!nzchar(runtime_path)) {
-  runtime_path <- file.path(
-    root, ".validation-libraries", liber_validation_library_name(root)
+  runtime_path <- liber_validation_dev_cache(
+    root, "r-libraries", "validation", liber_validation_library_name(root)
   )
 }
 if (!dir.exists(runtime_path)) {
@@ -17,8 +17,8 @@ if (!dir.exists(runtime_path)) {
   }
 }
 runtime <- liber_validation_library(root, packages, library = runtime_path)
-dependency_library <- file.path(
-  root, ".validation-libraries",
+dependency_library <- liber_validation_dev_cache(
+  root, "r-libraries", "validation",
   paste0("external-r-", R.version$major, ".", strsplit(R.version$minor, "\\.")[[1L]][1L])
 )
 dir.create(dependency_library, recursive = TRUE, showWarnings = FALSE)

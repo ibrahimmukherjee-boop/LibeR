@@ -147,6 +147,8 @@ jobs:
   sciml-copasi:
     if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.run_numerical) }}
     runs-on: ubuntu-latest
+    env:
+      LIBER_DEV_CACHE: ${{ github.workspace }}/.ci-cache
     steps:
       - uses: actions/checkout@v5
       - uses: r-lib/actions/setup-r@v2
@@ -171,7 +173,7 @@ jobs:
       - name: Cache exact SciML project
         uses: actions/cache@v4
         with:
-          path: .external-tools/julia-project
+          path: .ci-cache/external-tools/julia-project
           key: sciml-julia-1.12.6-v1
       - name: Install pinned SciML comparator environment
         run: julia validation/external-comparators/install-sciml.jl
@@ -179,23 +181,23 @@ jobs:
         id: cache-copasi
         uses: actions/cache@v4
         with:
-          path: .external-tools/COPASI
+          path: .ci-cache/external-tools/COPASI
           key: copasi-linux-4.46.300
       - name: Install pinned COPASI
         if: steps.cache-copasi.outputs.cache-hit != 'true'
         shell: bash
         run: |
-          mkdir -p .external-tools/COPASI
+          mkdir -p .ci-cache/external-tools/COPASI
           curl --fail --location --silent --show-error \
             --output /tmp/COPASI-4.46.300-Linux-64bit.sh \
             https://github.com/copasi/COPASI/releases/download/Build-300/COPASI-4.46.300-Linux-64bit.sh
           echo "7e2e2de94d50efa773507f5b113708f45b337e7d4c917300a2b12010b68e2ccb  /tmp/COPASI-4.46.300-Linux-64bit.sh" | sha256sum --check
           chmod +x /tmp/COPASI-4.46.300-Linux-64bit.sh
-          /tmp/COPASI-4.46.300-Linux-64bit.sh -e "$PWD/.external-tools/COPASI"
+          /tmp/COPASI-4.46.300-Linux-64bit.sh -e "$PWD/.ci-cache/external-tools/COPASI"
       - name: Configure COPASI runtime
         shell: bash
         run: |
-          COPASI_ROOT="$PWD/.external-tools/COPASI/COPASI-4.46.300-Linux-64bit"
+          COPASI_ROOT="$PWD/.ci-cache/external-tools/COPASI/COPASI-4.46.300-Linux-64bit"
           echo "COPASIDIR=$COPASI_ROOT" >> "$GITHUB_ENV"
           echo "$COPASI_ROOT/bin" >> "$GITHUB_PATH"
       - name: Create exact source-built validation library

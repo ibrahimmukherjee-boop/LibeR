@@ -19,7 +19,19 @@
 }
 
 .ad_default_benchmark_output <- function() {
-  .liber_shared_user_root("benchmarks")
+  configured <- Sys.getenv("LIBERTAD_BENCHMARK_HOME", unset = "")
+  path <- .liber_shared_user_root(
+    "benchmarks", envvar = "LIBERTAD_BENCHMARK_HOME",
+    root_name = "LibeR-data"
+  )
+  if (!nzchar(configured) && !dir.exists(path)) {
+    legacy <- .liber_shared_user_root("benchmarks", root_name = "LibeR")
+    legacy_root <- dirname(legacy)
+    if (dir.exists(legacy) && !dir.exists(file.path(legacy_root, ".git"))) {
+      path <- legacy
+    }
+  }
+  normalizePath(path, winslash = "/", mustWork = FALSE)
 }
 
 .ad_gui_ecosystem_result <- function(output, exit_status) {

@@ -61,7 +61,10 @@ tools/pandoc-*.zip
 .testlib*/
 .tmp/
 tmp/
+.ci-cache/
 releases/
+installer/stage/
+installer/build/
 liberator-workspace/
 liberator-teaching/
 library/

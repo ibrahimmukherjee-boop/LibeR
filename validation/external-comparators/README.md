@@ -30,10 +30,12 @@ julia validation/external-comparators/install-sciml.jl
 ```
 
 The CmdStan installer pins 2.39.0 by default and records its exact version below
-`.external-tools/cmdstan/`; the Julia installer creates a project and manifest
-below `.external-tools/julia-project/` from exact top-level SciML versions and
+`$LIBER_DEV_CACHE/external-tools/cmdstan/`; the Julia installer creates a project and manifest
+below `$LIBER_DEV_CACHE/external-tools/julia-project/` from exact top-level SciML versions and
 includes both files in evidence provenance. The runner also detects a portable
-COPASI installation at `.external-tools/COPASI/`.
+COPASI installation at `$LIBER_DEV_CACHE/external-tools/COPASI/`. When
+`LIBER_DEV_CACHE` is unset, the default is a `LibeR-dev-cache` sibling of the
+source checkout.
 
 Create the exact source-built LibeR validation library and run the campaign:
 

@@ -25,7 +25,9 @@ validation_runtime <- liber_validation_library(
   )
 )
 external_library <- value_after(
-  "external-library", file.path(root, ".external-comparator-lib")
+  "external-library", liber_validation_dev_cache(
+    root, "r-libraries", "external-comparators"
+  )
 )
 if (dir.exists(external_library)) {
   external_library <- normalizePath(
@@ -679,9 +681,13 @@ run_case(
 locate_copasi <- function() {
   candidates <- c(
     Sys.which("CopasiSE"),
-    file.path(root, ".external-tools", "COPASI", "bin", "CopasiSE.exe"),
+    file.path(
+      liber_validation_dev_cache(root, "external-tools"),
+      "COPASI", "bin", "CopasiSE.exe"
+    ),
     Sys.glob(file.path(
-      root, ".external-tools", "COPASI", "*", "bin",
+      liber_validation_dev_cache(root, "external-tools"),
+      "COPASI", "*", "bin",
       c("CopasiSE", "CopasiSE.exe")
     )),
     file.path(
@@ -799,7 +805,9 @@ locate_julia <- function() {
   )
 }
 julia_executable <- locate_julia()
-julia_project <- file.path(root, ".external-tools", "julia-project")
+julia_project <- liber_validation_dev_cache(
+  root, "external-tools", "julia-project"
+)
 julia_preflight <- function() {
   if (!nzchar(julia_executable)) return("Julia executable is unavailable.")
   if (!file.exists(file.path(julia_project, "Project.toml"))) {

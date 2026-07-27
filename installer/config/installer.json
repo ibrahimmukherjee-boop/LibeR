@@ -1,0 +1,31 @@
+{
+  "schema": "liber.installer/1",
+  "product": "LibeR Ecosystem",
+  "publisher": "Sven C. van Dijkman",
+  "architecture": "x86_64",
+  "minimum_windows": "10.0.17763",
+  "runtime": {
+    "r_version": "4.6.0",
+    "r_platform": "x86_64-w64-mingw32",
+    "rtools_series": "45"
+  },
+  "default_profile": "research",
+  "runtime_profile": {
+    "include_r_headers": false,
+    "include_package_headers": false,
+    "include_package_sources": false,
+    "include_cpp_toolchain": false
+  },
+  "research_profile": {
+    "include_r_headers": true,
+    "include_package_headers": true,
+    "include_package_sources": true,
+    "include_cpp_toolchain": true
+  },
+  "data_roots": {
+    "workspace": "Documents/LibeR/workspace",
+    "library": "Documents/LibeR-data/library",
+    "patient_workspace": "Documents/LibeR-data/liberator-workspace",
+    "benchmark_results": "Documents/LibeR-data/benchmarks"
+  }
+}

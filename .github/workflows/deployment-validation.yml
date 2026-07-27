@@ -36,7 +36,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p .external-tools/deployment-server
-          LIBRARY="$(Rscript -e "source('tools/validation-runtime.R'); cat(file.path(normalizePath('.', winslash='/'), '.validation-libraries', liber_validation_library_name(normalizePath('.', winslash='/'))))")"
+          LIBRARY="$(Rscript -e "source('tools/validation-runtime.R'); cat(liber_validation_library_path(normalizePath('.', winslash='/')))")"
           echo "LIBER_VALIDATION_LIBRARY=$LIBRARY" >> "$GITHUB_ENV"
           nohup Rscript validation/liberties/deployment/start-test-server.R \
             "--library=$LIBRARY" \

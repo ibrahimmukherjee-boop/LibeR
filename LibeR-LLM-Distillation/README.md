@@ -42,7 +42,7 @@ Python 3.14 because the GPU training ecosystem is not yet a reliable target for
 it.
 
 ```powershell
-cd C:\Users\svdijkman.DESKTOP-4OG10M4\Documents\LibeR\LibeR-LLM-Distillation
+cd C:\path\to\LibeR\LibeR-LLM-Distillation
 .\scripts\setup_windows.ps1
 .\.venv\Scripts\Activate.ps1
 liber-distill doctor

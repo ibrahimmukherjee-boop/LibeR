@@ -15,3 +15,21 @@ or credentials in the application bundle.
 The applications must not be used as durable or clinical data stores. Connect
 them to governed persistent infrastructure before enabling real study or
 patient data.
+
+Hosted deployments use a dedicated GitHub-sourced package library outside the
+source checkout. Prepare or refresh it with:
+
+```r
+Rscript deploy/shinyapps/prepare-library.R
+```
+
+Then validate and deploy with:
+
+```r
+Rscript deploy/shinyapps/check-manifests.R
+Rscript deploy/shinyapps/test-launchers.R
+Rscript deploy/shinyapps/deploy.R liberation
+```
+
+Set `LIBER_SHINYAPPS_LIBRARY` or the shared `LIBER_DEV_CACHE` when a custom
+cache location is required.

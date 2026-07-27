@@ -15,7 +15,9 @@ value_after <- function(name, default = NULL) {
   liber_validation_option(name, default, args = arguments)
 }
 library_path <- value_after(
-  "library", file.path(root, ".external-comparator-lib")
+  "library", liber_validation_dev_cache(
+    root, "r-libraries", "external-comparators", create = TRUE
+  )
 )
 dir.create(library_path, recursive = TRUE, showWarnings = FALSE)
 library_path <- normalizePath(library_path, winslash = "/", mustWork = TRUE)

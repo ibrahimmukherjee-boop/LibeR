@@ -1,9 +1,12 @@
 options(warn = 2)
+root <- normalizePath(getwd(), winslash = "/", mustWork = TRUE)
+source(file.path(root, "deploy", "shinyapps", "runtime.R"), local = TRUE)
+liber_shinyapps_use_library(root)
 
 apps <- c(
-  liberation = "deploy/shinyapps/liberation/app.R",
-  liberality = "deploy/shinyapps/liberality/app.R",
-  liberator = "deploy/shinyapps/liberator/app.R"
+  liberation = file.path(root, "deploy", "shinyapps", "liberation", "app.R"),
+  liberality = file.path(root, "deploy", "shinyapps", "liberality", "app.R"),
+  liberator = file.path(root, "deploy", "shinyapps", "liberator", "app.R")
 )
 
 for (name in names(apps)) {

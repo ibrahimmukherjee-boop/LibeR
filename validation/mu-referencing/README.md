@@ -34,7 +34,7 @@ Run a quick comparison with an isolated validation library:
 
 ```r
 Rscript validation/mu-referencing/run-validation.R \
-  --library=.release-buildlib --profile=quick --scenario=baseline-fixed
+  --library=../LibeR-dev-cache/r-libraries/release-build --profile=quick --scenario=baseline-fixed
 ```
 
 Use `--profile=standard --repeats=3` for a more stable runtime comparison.

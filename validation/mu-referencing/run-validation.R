@@ -80,8 +80,10 @@ validation_runtime <- liber_validation_library(
   root, c("LibeRtAD", "LibeRation"), library = library_value,
   allow_release_library = identical(
     normalizePath(library_value, winslash = "/", mustWork = FALSE),
-    normalizePath(file.path(root, ".release-buildlib"), winslash = "/",
-                  mustWork = FALSE)
+    normalizePath(
+      liber_validation_dev_cache(root, "r-libraries", "release-build"),
+      winslash = "/", mustWork = FALSE
+    )
   )
 )
 suppressPackageStartupMessages(library(LibeRation))

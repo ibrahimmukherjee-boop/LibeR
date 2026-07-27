@@ -1,8 +1,12 @@
 arguments <- commandArgs(trailingOnly = TRUE)
+root <- normalizePath(getwd(), winslash = "/", mustWork = TRUE)
+source(file.path(root, "tools", "validation-runtime.R"), local = TRUE)
 library_argument <- grep("^--library=", arguments, value = TRUE)
 library_path <- if (length(library_argument)) {
   sub("^--library=", "", library_argument[[1L]])
-} else file.path(getwd(), ".external-validation-lib")
+} else liber_validation_dev_cache(
+  root, "r-libraries", "liberality-external", create = TRUE
+)
 library_path <- normalizePath(library_path, winslash = "/", mustWork = FALSE)
 dir.create(library_path, recursive = TRUE, showWarnings = FALSE)
 
@@ -23,4 +27,3 @@ versions <- data.frame(
 )
 utils::write.csv(versions, file.path(library_path, "external-validation-lock.csv"), row.names = FALSE)
 print(versions)
-

@@ -308,7 +308,7 @@
       },
       "retry_count": 0,
       "cached": true,
-      "cache_path": "C:/Users/svdijkman.DESKTOP-4OG10M4/Documents/LibeR/library/documents/42453586/c67fe8aa1a43c585/investigation/stages/reconnaissance.json"
+      "cache_path": "documents/42453586/c67fe8aa1a43c585/investigation/stages/reconnaissance.json"
     },
     "investigate_structure": {
       "stage": "investigate_structure",
@@ -326,7 +326,7 @@
       },
       "retry_count": 0,
       "cached": true,
-      "cache_path": "C:/Users/svdijkman.DESKTOP-4OG10M4/Documents/LibeR/library/documents/42453586/c67fe8aa1a43c585/investigation/stages/investigate_structure.json"
+      "cache_path": "documents/42453586/c67fe8aa1a43c585/investigation/stages/investigate_structure.json"
     },
     "investigate_theta_covariates": {
       "stage": "investigate_theta_covariates",
@@ -344,7 +344,7 @@
       },
       "retry_count": 0,
       "cached": true,
-      "cache_path": "C:/Users/svdijkman.DESKTOP-4OG10M4/Documents/LibeR/library/documents/42453586/c67fe8aa1a43c585/investigation/stages/investigate_theta_covariates.json"
+      "cache_path": "documents/42453586/c67fe8aa1a43c585/investigation/stages/investigate_theta_covariates.json"
     },
     "investigate_omega_iov": {
       "stage": "investigate_omega_iov",
@@ -362,7 +362,7 @@
       },
       "retry_count": 0,
       "cached": true,
-      "cache_path": "C:/Users/svdijkman.DESKTOP-4OG10M4/Documents/LibeR/library/documents/42453586/c67fe8aa1a43c585/investigation/stages/investigate_omega_iov.json"
+      "cache_path": "documents/42453586/c67fe8aa1a43c585/investigation/stages/investigate_omega_iov.json"
     },
     "investigate_sigma_observation": {
       "stage": "investigate_sigma_observation",
@@ -380,7 +380,7 @@
       },
       "retry_count": 0,
       "cached": true,
-      "cache_path": "C:/Users/svdijkman.DESKTOP-4OG10M4/Documents/LibeR/library/documents/42453586/c67fe8aa1a43c585/investigation/stages/investigate_sigma_observation.json"
+      "cache_path": "documents/42453586/c67fe8aa1a43c585/investigation/stages/investigate_sigma_observation.json"
     },
     "investigate_population_dosing": {
       "stage": "investigate_population_dosing",
@@ -398,7 +398,7 @@
       },
       "retry_count": 0,
       "cached": true,
-      "cache_path": "C:/Users/svdijkman.DESKTOP-4OG10M4/Documents/LibeR/library/documents/42453586/c67fe8aa1a43c585/investigation/stages/investigate_population_dosing.json"
+      "cache_path": "documents/42453586/c67fe8aa1a43c585/investigation/stages/investigate_population_dosing.json"
     },
     "investigate_reproduction_data": {
       "stage": "investigate_reproduction_data",
@@ -416,7 +416,7 @@
       },
       "retry_count": 0,
       "cached": true,
-      "cache_path": "C:/Users/svdijkman.DESKTOP-4OG10M4/Documents/LibeR/library/documents/42453586/c67fe8aa1a43c585/investigation/stages/investigate_reproduction_data.json"
+      "cache_path": "documents/42453586/c67fe8aa1a43c585/investigation/stages/investigate_reproduction_data.json"
     },
     "falsification_1": {
       "stage": "falsification_1",
@@ -434,7 +434,7 @@
       },
       "retry_count": 0,
       "cached": true,
-      "cache_path": "C:/Users/svdijkman.DESKTOP-4OG10M4/Documents/LibeR/library/documents/42453586/c67fe8aa1a43c585/investigation/stages/falsification_1.json"
+      "cache_path": "documents/42453586/c67fe8aa1a43c585/investigation/stages/falsification_1.json"
     },
     "gap_search_1": {
       "stage": "gap_search_1",
@@ -452,7 +452,7 @@
       },
       "retry_count": 0,
       "cached": true,
-      "cache_path": "C:/Users/svdijkman.DESKTOP-4OG10M4/Documents/LibeR/library/documents/42453586/c67fe8aa1a43c585/investigation/stages/gap_search_1.json"
+      "cache_path": "documents/42453586/c67fe8aa1a43c585/investigation/stages/gap_search_1.json"
     },
     "falsification_2": {
       "stage": "falsification_2",
@@ -470,7 +470,7 @@
       },
       "retry_count": 0,
       "cached": true,
-      "cache_path": "C:/Users/svdijkman.DESKTOP-4OG10M4/Documents/LibeR/library/documents/42453586/c67fe8aa1a43c585/investigation/stages/falsification_2.json"
+      "cache_path": "documents/42453586/c67fe8aa1a43c585/investigation/stages/falsification_2.json"
     },
     "visual_verification": {
       "stage": "visual_verification",
@@ -488,7 +488,7 @@
       },
       "retry_count": 0,
       "cached": false,
-      "cache_path": "C:/Users/svdijkman.DESKTOP-4OG10M4/Documents/LibeR/library/documents/42453586/c67fe8aa1a43c585/investigation/stages/visual_verification.json"
+      "cache_path": "documents/42453586/c67fe8aa1a43c585/investigation/stages/visual_verification.json"
     },
     "synthesis": {
       "stage": "synthesis",
@@ -506,9 +506,9 @@
       },
       "retry_count": 1,
       "cached": false,
-      "cache_path": "C:/Users/svdijkman.DESKTOP-4OG10M4/Documents/LibeR/library/documents/42453586/c67fe8aa1a43c585/investigation/stages/synthesis.json"
+      "cache_path": "documents/42453586/c67fe8aa1a43c585/investigation/stages/synthesis.json"
     }
   },
   "elapsed_seconds": 602.0232,
-  "ledger_path": "C:/Users/svdijkman.DESKTOP-4OG10M4/Documents/LibeR/library/documents/42453586/c67fe8aa1a43c585/investigation/evidence-ledger.json"
+  "ledger_path": "documents/42453586/c67fe8aa1a43c585/investigation/evidence-ledger.json"
 }

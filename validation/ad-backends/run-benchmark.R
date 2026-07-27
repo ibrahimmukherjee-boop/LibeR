@@ -61,7 +61,9 @@ runtime <- liber_validation_library(
   library = value_after("library", Sys.getenv("LIBER_VALIDATION_LIBRARY", ""))
 )
 external_library <- value_after(
-  "external-library", file.path(root, ".external-comparator-lib")
+  "external-library", liber_validation_dev_cache(
+    root, "r-libraries", "external-comparators"
+  )
 )
 .libPaths(unique(c(
   runtime$path,
@@ -266,7 +268,9 @@ if (!requireNamespace("TMB", quietly = TRUE)) {
 }
 
 if (requireNamespace("cmdstanr", quietly = TRUE)) {
-  local_cmdstan_root <- file.path(root, ".external-tools", "cmdstan")
+  local_cmdstan_root <- liber_validation_dev_cache(
+    root, "external-tools", "cmdstan"
+  )
   local_cmdstan <- if (dir.exists(local_cmdstan_root)) {
     list.dirs(local_cmdstan_root, recursive = FALSE, full.names = TRUE)
   } else {

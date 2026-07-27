@@ -67,9 +67,16 @@ if (!identical(unname(actual), unname(versions))) {
 
 destination <- file.path(root, "releases", manifest$release)
 dir.create(destination, recursive = TRUE, showWarnings = FALSE)
-bundled_pandoc <- file.path(root, "tools", "pandoc-3.10")
-if (dir.exists(bundled_pandoc) && !nzchar(Sys.getenv("RSTUDIO_PANDOC"))) {
-  Sys.setenv(RSTUDIO_PANDOC = bundled_pandoc)
+pandoc_candidates <- Filter(nzchar, c(
+  Sys.getenv("LIBER_PANDOC_HOME", unset = ""),
+  liber_validation_dev_cache(root, "tools", "pandoc", "3.10"),
+  file.path(root, "tools", "pandoc-3.10")
+))
+bundled_pandoc <- pandoc_candidates[dir.exists(pandoc_candidates)][1L]
+if (!is.na(bundled_pandoc) && !nzchar(Sys.getenv("RSTUDIO_PANDOC"))) {
+  Sys.setenv(RSTUDIO_PANDOC = normalizePath(
+    bundled_pandoc, winslash = "/", mustWork = TRUE
+  ))
 }
 
 manual_status <- system2(file.path(R.home("bin"), "Rscript"),
@@ -77,7 +84,9 @@ manual_status <- system2(file.path(R.home("bin"), "Rscript"),
                            shQuote(root)))
 if (!identical(manual_status, 0L)) stop("Reference-manual generation failed.", call. = FALSE)
 
-release_library <- file.path(root, ".release-buildlib")
+release_library <- liber_validation_dev_cache(
+  root, "r-libraries", "release-build", create = TRUE
+)
 if (dir.exists(release_library)) unlink(release_library, recursive = TRUE, force = TRUE)
 dir.create(release_library, recursive = TRUE, showWarnings = FALSE)
 release_libs <- paste(c(release_library, .libPaths()), collapse = .Platform$path.sep)
@@ -89,7 +98,8 @@ on.exit({
 for (package in packages) {
   status <- system2(
     file.path(R.home("bin"), "R"),
-    c("CMD", "INSTALL", "--preclean", "-l", shQuote(release_library),
+    c("CMD", "INSTALL", "--preclean", "--clean",
+      "-l", shQuote(release_library),
       shQuote(file.path(root, package))),
     stdout = TRUE, stderr = TRUE
   )
@@ -97,6 +107,7 @@ for (package in packages) {
     stop("Failed to install exact release dependency ", package, ":\n",
          paste(status, collapse = "\n"), call. = FALSE)
   }
+  liber_validation_clean_native_source(file.path(root, package))
 }
 
 for (package in packages) {
@@ -115,7 +126,8 @@ if (.Platform$OS.type == "windows") {
   for (package in packages) {
     status <- system2(
       file.path(R.home("bin"), "R"),
-      c("CMD", "INSTALL", "--build", "--preclean", "-l", shQuote(release_library),
+      c("CMD", "INSTALL", "--build", "--preclean", "--clean",
+        "-l", shQuote(release_library),
         shQuote(file.path(root, package))),
       stdout = TRUE, stderr = TRUE
     )
@@ -123,6 +135,7 @@ if (.Platform$OS.type == "windows") {
       stop("Failed to build Windows binary for ", package, ":\n",
            paste(status, collapse = "\n"), call. = FALSE)
     }
+    liber_validation_clean_native_source(file.path(root, package))
     archive <- file.path(root, paste0(package, "_", versions[[package]], ".zip"))
     if (!file.exists(archive)) stop("Binary build did not create ", archive, call. = FALSE)
     file.copy(archive, destination, overwrite = TRUE)
