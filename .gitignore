@@ -23,6 +23,7 @@ dist/
 .publish/
 workspace/
 validation/benchmark/results/
+validation/mu-referencing/results/
 validation/ad-backends/results/
 validation/external-comparators/results/
 validation/nonmem/results/

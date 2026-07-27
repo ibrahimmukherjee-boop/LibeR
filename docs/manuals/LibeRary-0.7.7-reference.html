@@ -1,0 +1,4062 @@
+<!doctype html>
+<html lang='en'><head><meta charset='utf-8'>
+<title>LibeRary 0.7.7 reference manual</title>
+<style>
+@page { size: A4; margin: 17mm 16mm 18mm; }
+body { font-family: 'Segoe UI', Arial, sans-serif; color:#172033; line-height:1.42; max-width:980px; margin:0 auto; }
+h1 { color:#173f73; font-size:30px; margin-bottom:4px; }
+h2 { color:#173f73; border-bottom:2px solid #d9e4f2; padding-bottom:5px; break-before:page; }
+h3 { color:#315d89; margin-top:1.2em; }
+code, pre { font-family: Consolas, 'Courier New', monospace; }
+pre { background:#f5f7fa; border:1px solid #d8dee8; border-radius:4px; padding:10px; overflow-wrap:anywhere; white-space:pre-wrap; }
+table { border-collapse:collapse; width:100%; } td { vertical-align:top; border-bottom:1px solid #e5e9ef; padding:6px; }
+.cover { min-height:235mm; display:flex; flex-direction:column; justify-content:center; }
+.subtitle { color:#516175; font-size:18px; } .meta { margin-top:30px; color:#68778b; }
+.toc { columns:2; column-gap:32px; } .toc li { break-inside:avoid; margin:3px 0; }
+a { color:#175c9c; text-decoration:none; }
+</style></head><body>
+<section class='cover'>
+<h1>LibeRary reference manual</h1>
+<div class='subtitle'>Pharmacometric Model Repository for the LibeR Ecosystem</div>
+<div class='meta'>Version 0.7.7<br>Generated 2026-07-27<br>89 help topics</div>
+</section>
+<section><h2>Contents</h2><ul class='toc'>
+<li><a href='#ingest_adjudicate_extractions'>ingest_adjudicate_extractions</a></li>
+<li><a href='#ingest_assess_model'>ingest_assess_model</a></li>
+<li><a href='#ingest_classify_entry'>ingest_classify_entry</a></li>
+<li><a href='#ingest_compare_extractions'>ingest_compare_extractions</a></li>
+<li><a href='#ingest_default_query'>ingest_default_query</a></li>
+<li><a href='#ingest_deliberative_extract'>ingest_deliberative_extract</a></li>
+<li><a href='#ingest_discover'>ingest_discover</a></li>
+<li><a href='#ingest_docling_available'>ingest_docling_available</a></li>
+<li><a href='#ingest_docling_parse'>ingest_docling_parse</a></li>
+<li><a href='#ingest_document_bundle'>ingest_document_bundle</a></li>
+<li><a href='#ingest_download_pdf'>ingest_download_pdf</a></li>
+<li><a href='#ingest_dual_extract'>ingest_dual_extract</a></li>
+<li><a href='#ingest_entrez_count'>ingest_entrez_count</a></li>
+<li><a href='#ingest_entrez_fetch_metadata'>ingest_entrez_fetch_metadata</a></li>
+<li><a href='#ingest_entrez_search'>ingest_entrez_search</a></li>
+<li><a href='#ingest_europe_pmc_lookup'>ingest_europe_pmc_lookup</a></li>
+<li><a href='#ingest_extract_batch'>ingest_extract_batch</a></li>
+<li><a href='#ingest_extract_model'>ingest_extract_model</a></li>
+<li><a href='#ingest_extract_text_lane'>ingest_extract_text_lane</a></li>
+<li><a href='#ingest_extract_vision_lane'>ingest_extract_vision_lane</a></li>
+<li><a href='#ingest_fetch_institutional'>ingest_fetch_institutional</a></li>
+<li><a href='#ingest_find_supplements'>ingest_find_supplements</a></li>
+<li><a href='#ingest_generate_fetch_script'>ingest_generate_fetch_script</a></li>
+<li><a href='#ingest_gui_worker'>ingest_gui_worker</a></li>
+<li><a href='#ingest_latest_manifest'>ingest_latest_manifest</a></li>
+<li><a href='#ingest_load_config'>ingest_load_config</a></li>
+<li><a href='#ingest_make_logger'>ingest_make_logger</a></li>
+<li><a href='#ingest_map_to_ctl'>ingest_map_to_ctl</a></li>
+<li><a href='#ingest_ollama_compatibility'>ingest_ollama_compatibility</a></li>
+<li><a href='#ingest_parse_llm_json'>ingest_parse_llm_json</a></li>
+<li><a href='#ingest_pdf_text'>ingest_pdf_text</a></li>
+<li><a href='#ingest_pmc_oa_lookup'>ingest_pmc_oa_lookup</a></li>
+<li><a href='#ingest_pmc_pdf_url'>ingest_pmc_pdf_url</a></li>
+<li><a href='#ingest_process_batch'>ingest_process_batch</a></li>
+<li><a href='#ingest_publish_catalog_entry'>ingest_publish_catalog_entry</a></li>
+<li><a href='#ingest_read_document_bundle'>ingest_read_document_bundle</a></li>
+<li><a href='#ingest_read_manifest'>ingest_read_manifest</a></li>
+<li><a href='#ingest_read_progress'>ingest_read_progress</a></li>
+<li><a href='#ingest_render_pdf_pages'>ingest_render_pdf_pages</a></li>
+<li><a href='#ingest_shiny'>ingest_shiny</a></li>
+<li><a href='#ingest_stub_extraction'>ingest_stub_extraction</a></li>
+<li><a href='#ingest_triage_abstract'>ingest_triage_abstract</a></li>
+<li><a href='#ingest_triage_batch'>ingest_triage_batch</a></li>
+<li><a href='#ingest_unpaywall_lookup'>ingest_unpaywall_lookup</a></li>
+<li><a href='#ingest_validate_config'>ingest_validate_config</a></li>
+<li><a href='#ingest_write_manifest'>ingest_write_manifest</a></li>
+<li><a href='#ingest_write_progress'>ingest_write_progress</a></li>
+<li><a href='#library_catalog_root'>library_catalog_root</a></li>
+<li><a href='#library_config_path'>library_config_path</a></li>
+<li><a href='#library_dosing_normalize'>library_dosing_normalize</a></li>
+<li><a href='#library_get'>library_get</a></li>
+<li><a href='#library_home'>library_home</a></li>
+<li><a href='#library_image_message'>library_image_message</a></li>
+<li><a href='#library_infer_implementation'>library_infer_implementation</a></li>
+<li><a href='#library_job'>library_job</a></li>
+<li><a href='#library_list'>library_list</a></li>
+<li><a href='#library_llm_available'>library_llm_available</a></li>
+<li><a href='#library_llm_chat'>library_llm_chat</a></li>
+<li><a href='#library_llm_models'>library_llm_models</a></li>
+<li><a href='#library_llm_providers'>library_llm_providers</a></li>
+<li><a href='#library_model'>library_model</a></li>
+<li><a href='#library_model_enrich'>library_model_enrich</a></li>
+<li><a href='#library_population_normalize'>library_population_normalize</a></li>
+<li><a href='#library_provenance'>library_provenance</a></li>
+<li><a href='#library_qualification_check'>library_qualification_check</a></li>
+<li><a href='#library_reference_benchmark'>library_reference_benchmark</a></li>
+<li><a href='#library_reference_build'>library_reference_build</a></li>
+<li><a href='#library_reference_compare'>library_reference_compare</a></li>
+<li><a href='#library_reference_get'>library_reference_get</a></li>
+<li><a href='#library_reference_list'>library_reference_list</a></li>
+<li><a href='#library_reference_release_gate'>library_reference_release_gate</a></li>
+<li><a href='#library_reference_revise'>library_reference_revise</a></li>
+<li><a href='#library_reference_run'>library_reference_run</a></li>
+<li><a href='#library_reference_shiny'>library_reference_shiny</a></li>
+<li><a href='#library_reference_training_export'>library_reference_training_export</a></li>
+<li><a href='#library_reference_training_files'>library_reference_training_files</a></li>
+<li><a href='#library_reference_validate'>library_reference_validate</a></li>
+<li><a href='#library_repository_wipe'>library_repository_wipe</a></li>
+<li><a href='#library_reproduction_plan'>library_reproduction_plan</a></li>
+<li><a href='#library_reproduction_run'>library_reproduction_run</a></li>
+<li><a href='#library_reproduction_score'>library_reproduction_score</a></li>
+<li><a href='#library_review'>library_review</a></li>
+<li><a href='#library_save_config'>library_save_config</a></li>
+<li><a href='#library_search'>library_search</a></li>
+<li><a href='#library_shiny'>library_shiny</a></li>
+<li><a href='#library_source_pdf'>library_source_pdf</a></li>
+<li><a href='#library_use_in_workspace'>library_use_in_workspace</a></li>
+<li><a href='#library_validate'>library_validate</a></li>
+<li><a href='#library_worker_task'>library_worker_task</a></li>
+</ul></section>
+<h2 id='ingest_adjudicate_extractions'>Adjudicate discrepancies using a third configured LLM role</h2><span id='topic+ingest_adjudicate_extractions'></span>
+
+<h3>Description</h3>
+
+<p>Adjudicate discrepancies using a third configured LLM role
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_adjudicate_extractions(
+  metadata,
+  text,
+  vision,
+  comparison,
+  bundle,
+  cfg = NULL
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_adjudicate_extractions_+3A_metadata">metadata</code></td>
+<td>
+<p>Publication metadata.</p>
+</td></tr>
+<tr><td><code id="ingest_adjudicate_extractions_+3A_text">text</code></td>
+<td>
+<p>Text-lane result.</p>
+</td></tr>
+<tr><td><code id="ingest_adjudicate_extractions_+3A_vision">vision</code></td>
+<td>
+<p>Vision-lane result.</p>
+</td></tr>
+<tr><td><code id="ingest_adjudicate_extractions_+3A_comparison">comparison</code></td>
+<td>
+<p>Field comparison.</p>
+</td></tr>
+<tr><td><code id="ingest_adjudicate_extractions_+3A_bundle">bundle</code></td>
+<td>
+<p>Document bundle.</p>
+</td></tr>
+<tr><td><code id="ingest_adjudicate_extractions_+3A_cfg">cfg</code></td>
+<td>
+<p>LibeRary configuration.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Adjudication result, or an unavailable result with an error.
+</p>
+
+<h2 id='ingest_assess_model'>Independently assess an extracted model against its evidence</h2><span id='topic+ingest_assess_model'></span>
+
+<h3>Description</h3>
+
+<p>Independently assess an extracted model against its evidence
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_assess_model(
+  metadata,
+  extraction,
+  cfg = NULL,
+  full_text = "",
+  supplement_text = ""
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_assess_model_+3A_metadata">metadata</code></td>
+<td>
+<p>Publication metadata.</p>
+</td></tr>
+<tr><td><code id="ingest_assess_model_+3A_extraction">extraction</code></td>
+<td>
+<p>Parsed extraction.</p>
+</td></tr>
+<tr><td><code id="ingest_assess_model_+3A_cfg">cfg</code></td>
+<td>
+<p>Ingest configuration.</p>
+</td></tr>
+<tr><td><code id="ingest_assess_model_+3A_full_text">full_text</code></td>
+<td>
+<p>Publication text.</p>
+</td></tr>
+<tr><td><code id="ingest_assess_model_+3A_supplement_text">supplement_text</code></td>
+<td>
+<p>Supplement text.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Assessment and audit data.
+</p>
+
+<h2 id='ingest_classify_entry'>Classify acquisition route for a literature record</h2><span id='topic+ingest_classify_entry'></span>
+
+<h3>Description</h3>
+
+<p>Classify acquisition route for a literature record
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_classify_entry(metadata, cfg, triage = NULL)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_classify_entry_+3A_metadata">metadata</code></td>
+<td>
+<p>Record from <code>ingest_entrez_fetch_metadata()</code>.</p>
+</td></tr>
+<tr><td><code id="ingest_classify_entry_+3A_cfg">cfg</code></td>
+<td>
+<p>Ingest config.</p>
+</td></tr>
+<tr><td><code id="ingest_classify_entry_+3A_triage">triage</code></td>
+<td>
+<p>Optional result from <code>ingest_triage_abstract()</code>. When supplied,
+its probability tier determines whether the record belongs to the first
+processing pass or the retained low-probability backlog.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Manifest row list.
+</p>
+
+<h2 id='ingest_compare_extractions'>Compare text- and vision-lane model claims field by field</h2><span id='topic+ingest_compare_extractions'></span>
+
+<h3>Description</h3>
+
+<p>Compare text- and vision-lane model claims field by field
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_compare_extractions(text, vision, tolerance = 0.02)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_compare_extractions_+3A_text">text</code></td>
+<td>
+<p>Text-lane result.</p>
+</td></tr>
+<tr><td><code id="ingest_compare_extractions_+3A_vision">vision</code></td>
+<td>
+<p>Vision-lane result.</p>
+</td></tr>
+<tr><td><code id="ingest_compare_extractions_+3A_tolerance">tolerance</code></td>
+<td>
+<p>Relative tolerance for numeric claims.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A versioned <code>library_model_comparison</code> reconciliation object with
+source fingerprints, normalized claims, and field-level differences.
+</p>
+
+<h2 id='ingest_default_query'>Default PubMed query for pharmacometric literature</h2><span id='topic+ingest_default_query'></span>
+
+<h3>Description</h3>
+
+<p>Default PubMed query for pharmacometric literature
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_default_query()
+</code></pre>
+
+
+<h3>Value</h3>
+
+<p>Character scalar PubMed query string.
+</p>
+
+<h2 id='ingest_deliberative_extract'>Run a staged evidence-led model investigation</h2><span id='topic+ingest_deliberative_extract'></span>
+
+<h3>Description</h3>
+
+<p>The article is mapped into searchable chunks, investigated by pharmacometric
+topic, challenged by a skeptical reviewer, optionally re-searched for gaps,
+checked deterministically, and only then synthesized into the standard
+LibeRary extraction schema. Every stage is content-addressed and resumable.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_deliberative_extract(
+  metadata,
+  bundle,
+  cfg = NULL,
+  progress = NULL,
+  force = FALSE,
+  chat = library_llm_chat
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_deliberative_extract_+3A_metadata">metadata</code></td>
+<td>
+<p>Publication metadata.</p>
+</td></tr>
+<tr><td><code id="ingest_deliberative_extract_+3A_bundle">bundle</code></td>
+<td>
+<p>Document bundle or bundle path.</p>
+</td></tr>
+<tr><td><code id="ingest_deliberative_extract_+3A_cfg">cfg</code></td>
+<td>
+<p>LibeRary configuration.</p>
+</td></tr>
+<tr><td><code id="ingest_deliberative_extract_+3A_progress">progress</code></td>
+<td>
+<p>Optional callback accepting <code>value</code>, <code>message</code>, and <code>stage</code>.</p>
+</td></tr>
+<tr><td><code id="ingest_deliberative_extract_+3A_force">force</code></td>
+<td>
+<p>Ignore reusable stage caches.</p>
+</td></tr>
+<tr><td><code id="ingest_deliberative_extract_+3A_chat">chat</code></td>
+<td>
+<p>Chat function, primarily for deterministic testing.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A text-lane-compatible result with an evidence-led audit.
+</p>
+
+<h2 id='ingest_discover'>Discover PubMed entries and classify acquisition routes</h2><span id='topic+ingest_discover'></span>
+
+<h3>Description</h3>
+
+<p>Runs E-utilities search (rate-limited), fetches metadata, resolves OA
+sources, downloads open-access PDFs immediately, and returns manifest rows.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_discover(
+  query = DEFAULT_PM_QUERY,
+  limit = 20L,
+  cfg = NULL,
+  triage = TRUE,
+  download_oa = TRUE,
+  log = NULL,
+  progress = NULL
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_discover_+3A_query">query</code></td>
+<td>
+<p>PubMed query. Defaults to <code>ingest_default_query()</code>.</p>
+</td></tr>
+<tr><td><code id="ingest_discover_+3A_limit">limit</code></td>
+<td>
+<p>Maximum PMIDs to process.</p>
+</td></tr>
+<tr><td><code id="ingest_discover_+3A_cfg">cfg</code></td>
+<td>
+<p>Config from <code>ingest_load_config()</code> or path to YAML.</p>
+</td></tr>
+<tr><td><code id="ingest_discover_+3A_triage">triage</code></td>
+<td>
+<p>If TRUE, assess model probability from title and abstract
+before acquisition routing. High and intermediate tiers enter the first
+pass; low-probability records are retained in a separate backlog.</p>
+</td></tr>
+<tr><td><code id="ingest_discover_+3A_download_oa">download_oa</code></td>
+<td>
+<p>If TRUE, download <code>oa_auto</code> PDFs during discovery.</p>
+</td></tr>
+<tr><td><code id="ingest_discover_+3A_log">log</code></td>
+<td>
+<p>Optional logger <code style="white-space: pre;">&#8288;function(msg, level)&#8288;</code>.</p>
+</td></tr>
+<tr><td><code id="ingest_discover_+3A_progress">progress</code></td>
+<td>
+<p>Optional <code style="white-space: pre;">&#8288;function(value, message, step, total)&#8288;</code>.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>List with pmids, entries (manifest rows), metadata, summary.
+</p>
+
+<h2 id='ingest_docling_available'>Check whether the configured Docling command is available</h2><span id='topic+ingest_docling_available'></span>
+
+<h3>Description</h3>
+
+<p>Check whether the configured Docling command is available
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_docling_available(cfg = NULL)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_docling_available_+3A_cfg">cfg</code></td>
+<td>
+<p>LibeRary configuration.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A list containing <code>available</code>, <code>executable</code>, and <code>version</code>.
+</p>
+
+<h2 id='ingest_docling_parse'>Parse a PDF with Docling's standard document pipeline</h2><span id='topic+ingest_docling_parse'></span>
+
+<h3>Description</h3>
+
+<p>This lane deliberately uses Docling's standard parser rather than its VLM
+pipeline, keeping it independent from the raw-page vision extraction lane.
+A test or deployment runner can be supplied as
+<code>options(LibeRary.docling_runner = function(executable, args, stdout, stderr) ...)</code>.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_docling_parse(pdf_path, output_dir, cfg = NULL, force = FALSE)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_docling_parse_+3A_pdf_path">pdf_path</code></td>
+<td>
+<p>PDF to convert.</p>
+</td></tr>
+<tr><td><code id="ingest_docling_parse_+3A_output_dir">output_dir</code></td>
+<td>
+<p>Conversion output directory.</p>
+</td></tr>
+<tr><td><code id="ingest_docling_parse_+3A_cfg">cfg</code></td>
+<td>
+<p>LibeRary configuration.</p>
+</td></tr>
+<tr><td><code id="ingest_docling_parse_+3A_force">force</code></td>
+<td>
+<p>Re-run when converted output already exists.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Conversion manifest.
+</p>
+
+<h2 id='ingest_document_bundle'>Build a canonical, content-addressed document bundle</h2><span id='topic+ingest_document_bundle'></span>
+
+<h3>Description</h3>
+
+<p>The bundle retains the source PDF, standard-parser outputs, selected raw page
+images, hashes, parser provenance, and fallback status. It is safe to resume:
+an unchanged PDF reuses its existing bundle.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_document_bundle(metadata, pdf_path, cfg = NULL, force = FALSE)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_document_bundle_+3A_metadata">metadata</code></td>
+<td>
+<p>Publication metadata.</p>
+</td></tr>
+<tr><td><code id="ingest_document_bundle_+3A_pdf_path">pdf_path</code></td>
+<td>
+<p>Full-text PDF.</p>
+</td></tr>
+<tr><td><code id="ingest_document_bundle_+3A_cfg">cfg</code></td>
+<td>
+<p>LibeRary configuration.</p>
+</td></tr>
+<tr><td><code id="ingest_document_bundle_+3A_force">force</code></td>
+<td>
+<p>Rebuild an existing bundle.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Bundle manifest.
+</p>
+
+<h2 id='ingest_download_pdf'>Download a PDF to inbox for a PMID</h2><span id='topic+ingest_download_pdf'></span>
+
+<h3>Description</h3>
+
+<p>Download a PDF to inbox for a PMID
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_download_pdf(pmid, url, cfg, dest_name = "article.pdf")
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_download_pdf_+3A_pmid">pmid</code></td>
+<td>
+<p>PMID string.</p>
+</td></tr>
+<tr><td><code id="ingest_download_pdf_+3A_url">url</code></td>
+<td>
+<p>URL to download.</p>
+</td></tr>
+<tr><td><code id="ingest_download_pdf_+3A_cfg">cfg</code></td>
+<td>
+<p>Ingest config.</p>
+</td></tr>
+<tr><td><code id="ingest_download_pdf_+3A_dest_name">dest_name</code></td>
+<td>
+<p>Destination filename inside <code style="white-space: pre;">&#8288;inbox/&lt;pmid&gt;/&#8288;</code>.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>List with success, path, final_url, error.
+</p>
+
+<h2 id='ingest_dual_extract'>Run independent text and vision extraction with automated reconciliation</h2><span id='topic+ingest_dual_extract'></span>
+
+<h3>Description</h3>
+
+<p>Consistent records are labelled <code>machine_consistent</code>. Conflicts are sent to
+the adjudication role and labelled <code>machine_adjudicated</code> unless a major field
+remains unresolved. Machine agreement is deliberately not called human
+validation.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_dual_extract(
+  metadata,
+  bundle,
+  cfg = NULL,
+  adjudicate = TRUE,
+  progress = NULL
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_dual_extract_+3A_metadata">metadata</code></td>
+<td>
+<p>Publication metadata.</p>
+</td></tr>
+<tr><td><code id="ingest_dual_extract_+3A_bundle">bundle</code></td>
+<td>
+<p>Document bundle or path to one.</p>
+</td></tr>
+<tr><td><code id="ingest_dual_extract_+3A_cfg">cfg</code></td>
+<td>
+<p>LibeRary configuration.</p>
+</td></tr>
+<tr><td><code id="ingest_dual_extract_+3A_adjudicate">adjudicate</code></td>
+<td>
+<p>Automatically adjudicate discrepancies.</p>
+</td></tr>
+<tr><td><code id="ingest_dual_extract_+3A_progress">progress</code></td>
+<td>
+<p>Optional callback for progress within this article, accepting
+<code>value</code>, <code>message</code>, and <code>stage</code>.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Reconciled extraction, status, lane outputs, and audit data.
+</p>
+
+<h2 id='ingest_entrez_count'>Count PubMed hits for a query (no metadata fetch)</h2><span id='topic+ingest_entrez_count'></span>
+
+<h3>Description</h3>
+
+<p>Count PubMed hits for a query (no metadata fetch)
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_entrez_count(query, cfg)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_entrez_count_+3A_query">query</code></td>
+<td>
+<p>PubMed query string.</p>
+</td></tr>
+<tr><td><code id="ingest_entrez_count_+3A_cfg">cfg</code></td>
+<td>
+<p>Ingest config.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Integer total hit count reported by NCBI.
+</p>
+
+<h2 id='ingest_entrez_fetch_metadata'>Fetch PubMed metadata for PMIDs</h2><span id='topic+ingest_entrez_fetch_metadata'></span>
+
+<h3>Description</h3>
+
+<p>Fetch PubMed metadata for PMIDs
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_entrez_fetch_metadata(pmids, cfg, use_cache = TRUE)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_entrez_fetch_metadata_+3A_pmids">pmids</code></td>
+<td>
+<p>Character vector of PMIDs.</p>
+</td></tr>
+<tr><td><code id="ingest_entrez_fetch_metadata_+3A_cfg">cfg</code></td>
+<td>
+<p>Ingest config.</p>
+</td></tr>
+<tr><td><code id="ingest_entrez_fetch_metadata_+3A_use_cache">use_cache</code></td>
+<td>
+<p>If TRUE, read/write per-PMID JSON cache.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A list of metadata records (named by PMID).
+</p>
+
+<h2 id='ingest_entrez_search'>Search PubMed via E-utilities</h2><span id='topic+ingest_entrez_search'></span>
+
+<h3>Description</h3>
+
+<p>Search PubMed via E-utilities
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_entrez_search(query, retmax = 20L, cfg)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_entrez_search_+3A_query">query</code></td>
+<td>
+<p>PubMed query string.</p>
+</td></tr>
+<tr><td><code id="ingest_entrez_search_+3A_retmax">retmax</code></td>
+<td>
+<p>Maximum PMIDs to return.</p>
+</td></tr>
+<tr><td><code id="ingest_entrez_search_+3A_cfg">cfg</code></td>
+<td>
+<p>Ingest config from <code>ingest_load_config()</code>.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Character vector of PMIDs.
+</p>
+
+<h2 id='ingest_europe_pmc_lookup'>Europe PMC lookup for full-text PDF hints</h2><span id='topic+ingest_europe_pmc_lookup'></span>
+
+<h3>Description</h3>
+
+<p>Europe PMC lookup for full-text PDF hints
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_europe_pmc_lookup(pmid = "", doi = "", cfg)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_europe_pmc_lookup_+3A_pmid">pmid</code></td>
+<td>
+<p>PubMed ID.</p>
+</td></tr>
+<tr><td><code id="ingest_europe_pmc_lookup_+3A_doi">doi</code></td>
+<td>
+<p>Optional DOI.</p>
+</td></tr>
+<tr><td><code id="ingest_europe_pmc_lookup_+3A_cfg">cfg</code></td>
+<td>
+<p>Ingest config.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>List with pdf_url, is_open_access, pmcid.
+</p>
+
+<h2 id='ingest_extract_batch'>Batch extract, assess and publish discovered publications</h2><span id='topic+ingest_extract_batch'></span>
+
+<h3>Description</h3>
+
+<p>Batch extract, assess and publish discovered publications
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_extract_batch(
+  manifest,
+  cfg = NULL,
+  limit = 10L,
+  use_ollama = TRUE,
+  assess = TRUE,
+  resume = TRUE,
+  overwrite = TRUE,
+  log = NULL,
+  progress = NULL
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_extract_batch_+3A_manifest">manifest</code></td>
+<td>
+<p>Discover manifest path or data frame.</p>
+</td></tr>
+<tr><td><code id="ingest_extract_batch_+3A_cfg">cfg</code></td>
+<td>
+<p>Ingest configuration.</p>
+</td></tr>
+<tr><td><code id="ingest_extract_batch_+3A_limit">limit</code></td>
+<td>
+<p>Maximum records.</p>
+</td></tr>
+<tr><td><code id="ingest_extract_batch_+3A_use_ollama">use_ollama</code></td>
+<td>
+<p>Legacy switch; <code>FALSE</code> creates metadata stubs.</p>
+</td></tr>
+<tr><td><code id="ingest_extract_batch_+3A_assess">assess</code></td>
+<td>
+<p>Run the independently configured assessment role.</p>
+</td></tr>
+<tr><td><code id="ingest_extract_batch_+3A_resume">resume</code></td>
+<td>
+<p>Skip PMIDs already present in the target catalogue.</p>
+</td></tr>
+<tr><td><code id="ingest_extract_batch_+3A_overwrite">overwrite</code></td>
+<td>
+<p>Update existing entries when <code>resume=FALSE</code>.</p>
+</td></tr>
+<tr><td><code id="ingest_extract_batch_+3A_log">log</code></td>
+<td>
+<p>Optional logger.</p>
+</td></tr>
+<tr><td><code id="ingest_extract_batch_+3A_progress">progress</code></td>
+<td>
+<p>Optional progress callback.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Batch results and provider summary.
+</p>
+
+<h2 id='ingest_extract_model'>Run model extraction for one publication</h2><span id='topic+ingest_extract_model'></span>
+
+<h3>Description</h3>
+
+<p>Run model extraction for one publication
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_extract_model(
+  metadata,
+  cfg = NULL,
+  pdf_path = NULL,
+  assess = TRUE,
+  full_text = NULL,
+  supplement_text = NULL
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_extract_model_+3A_metadata">metadata</code></td>
+<td>
+<p>PubMed metadata.</p>
+</td></tr>
+<tr><td><code id="ingest_extract_model_+3A_cfg">cfg</code></td>
+<td>
+<p>Ingest configuration.</p>
+</td></tr>
+<tr><td><code id="ingest_extract_model_+3A_pdf_path">pdf_path</code></td>
+<td>
+<p>Optional publication PDF.</p>
+</td></tr>
+<tr><td><code id="ingest_extract_model_+3A_assess">assess</code></td>
+<td>
+<p>Run a separate evidence assessment after extraction.</p>
+</td></tr>
+<tr><td><code id="ingest_extract_model_+3A_full_text">full_text</code></td>
+<td>
+<p>Optional pre-extracted article text, used by remote workers.</p>
+</td></tr>
+<tr><td><code id="ingest_extract_model_+3A_supplement_text">supplement_text</code></td>
+<td>
+<p>Optional pre-extracted supplement text.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Extraction, assessment and immutable audit metadata.
+</p>
+
+<h2 id='ingest_extract_text_lane'>Extract a model from the standard-parser text lane</h2><span id='topic+ingest_extract_text_lane'></span>
+
+<h3>Description</h3>
+
+<p>Extract a model from the standard-parser text lane
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_extract_text_lane(metadata, bundle, cfg = NULL, progress = NULL)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_extract_text_lane_+3A_metadata">metadata</code></td>
+<td>
+<p>Publication metadata.</p>
+</td></tr>
+<tr><td><code id="ingest_extract_text_lane_+3A_bundle">bundle</code></td>
+<td>
+<p>Document bundle.</p>
+</td></tr>
+<tr><td><code id="ingest_extract_text_lane_+3A_cfg">cfg</code></td>
+<td>
+<p>LibeRary configuration.</p>
+</td></tr>
+<tr><td><code id="ingest_extract_text_lane_+3A_progress">progress</code></td>
+<td>
+<p>Optional callback accepting <code>value</code>, <code>message</code>, and <code>stage</code>.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Lane result with extraction and immutable audit data.
+</p>
+
+<h2 id='ingest_extract_vision_lane'>Extract a model directly from original PDF page images</h2><span id='topic+ingest_extract_vision_lane'></span>
+
+<h3>Description</h3>
+
+<p>Extract a model directly from original PDF page images
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_extract_vision_lane(metadata, bundle, cfg = NULL)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_extract_vision_lane_+3A_metadata">metadata</code></td>
+<td>
+<p>Publication metadata.</p>
+</td></tr>
+<tr><td><code id="ingest_extract_vision_lane_+3A_bundle">bundle</code></td>
+<td>
+<p>Document bundle.</p>
+</td></tr>
+<tr><td><code id="ingest_extract_vision_lane_+3A_cfg">cfg</code></td>
+<td>
+<p>LibeRary configuration.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Lane result with extraction and immutable audit data.
+</p>
+
+<h2 id='ingest_fetch_institutional'>Fetch pending institutional (paywalled) PDFs</h2><span id='topic+ingest_fetch_institutional'></span>
+
+<h3>Description</h3>
+
+<p>Attempts direct PDF URLs when known, otherwise follows DOI redirects on
+the institutional/VPN network. Optional chromote fallback for publisher
+pages that require JavaScript.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_fetch_institutional(
+  manifest,
+  cfg = NULL,
+  classes = "needs_institutional",
+  tiers = NULL,
+  use_chromote_fallback = NULL,
+  log = NULL,
+  progress = NULL
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_fetch_institutional_+3A_manifest">manifest</code></td>
+<td>
+<p>Path to manifest CSV or data frame.</p>
+</td></tr>
+<tr><td><code id="ingest_fetch_institutional_+3A_cfg">cfg</code></td>
+<td>
+<p>Ingest config.</p>
+</td></tr>
+<tr><td><code id="ingest_fetch_institutional_+3A_classes">classes</code></td>
+<td>
+<p>Character vector of acquisition_class values to fetch.
+Default: <code>"needs_institutional"</code>.</p>
+</td></tr>
+<tr><td><code id="ingest_fetch_institutional_+3A_tiers">tiers</code></td>
+<td>
+<p>Probability tiers to fetch. Defaults to the configured first
+pass (<code>high</code> and <code>intermediate</code>). Use <code>"low"</code> to process the retained
+backlog later.</p>
+</td></tr>
+<tr><td><code id="ingest_fetch_institutional_+3A_use_chromote_fallback">use_chromote_fallback</code></td>
+<td>
+<p>Use chromote when direct download fails.</p>
+</td></tr>
+<tr><td><code id="ingest_fetch_institutional_+3A_log">log</code></td>
+<td>
+<p>Optional logger function.</p>
+</td></tr>
+<tr><td><code id="ingest_fetch_institutional_+3A_progress">progress</code></td>
+<td>
+<p>Optional progress callback.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>List with results, summary, failures, log_path.
+</p>
+
+<h2 id='ingest_find_supplements'>Detect supplement control streams in a directory</h2><span id='topic+ingest_find_supplements'></span>
+
+<h3>Description</h3>
+
+<p>Detect supplement control streams in a directory
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_find_supplements(dir)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_find_supplements_+3A_dir">dir</code></td>
+<td>
+<p>Directory to scan (for example, <code style="white-space: pre;">&#8288;inbox/&lt;pmid&gt;&#8288;</code>).</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Character vector of matching file paths.
+</p>
+
+<h2 id='ingest_generate_fetch_script'>Generate standalone institutional fetch R script</h2><span id='topic+ingest_generate_fetch_script'></span>
+
+<h3>Description</h3>
+
+<p>Writes a script intended to run on a VPN-enabled work laptop. The script
+loads LibeRary and calls <code>ingest_fetch_institutional()</code>.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_generate_fetch_script(
+  manifest_path,
+  output_path = "library_fetch_institutional.R",
+  config_path = NULL
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_generate_fetch_script_+3A_manifest_path">manifest_path</code></td>
+<td>
+<p>Path to manifest CSV.</p>
+</td></tr>
+<tr><td><code id="ingest_generate_fetch_script_+3A_output_path">output_path</code></td>
+<td>
+<p>Path for generated R script.</p>
+</td></tr>
+<tr><td><code id="ingest_generate_fetch_script_+3A_config_path">config_path</code></td>
+<td>
+<p>Optional YAML config path embedded in script.</p>
+</td></tr>
+</table>
+
+<h2 id='ingest_gui_worker'>Background worker for LibeRary GUI jobs</h2><span id='topic+ingest_gui_worker'></span>
+
+<h3>Description</h3>
+
+<p>Background worker for LibeRary GUI jobs
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_gui_worker(params)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_gui_worker_+3A_params">params</code></td>
+<td>
+<p>List with job settings (see Shiny app).</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>List with <code>ok</code> and result or error.
+</p>
+
+<h2 id='ingest_latest_manifest'>Find most recent discover manifest</h2><span id='topic+ingest_latest_manifest'></span>
+
+<h3>Description</h3>
+
+<p>Find most recent discover manifest
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_latest_manifest(cfg)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_latest_manifest_+3A_cfg">cfg</code></td>
+<td>
+<p>Ingest config list.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>File path or <code>""</code>.
+</p>
+
+<h2 id='ingest_load_config'>Load ingest configuration</h2><span id='topic+ingest_load_config'></span>
+
+<h3>Description</h3>
+
+<p>Reads YAML config when the <strong>yaml</strong> package is installed; otherwise uses
+defaults merged with environment variables.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_load_config(path = NULL)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_load_config_+3A_path">path</code></td>
+<td>
+<p>Path to YAML config file. If missing, uses env vars only.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A normalized config list.
+</p>
+
+<h2 id='ingest_make_logger'>Create a file-backed logger for GUI / background jobs</h2><span id='topic+ingest_make_logger'></span>
+
+<h3>Description</h3>
+
+<p>Create a file-backed logger for GUI / background jobs
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_make_logger(log_path)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_make_logger_+3A_log_path">log_path</code></td>
+<td>
+<p>Path to append log lines.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Function <code style="white-space: pre;">&#8288;function(msg, level = "INFO")&#8288;</code>.
+</p>
+
+<h2 id='ingest_map_to_ctl'>Map extracted evidence to a reviewable NONMEM control stream</h2><span id='topic+ingest_map_to_ctl'></span>
+
+<h3>Description</h3>
+
+<p>Only established LibeRation templates (ADVAN1-4/11/12) are generated. Any
+missing structural or parameter evidence is explicitly recorded in the
+<code>mapping</code> attribute and the resulting catalogue entry cannot be promoted to
+validated status without review.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_map_to_ctl(extraction, metadata = NULL)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_map_to_ctl_+3A_extraction">extraction</code></td>
+<td>
+<p>Parsed extraction list.</p>
+</td></tr>
+<tr><td><code id="ingest_map_to_ctl_+3A_metadata">metadata</code></td>
+<td>
+<p>Optional publication metadata.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Character control stream with a <code>mapping</code> attribute.
+</p>
+
+<h2 id='ingest_ollama_compatibility'>Legacy Ollama provider wrappers</h2><span id='topic+ingest_ollama_compatibility'></span><span id='topic+ingest_ollama_available'></span><span id='topic+ingest_ollama_chat'></span>
+
+<h3>Description</h3>
+
+<p>Compatibility functions for scripts written against the original ingest
+prototype. New code should use <code>library_llm_available()</code> and
+<code>library_llm_chat()</code>.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_ollama_available(cfg)
+
+ingest_ollama_chat(messages, cfg, format = NULL)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_ollama_compatibility_+3A_cfg">cfg</code></td>
+<td>
+<p>LibeRary configuration.</p>
+</td></tr>
+<tr><td><code id="ingest_ollama_compatibility_+3A_messages">messages</code></td>
+<td>
+<p>Chat messages.</p>
+</td></tr>
+<tr><td><code id="ingest_ollama_compatibility_+3A_format">format</code></td>
+<td>
+<p>Optional structured-output schema.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p><code>ingest_ollama_available()</code> returns a logical scalar;
+<code>ingest_ollama_chat()</code> returns the response content as text.
+</p>
+
+<h2 id='ingest_parse_llm_json'>Parse JSON from an LLM response</h2><span id='topic+ingest_parse_llm_json'></span>
+
+<h3>Description</h3>
+
+<p>Parse JSON from an LLM response
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_parse_llm_json(text, schema = NULL)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_parse_llm_json_+3A_text">text</code></td>
+<td>
+<p>Raw response, optionally fenced or surrounded by short prose.</p>
+</td></tr>
+<tr><td><code id="ingest_parse_llm_json_+3A_schema">schema</code></td>
+<td>
+<p>Optional JSON-schema-like list used to validate the decoded
+response before it reaches semantic model code.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Parsed list.
+</p>
+
+<h2 id='ingest_pdf_text'>Extract text from a PDF file</h2><span id='topic+ingest_pdf_text'></span>
+
+<h3>Description</h3>
+
+<p>Uses <strong>pdftools</strong> when available.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_pdf_text(path, max_chars = 120000L)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_pdf_text_+3A_path">path</code></td>
+<td>
+<p>Path to PDF.</p>
+</td></tr>
+<tr><td><code id="ingest_pdf_text_+3A_max_chars">max_chars</code></td>
+<td>
+<p>Truncate extracted text (LLM context limit).</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Character scalar of extracted text.
+</p>
+
+<h2 id='ingest_pmc_oa_lookup'>Check PMC open-access availability and PDF link</h2><span id='topic+ingest_pmc_oa_lookup'></span>
+
+<h3>Description</h3>
+
+<p>Check PMC open-access availability and PDF link
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_pmc_oa_lookup(pmcid, cfg)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_pmc_oa_lookup_+3A_pmcid">pmcid</code></td>
+<td>
+<p>PMC ID with or without prefix.</p>
+</td></tr>
+<tr><td><code id="ingest_pmc_oa_lookup_+3A_cfg">cfg</code></td>
+<td>
+<p>Ingest config.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>List with is_oa, pdf_url.
+</p>
+
+<h2 id='ingest_pmc_pdf_url'>Build deterministic PMC PDF URL</h2><span id='topic+ingest_pmc_pdf_url'></span>
+
+<h3>Description</h3>
+
+<p>Build deterministic PMC PDF URL
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_pmc_pdf_url(pmcid)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_pmc_pdf_url_+3A_pmcid">pmcid</code></td>
+<td>
+<p>PMC ID with or without PMC prefix.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>URL string or empty if no PMCID.
+</p>
+
+<h2 id='ingest_process_batch'>Process a triaged literature batch into reconciled catalogue entries</h2><span id='topic+ingest_process_batch'></span>
+
+<h3>Description</h3>
+
+<p>By default only High and Intermediate probability records are processed.
+Low-probability records remain in the manifest and can be processed later by
+setting <code>tiers = "low"</code>. Each PDF is converted to a resumable document bundle,
+independently extracted through text and vision lanes, compared field by
+field, and automatically adjudicated when necessary.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_process_batch(
+  manifest,
+  cfg = NULL,
+  tiers = NULL,
+  limit = Inf,
+  resume = TRUE,
+  adjudicate = TRUE,
+  overwrite = TRUE,
+  continue_on_error = TRUE,
+  log = NULL,
+  progress = NULL,
+  article_progress = NULL
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_process_batch_+3A_manifest">manifest</code></td>
+<td>
+<p>Discovery manifest path or data frame.</p>
+</td></tr>
+<tr><td><code id="ingest_process_batch_+3A_cfg">cfg</code></td>
+<td>
+<p>LibeRary configuration.</p>
+</td></tr>
+<tr><td><code id="ingest_process_batch_+3A_tiers">tiers</code></td>
+<td>
+<p>Triage tiers to process.</p>
+</td></tr>
+<tr><td><code id="ingest_process_batch_+3A_limit">limit</code></td>
+<td>
+<p>Maximum records to process.</p>
+</td></tr>
+<tr><td><code id="ingest_process_batch_+3A_resume">resume</code></td>
+<td>
+<p>Reuse terminal decisions and existing catalogue entries.</p>
+</td></tr>
+<tr><td><code id="ingest_process_batch_+3A_adjudicate">adjudicate</code></td>
+<td>
+<p>Run automatic third-model adjudication.</p>
+</td></tr>
+<tr><td><code id="ingest_process_batch_+3A_overwrite">overwrite</code></td>
+<td>
+<p>Update an existing catalogue entry.</p>
+</td></tr>
+<tr><td><code id="ingest_process_batch_+3A_continue_on_error">continue_on_error</code></td>
+<td>
+<p>Continue remaining articles after an article error.</p>
+</td></tr>
+<tr><td><code id="ingest_process_batch_+3A_log">log</code></td>
+<td>
+<p>Optional logger.</p>
+</td></tr>
+<tr><td><code id="ingest_process_batch_+3A_progress">progress</code></td>
+<td>
+<p>Optional progress callback.</p>
+</td></tr>
+<tr><td><code id="ingest_process_batch_+3A_article_progress">article_progress</code></td>
+<td>
+<p>Optional callback for progress within the current
+PMID, accepting <code>value</code>, <code>message</code>, <code>step</code>, <code>total</code>, <code>pmid</code>, <code>stage</code>, and
+<code>status</code>.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Batch results and summary.
+</p>
+
+<h2 id='ingest_publish_catalog_entry'>Publish an extracted model to the catalogue</h2><span id='topic+ingest_publish_catalog_entry'></span>
+
+<h3>Description</h3>
+
+<p>Publish an extracted model to the catalogue
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_publish_catalog_entry(
+  metadata,
+  extraction,
+  cfg = NULL,
+  status = "stub",
+  raw_llm = NULL,
+  library_id = NULL,
+  assessment = NULL,
+  overwrite = TRUE,
+  document_bundle = NULL
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_publish_catalog_entry_+3A_metadata">metadata</code></td>
+<td>
+<p>Publication metadata.</p>
+</td></tr>
+<tr><td><code id="ingest_publish_catalog_entry_+3A_extraction">extraction</code></td>
+<td>
+<p>Extraction list.</p>
+</td></tr>
+<tr><td><code id="ingest_publish_catalog_entry_+3A_cfg">cfg</code></td>
+<td>
+<p>Ingest configuration.</p>
+</td></tr>
+<tr><td><code id="ingest_publish_catalog_entry_+3A_status">status</code></td>
+<td>
+<p>Initial workflow status.</p>
+</td></tr>
+<tr><td><code id="ingest_publish_catalog_entry_+3A_raw_llm">raw_llm</code></td>
+<td>
+<p>Optional immutable LLM audit object.</p>
+</td></tr>
+<tr><td><code id="ingest_publish_catalog_entry_+3A_library_id">library_id</code></td>
+<td>
+<p>Optional stable entry id.</p>
+</td></tr>
+<tr><td><code id="ingest_publish_catalog_entry_+3A_assessment">assessment</code></td>
+<td>
+<p>Optional independent evidence assessment.</p>
+</td></tr>
+<tr><td><code id="ingest_publish_catalog_entry_+3A_overwrite">overwrite</code></td>
+<td>
+<p>Update an existing entry and archive its previous version.</p>
+</td></tr>
+<tr><td><code id="ingest_publish_catalog_entry_+3A_document_bundle">document_bundle</code></td>
+<td>
+<p>Optional canonical document-bundle manifest.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Published paths and mapping details.
+</p>
+
+<h2 id='ingest_read_document_bundle'>Read a canonical document bundle</h2><span id='topic+ingest_read_document_bundle'></span>
+
+<h3>Description</h3>
+
+<p>Read a canonical document bundle
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_read_document_bundle(path)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_read_document_bundle_+3A_path">path</code></td>
+<td>
+<p>Bundle directory or <code>bundle.json</code> path.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Bundle manifest.
+</p>
+
+<h2 id='ingest_read_manifest'>Read manifest CSV</h2><span id='topic+ingest_read_manifest'></span>
+
+<h3>Description</h3>
+
+<p>Read manifest CSV
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_read_manifest(path)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_read_manifest_+3A_path">path</code></td>
+<td>
+<p>CSV path.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Data frame.
+</p>
+
+<h2 id='ingest_read_progress'>Read GUI progress state</h2><span id='topic+ingest_read_progress'></span>
+
+<h3>Description</h3>
+
+<p>Read GUI progress state
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_read_progress(progress_path)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_read_progress_+3A_progress_path">progress_path</code></td>
+<td>
+<p>JSON file path.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>List or NULL.
+</p>
+
+<h2 id='ingest_render_pdf_pages'>Render selected original PDF pages for the independent vision lane</h2><span id='topic+ingest_render_pdf_pages'></span>
+
+<h3>Description</h3>
+
+<p>Render selected original PDF pages for the independent vision lane
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_render_pdf_pages(
+  pdf_path,
+  output_dir,
+  pages = NULL,
+  dpi = 140L,
+  max_pages = 12L
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_render_pdf_pages_+3A_pdf_path">pdf_path</code></td>
+<td>
+<p>PDF path.</p>
+</td></tr>
+<tr><td><code id="ingest_render_pdf_pages_+3A_output_dir">output_dir</code></td>
+<td>
+<p>Page image directory.</p>
+</td></tr>
+<tr><td><code id="ingest_render_pdf_pages_+3A_pages">pages</code></td>
+<td>
+<p>One-based page numbers, or NULL for relevance-based selection.</p>
+</td></tr>
+<tr><td><code id="ingest_render_pdf_pages_+3A_dpi">dpi</code></td>
+<td>
+<p>Image resolution.</p>
+</td></tr>
+<tr><td><code id="ingest_render_pdf_pages_+3A_max_pages">max_pages</code></td>
+<td>
+<p>Maximum automatically selected pages.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Normalized paths to PNG page images.
+</p>
+
+<h2 id='ingest_shiny'>Launch the LibeRary literature-ingestion application</h2><span id='topic+ingest_shiny'></span><span id='topic+library_ingest_shiny'></span>
+
+<h3>Description</h3>
+
+<p>Provides PubMed discovery and abstract triage, full-text acquisition,
+Docling parsing, independent text/vision extraction, automated adjudication,
+reviewable catalogue publication,
+and live background-job logs.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_shiny(host = "127.0.0.1", port = NULL, launch.browser = TRUE)
+
+library_ingest_shiny(host = "127.0.0.1", port = NULL, launch.browser = TRUE)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_shiny_+3A_host">host</code></td>
+<td>
+<p>Host passed to <code>shiny::runApp()</code>.</p>
+</td></tr>
+<tr><td><code id="ingest_shiny_+3A_port">port</code></td>
+<td>
+<p>Port or <code>NULL</code>.</p>
+</td></tr>
+<tr><td><code id="ingest_shiny_+3A_launch.browser">launch.browser</code></td>
+<td>
+<p>Open a browser.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>The Shiny application, invisibly.
+</p>
+
+<h2 id='ingest_stub_extraction'>Minimal metadata-only extraction</h2><span id='topic+ingest_stub_extraction'></span>
+
+<h3>Description</h3>
+
+<p>Minimal metadata-only extraction
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_stub_extraction(metadata, reason = "abstract_only")
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_stub_extraction_+3A_metadata">metadata</code></td>
+<td>
+<p>PubMed metadata.</p>
+</td></tr>
+<tr><td><code id="ingest_stub_extraction_+3A_reason">reason</code></td>
+<td>
+<p>Reason for creating a stub.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Extraction-like list requiring review.
+</p>
+
+<h2 id='ingest_triage_abstract'>Triage one publication from its title and abstract</h2><span id='topic+ingest_triage_abstract'></span>
+
+<h3>Description</h3>
+
+<p>The LLM score is converted to a deterministic <code>high</code>, <code>intermediate</code>, or
+<code>low</code> tier using configuration thresholds. Low-tier records are deferred,
+never discarded.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_triage_abstract(metadata, cfg = NULL, fallback_on_error = TRUE)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_triage_abstract_+3A_metadata">metadata</code></td>
+<td>
+<p>PubMed metadata.</p>
+</td></tr>
+<tr><td><code id="ingest_triage_abstract_+3A_cfg">cfg</code></td>
+<td>
+<p>LibeRary configuration.</p>
+</td></tr>
+<tr><td><code id="ingest_triage_abstract_+3A_fallback_on_error">fallback_on_error</code></td>
+<td>
+<p>Use the conservative deterministic fallback when
+the configured triage model cannot be reached.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Structured triage decision and audit data.
+</p>
+
+<h2 id='ingest_triage_batch'>Triage a collection of PubMed metadata records</h2><span id='topic+ingest_triage_batch'></span>
+
+<h3>Description</h3>
+
+<p>Triage a collection of PubMed metadata records
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_triage_batch(metadata, cfg = NULL, log = NULL, progress = NULL)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_triage_batch_+3A_metadata">metadata</code></td>
+<td>
+<p>Named list of metadata records.</p>
+</td></tr>
+<tr><td><code id="ingest_triage_batch_+3A_cfg">cfg</code></td>
+<td>
+<p>LibeRary configuration.</p>
+</td></tr>
+<tr><td><code id="ingest_triage_batch_+3A_log">log</code></td>
+<td>
+<p>Optional logger.</p>
+</td></tr>
+<tr><td><code id="ingest_triage_batch_+3A_progress">progress</code></td>
+<td>
+<p>Optional progress callback.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A named list of triage decisions.
+</p>
+
+<h2 id='ingest_unpaywall_lookup'>Look up open-access locations via Unpaywall</h2><span id='topic+ingest_unpaywall_lookup'></span>
+
+<h3>Description</h3>
+
+<p>Look up open-access locations via Unpaywall
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_unpaywall_lookup(doi, cfg, use_cache = TRUE)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_unpaywall_lookup_+3A_doi">doi</code></td>
+<td>
+<p>DOI string.</p>
+</td></tr>
+<tr><td><code id="ingest_unpaywall_lookup_+3A_cfg">cfg</code></td>
+<td>
+<p>Ingest config.</p>
+</td></tr>
+<tr><td><code id="ingest_unpaywall_lookup_+3A_use_cache">use_cache</code></td>
+<td>
+<p>Use disk cache under cache/unpaywall.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>List with is_oa, url_for_pdf, url, host_type, or NULL on failure.
+</p>
+
+<h2 id='ingest_validate_config'>Validate and normalize LibeRary configuration</h2><span id='topic+ingest_validate_config'></span>
+
+<h3>Description</h3>
+
+<p>Validate and normalize LibeRary configuration
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_validate_config(cfg)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_validate_config_+3A_cfg">cfg</code></td>
+<td>
+<p>Configuration list.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Normalized configuration.
+</p>
+
+<h2 id='ingest_write_manifest'>Write institutional fetch manifest CSV</h2><span id='topic+ingest_write_manifest'></span>
+
+<h3>Description</h3>
+
+<p>Write institutional fetch manifest CSV
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_write_manifest(entries, path)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_write_manifest_+3A_entries">entries</code></td>
+<td>
+<p>Data frame or list of manifest rows.</p>
+</td></tr>
+<tr><td><code id="ingest_write_manifest_+3A_path">path</code></td>
+<td>
+<p>Output CSV path.</p>
+</td></tr>
+</table>
+
+<h2 id='ingest_write_progress'>Write GUI progress state</h2><span id='topic+ingest_write_progress'></span>
+
+<h3>Description</h3>
+
+<p>Write GUI progress state
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ingest_write_progress(
+  progress_path,
+  value,
+  message,
+  step = NA_integer_,
+  total = NA_integer_,
+  status = "running",
+  current = NULL
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ingest_write_progress_+3A_progress_path">progress_path</code></td>
+<td>
+<p>JSON file path.</p>
+</td></tr>
+<tr><td><code id="ingest_write_progress_+3A_value">value</code></td>
+<td>
+<p>Progress fraction 0–1.</p>
+</td></tr>
+<tr><td><code id="ingest_write_progress_+3A_message">message</code></td>
+<td>
+<p>Status message.</p>
+</td></tr>
+<tr><td><code id="ingest_write_progress_+3A_step">step</code></td>
+<td>
+<p>Optional current step index.</p>
+</td></tr>
+<tr><td><code id="ingest_write_progress_+3A_total">total</code></td>
+<td>
+<p>Optional total steps.</p>
+</td></tr>
+<tr><td><code id="ingest_write_progress_+3A_status">status</code></td>
+<td>
+<p>One of <code>idle</code>, <code>running</code>, <code>done</code>, <code>error</code>, or <code>cancelled</code>.</p>
+</td></tr>
+<tr><td><code id="ingest_write_progress_+3A_current">current</code></td>
+<td>
+<p>Optional nested progress record for the current PMID. When
+omitted, an existing current-PMID record is retained.</p>
+</td></tr>
+</table>
+
+<h2 id='library_catalog_root'>Catalogue root directory</h2><span id='topic+library_catalog_root'></span>
+
+<h3>Description</h3>
+
+<p>The mutable catalogue lives in the user's application-data directory, so it
+survives upgrades and reinstalls. Packaged validated examples are seeded on
+first use. <code>options(LibeRary.catalog=)</code> or <code>LIBERARY_CATALOG</code> can select a
+shared or project-specific catalogue.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>library_catalog_root(create = TRUE)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="library_catalog_root_+3A_create">create</code></td>
+<td>
+<p>Create and seed the catalogue when it does not exist.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Normalized directory path.
+</p>
+
+
+<h3>Examples</h3>
+
+<pre><code class='language-R'>root &lt;- tempfile("liberary-catalog-")
+old &lt;- options(LibeRary.catalog = root)
+catalog &lt;- library_catalog_root()
+library_search("theophylline", root = catalog)
+options(old)
+unlink(root, recursive = TRUE)
+</code></pre>
+
+<h2 id='library_config_path'>Upgrade-safe LibeRary configuration path</h2><span id='topic+library_config_path'></span>
+
+<h3>Description</h3>
+
+<p>Secrets are deliberately read from environment variables rather than saved
+in package files. The returned YAML path survives package upgrades.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>library_config_path(create = FALSE)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="library_config_path_+3A_create">create</code></td>
+<td>
+<p>Create its parent directory.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Normalized configuration path.
+</p>
+
+<h2 id='library_dosing_normalize'>Normalize reported dosing information</h2><span id='topic+library_dosing_normalize'></span>
+
+<h3>Description</h3>
+
+<p>Normalize reported dosing information
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>library_dosing_normalize(dose, route = NULL, source_locator = "")
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="library_dosing_normalize_+3A_dose">dose</code></td>
+<td>
+<p>Reported dose text or existing regimen list.</p>
+</td></tr>
+<tr><td><code id="library_dosing_normalize_+3A_route">route</code></td>
+<td>
+<p>Optional normalized route.</p>
+</td></tr>
+<tr><td><code id="library_dosing_normalize_+3A_source_locator">source_locator</code></td>
+<td>
+<p>Evidence locator.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A list of dosing regimens.
+</p>
+
+<h2 id='library_get'>Get a catalog entry</h2><span id='topic+library_get'></span>
+
+<h3>Description</h3>
+
+<p>Get a catalog entry
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>library_get(library_id, root = library_catalog_root())
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="library_get_+3A_library_id">library_id</code></td>
+<td>
+<p>Entry identifier.</p>
+</td></tr>
+<tr><td><code id="library_get_+3A_root">root</code></td>
+<td>
+<p>Catalog root.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>List with <code>manifest</code>, <code>paths</code>, and <code>summary</code>.
+</p>
+
+<h2 id='library_home'>Persistent LibeRary home</h2><span id='topic+library_home'></span>
+
+<h3>Description</h3>
+
+<p>Defaults to <code>Documents/LibeR/library</code> on Windows and <code style="white-space: pre;">&#8288;~/LibeR/library&#8288;</code> on
+Linux/macOS, alongside the default LibeRation workspace. Set
+<code>LIBERARY_HOME</code> to override it.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>library_home(create = FALSE)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="library_home_+3A_create">create</code></td>
+<td>
+<p>Create the directory.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Normalized directory path.
+</p>
+
+<h2 id='library_image_message'>Build a provider-neutral multimodal user message</h2><span id='topic+library_image_message'></span>
+
+<h3>Description</h3>
+
+<p>Image files are encoded as data URLs for OpenAI-compatible chat endpoints.
+The Ollama adapter converts the same blocks to its native <code>images</code> array.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>library_image_message(
+  prompt,
+  image_paths,
+  labels = NULL,
+  detail = c("high", "auto", "low", "original")
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="library_image_message_+3A_prompt">prompt</code></td>
+<td>
+<p>Text instruction.</p>
+</td></tr>
+<tr><td><code id="library_image_message_+3A_image_paths">image_paths</code></td>
+<td>
+<p>Local PNG, JPEG, WebP, or GIF paths.</p>
+</td></tr>
+<tr><td><code id="library_image_message_+3A_labels">labels</code></td>
+<td>
+<p>Optional labels inserted before each image, normally page ids.</p>
+</td></tr>
+<tr><td><code id="library_image_message_+3A_detail">detail</code></td>
+<td>
+<p>Image detail hint.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A chat message list accepted by <code>library_llm_chat()</code>.
+</p>
+
+<h2 id='library_infer_implementation'>Infer an executable NONMEM implementation from model semantics</h2><span id='topic+library_infer_implementation'></span>
+
+<h3>Description</h3>
+
+<p>Reported ADVAN/TRANS values are retained as reported. Otherwise common
+linear one-, two-, and three-compartment models are mapped deterministically;
+ambiguous/general models retain candidates and require review.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>library_infer_implementation(
+  structural_model,
+  route = NULL,
+  parameters = list(),
+  dose = NULL
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="library_infer_implementation_+3A_structural_model">structural_model</code></td>
+<td>
+<p>Structural-model object.</p>
+</td></tr>
+<tr><td><code id="library_infer_implementation_+3A_route">route</code></td>
+<td>
+<p>Administration route.</p>
+</td></tr>
+<tr><td><code id="library_infer_implementation_+3A_parameters">parameters</code></td>
+<td>
+<p>Extracted parameter object.</p>
+</td></tr>
+<tr><td><code id="library_infer_implementation_+3A_dose">dose</code></td>
+<td>
+<p>Optional dose description.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Implementation record with provenance, rationale, and alternatives.
+</p>
+
+<h2 id='library_job'>Create a typed LibeRties literature job</h2><span id='topic+library_job'></span>
+
+<h3>Description</h3>
+
+<p>The resulting job contains data, provider/model choices and evidence only;
+it cannot contain executable R code. API keys are resolved from environment
+variables on the worker. Full-text transfer requires explicit confirmation.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>library_job(
+  task = c("triage", "parse", "index", "dual_extract", "assess", "adjudicate"),
+  metadata,
+  extraction = NULL,
+  full_text = "",
+  supplement_text = "",
+  pdf_path = NULL,
+  text_lane = NULL,
+  vision_lane = NULL,
+  comparison = NULL,
+  cfg = NULL,
+  run_assessment = TRUE,
+  confirm_transfer = FALSE,
+  label = NULL
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="library_job_+3A_task">task</code></td>
+<td>
+<p>One of <code>triage</code>, <code>parse</code>, <code>index</code>, <code>dual_extract</code>, <code>assess</code>, or
+<code>adjudicate</code>.</p>
+</td></tr>
+<tr><td><code id="library_job_+3A_metadata">metadata</code></td>
+<td>
+<p>Publication metadata.</p>
+</td></tr>
+<tr><td><code id="library_job_+3A_extraction">extraction</code></td>
+<td>
+<p>Proposed extraction for an assessment job.</p>
+</td></tr>
+<tr><td><code id="library_job_+3A_full_text">full_text</code></td>
+<td>
+<p>Optional article text.</p>
+</td></tr>
+<tr><td><code id="library_job_+3A_supplement_text">supplement_text</code></td>
+<td>
+<p>Optional supplement/control-stream text.</p>
+</td></tr>
+<tr><td><code id="library_job_+3A_pdf_path">pdf_path</code></td>
+<td>
+<p>Optional PDF for parse, dual extraction, or adjudication.</p>
+</td></tr>
+<tr><td><code id="library_job_+3A_text_lane">text_lane</code></td>
+<td>
+<p>Text-lane result for an adjudication job.</p>
+</td></tr>
+<tr><td><code id="library_job_+3A_vision_lane">vision_lane</code></td>
+<td>
+<p>Vision-lane result for an adjudication job.</p>
+</td></tr>
+<tr><td><code id="library_job_+3A_comparison">comparison</code></td>
+<td>
+<p>Field comparison for an adjudication job.</p>
+</td></tr>
+<tr><td><code id="library_job_+3A_cfg">cfg</code></td>
+<td>
+<p>LibeRary configuration.</p>
+</td></tr>
+<tr><td><code id="library_job_+3A_run_assessment">run_assessment</code></td>
+<td>
+<p>Also assess the extraction produced by an index job.</p>
+</td></tr>
+<tr><td><code id="library_job_+3A_confirm_transfer">confirm_transfer</code></td>
+<td>
+<p>Confirm that supplied text may be sent to the queue worker.</p>
+</td></tr>
+<tr><td><code id="library_job_+3A_label">label</code></td>
+<td>
+<p>Job label.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A <code>liber_job</code> accepted by local and remote LibeRties queues.
+</p>
+
+<h2 id='library_list'>List catalog entries</h2><span id='topic+library_list'></span>
+
+<h3>Description</h3>
+
+<p>List catalog entries
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>library_list(status = NULL, root = library_catalog_root())
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="library_list_+3A_status">status</code></td>
+<td>
+<p>Optional status filter (e.g. <code>"validated"</code>, <code>"stub"</code>).</p>
+</td></tr>
+<tr><td><code id="library_list_+3A_root">root</code></td>
+<td>
+<p>Catalog root; default <code>library_catalog_root()</code>.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Data frame of summary fields per entry.
+</p>
+
+<h2 id='library_llm_available'>Check whether an LLM role is usable</h2><span id='topic+library_llm_available'></span>
+
+<h3>Description</h3>
+
+<p>Check whether an LLM role is usable
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>library_llm_available(cfg = NULL, role = .library_llm_roles())
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="library_llm_available_+3A_cfg">cfg</code></td>
+<td>
+<p>LibeRary configuration.</p>
+</td></tr>
+<tr><td><code id="library_llm_available_+3A_role">role</code></td>
+<td>
+<p>One of <code>triage</code>, <code>indexing</code>, <code>vision</code>, <code>assessment</code>, or
+<code>adjudication</code>.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p><code>TRUE</code> or <code>FALSE</code>.
+</p>
+
+<h2 id='library_llm_chat'>Send a chat request through a configured LibeRary LLM role</h2><span id='topic+library_llm_chat'></span>
+
+<h3>Description</h3>
+
+<p>Send a chat request through a configured LibeRary LLM role
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>library_llm_chat(
+  messages,
+  cfg = NULL,
+  role = .library_llm_roles(),
+  format = NULL,
+  sensitive = TRUE
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="library_llm_chat_+3A_messages">messages</code></td>
+<td>
+<p>List of role/content messages.</p>
+</td></tr>
+<tr><td><code id="library_llm_chat_+3A_cfg">cfg</code></td>
+<td>
+<p>LibeRary configuration.</p>
+</td></tr>
+<tr><td><code id="library_llm_chat_+3A_role">role</code></td>
+<td>
+<p>One of <code>triage</code>, <code>indexing</code>, <code>vision</code>, <code>assessment</code>, or
+<code>adjudication</code>.</p>
+</td></tr>
+<tr><td><code id="library_llm_chat_+3A_format">format</code></td>
+<td>
+<p><code>NULL</code>, <code>"json"</code>, or a JSON schema list.</p>
+</td></tr>
+<tr><td><code id="library_llm_chat_+3A_sensitive">sensitive</code></td>
+<td>
+<p>Whether the request contains publication or patient-derived content.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A <code>library_llm_response</code> with content, model, provider, usage and timing.
+</p>
+
+<h2 id='library_llm_models'>Discover models offered by an LLM endpoint</h2><span id='topic+library_llm_models'></span>
+
+<h3>Description</h3>
+
+<p>Discover models offered by an LLM endpoint
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>library_llm_models(
+  provider = NULL,
+  cfg = NULL,
+  role = .library_llm_roles(),
+  refresh = FALSE
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="library_llm_models_+3A_provider">provider</code></td>
+<td>
+<p>Provider id from <code>library_llm_providers()</code>.</p>
+</td></tr>
+<tr><td><code id="library_llm_models_+3A_cfg">cfg</code></td>
+<td>
+<p>LibeRary configuration or <code>NULL</code>.</p>
+</td></tr>
+<tr><td><code id="library_llm_models_+3A_role">role</code></td>
+<td>
+<p>Configuration role, used for endpoint defaults.</p>
+</td></tr>
+<tr><td><code id="library_llm_models_+3A_refresh">refresh</code></td>
+<td>
+<p>Ignore the short in-memory discovery cache.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A data frame with model ids and endpoint metadata.
+</p>
+
+<h2 id='library_llm_providers'>Language-model providers available to LibeRary</h2><span id='topic+library_llm_providers'></span>
+
+<h3>Description</h3>
+
+<p><code>ollama</code> is local by default. <code>openai</code> uses the official API, while
+<code>openai_compatible</code> supports local servers and gateways implementing the
+common models and chat-completions endpoints.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>library_llm_providers()
+</code></pre>
+
+
+<h3>Value</h3>
+
+<p>A data frame describing the provider registry.
+</p>
+
+<h2 id='library_model'>Read model control stream for an entry</h2><span id='topic+library_model'></span>
+
+<h3>Description</h3>
+
+<p>Read model control stream for an entry
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>library_model(library_id, root = library_catalog_root())
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="library_model_+3A_library_id">library_id</code></td>
+<td>
+<p>Entry identifier.</p>
+</td></tr>
+<tr><td><code id="library_model_+3A_root">root</code></td>
+<td>
+<p>Catalog root.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Character vector of <code>model.ctl</code> lines.
+</p>
+
+<h2 id='library_model_enrich'>Enrich a LibeRary extraction with executable semantics</h2><span id='topic+library_model_enrich'></span>
+
+<h3>Description</h3>
+
+<p>This is backward compatible: legacy population, route, subject-count,
+structural-model, and parameter fields remain in place.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>library_model_enrich(extraction, source_locator = "")
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="library_model_enrich_+3A_extraction">extraction</code></td>
+<td>
+<p>Parsed literature extraction.</p>
+</td></tr>
+<tr><td><code id="library_model_enrich_+3A_source_locator">source_locator</code></td>
+<td>
+<p>Optional source locator used for appendix-derived data.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Enriched extraction.
+</p>
+
+<h2 id='library_population_normalize'>Normalize a reported study population into cohorts and descriptors</h2><span id='topic+library_population_normalize'></span>
+
+<h3>Description</h3>
+
+<p>The original population text is always retained. Summary-statistic records
+can coexist, so a paper may report mean/SD and a range for the same variable.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>library_population_normalize(
+  population,
+  n_subjects = NULL,
+  source_locator = ""
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="library_population_normalize_+3A_population">population</code></td>
+<td>
+<p>Reported population text or an existing normalized object.</p>
+</td></tr>
+<tr><td><code id="library_population_normalize_+3A_n_subjects">n_subjects</code></td>
+<td>
+<p>Optional legacy subject count.</p>
+</td></tr>
+<tr><td><code id="library_population_normalize_+3A_source_locator">source_locator</code></td>
+<td>
+<p>Optional page/table/appendix locator.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A normalized population object.
+</p>
+
+<h2 id='library_provenance'>Provenance and audit trail for an entry</h2><span id='topic+library_provenance'></span>
+
+<h3>Description</h3>
+
+<p>Provenance and audit trail for an entry
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>library_provenance(library_id, root = library_catalog_root())
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="library_provenance_+3A_library_id">library_id</code></td>
+<td>
+<p>Entry identifier.</p>
+</td></tr>
+<tr><td><code id="library_provenance_+3A_root">root</code></td>
+<td>
+<p>Catalog root.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>List with manifest provenance block and optional extraction files.
+</p>
+
+<h2 id='library_qualification_check'>Evaluate whether an extracted catalogue model is ready for validation</h2><span id='topic+library_qualification_check'></span>
+
+<h3>Description</h3>
+
+<p>This deterministic gate keeps machine-extracted entries quarantined until
+their evidence, mapping, control stream, and executable prediction path are
+internally consistent. Passing the gate establishes computational
+qualification; it is not evidence that the publication or model is correct.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>library_qualification_check(
+  library_id,
+  root = library_catalog_root(),
+  min_confidence = 0.8,
+  simulate = TRUE
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="library_qualification_check_+3A_library_id">library_id</code></td>
+<td>
+<p>Catalogue identifier.</p>
+</td></tr>
+<tr><td><code id="library_qualification_check_+3A_root">root</code></td>
+<td>
+<p>Catalogue root.</p>
+</td></tr>
+<tr><td><code id="library_qualification_check_+3A_min_confidence">min_confidence</code></td>
+<td>
+<p>Minimum overall extraction confidence.</p>
+</td></tr>
+<tr><td><code id="library_qualification_check_+3A_simulate">simulate</code></td>
+<td>
+<p>Run a deterministic, residual-free simulation smoke test.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A <code>library_qualification</code> report.
+</p>
+
+<h2 id='library_reference_benchmark'>Score LibeRary predictions against a reference corpus</h2><span id='topic+library_reference_benchmark'></span>
+
+<h3>Description</h3>
+
+<p>Strict and silver-tier results are reported separately. Additional values in
+a silver reference are labelled unverified extras, not hallucinations,
+because the appendix itself may be incomplete.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>library_reference_benchmark(
+  root,
+  predictions,
+  task = c("extraction", "triage"),
+  partition = "test",
+  output_dir = NULL,
+  relative_tolerance = 0.05,
+  absolute_tolerance = 1e-08,
+  probability_threshold = 0.3,
+  prediction_variant = "prediction"
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="library_reference_benchmark_+3A_root">root</code></td>
+<td>
+<p>Reference corpus root.</p>
+</td></tr>
+<tr><td><code id="library_reference_benchmark_+3A_predictions">predictions</code></td>
+<td>
+<p>Directory produced by <code>library_reference_run()</code> or an equivalent runner.</p>
+</td></tr>
+<tr><td><code id="library_reference_benchmark_+3A_task">task</code></td>
+<td>
+<p><code>"extraction"</code> or <code>"triage"</code>.</p>
+</td></tr>
+<tr><td><code id="library_reference_benchmark_+3A_partition">partition</code></td>
+<td>
+<p>Partition to score.</p>
+</td></tr>
+<tr><td><code id="library_reference_benchmark_+3A_output_dir">output_dir</code></td>
+<td>
+<p>Optional report directory.</p>
+</td></tr>
+<tr><td><code id="library_reference_benchmark_+3A_relative_tolerance">relative_tolerance</code></td>
+<td>
+<p>Relative numeric tolerance.</p>
+</td></tr>
+<tr><td><code id="library_reference_benchmark_+3A_absolute_tolerance">absolute_tolerance</code></td>
+<td>
+<p>Absolute numeric tolerance.</p>
+</td></tr>
+<tr><td><code id="library_reference_benchmark_+3A_probability_threshold">probability_threshold</code></td>
+<td>
+<p>First-pass threshold for triage sensitivity/specificity.</p>
+</td></tr>
+<tr><td><code id="library_reference_benchmark_+3A_prediction_variant">prediction_variant</code></td>
+<td>
+<p>Score the primary prediction or a stored
+<code>text</code>, <code>vision</code>, or <code>reconciled</code> dual-pipeline variant.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Benchmark summary and per-record results.
+</p>
+
+<h2 id='library_reference_build'>Build a versioned AED PK/PD reference corpus</h2><span id='topic+library_reference_build'></span>
+
+<h3>Description</h3>
+
+<p>Converts the v2 systematic-review supplement tables into a separate,
+auditable LibeRary-style JSON corpus. Appendix text is retained verbatim and
+normalized fields are marked as silver-tier until checked against the source
+publication. Article-level deterministic partitions prevent the same PMID
+from leaking between training, validation, and test data.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>library_reference_build(
+  source_dir,
+  output_dir,
+  version = "0.1.0",
+  partition_seed = 20260716L,
+  validation_fraction = 0.15,
+  test_fraction = 0.15
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="library_reference_build_+3A_source_dir">source_dir</code></td>
+<td>
+<p>Directory containing <code>Supplements</code> and the review files.</p>
+</td></tr>
+<tr><td><code id="library_reference_build_+3A_output_dir">output_dir</code></td>
+<td>
+<p>New directory for this immutable corpus version.</p>
+</td></tr>
+<tr><td><code id="library_reference_build_+3A_version">version</code></td>
+<td>
+<p>Corpus version. Use a new directory for every version.</p>
+</td></tr>
+<tr><td><code id="library_reference_build_+3A_partition_seed">partition_seed</code></td>
+<td>
+<p>Stable string or integer used for article partitions.</p>
+</td></tr>
+<tr><td><code id="library_reference_build_+3A_validation_fraction">validation_fraction</code></td>
+<td>
+<p>Fraction assigned to validation.</p>
+</td></tr>
+<tr><td><code id="library_reference_build_+3A_test_fraction">test_fraction</code></td>
+<td>
+<p>Fraction assigned to the locked test set.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Corpus manifest invisibly.
+</p>
+
+<h2 id='library_reference_compare'>Compare a systematic-review reference with a LibeRary extraction</h2><span id='topic+library_reference_compare'></span>
+
+<h3>Description</h3>
+
+<p>Returns the historical appendix transcription, the normalized reference
+target, a selected prediction variant, and a leaf-level comparison table.
+The function is read-only; curation is applied only through
+<code>library_reference_revise()</code>.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>library_reference_compare(
+  reference_id,
+  root,
+  predictions,
+  variant = "prediction",
+  relative_tolerance = 0.05,
+  absolute_tolerance = 1e-08
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="library_reference_compare_+3A_reference_id">reference_id</code></td>
+<td>
+<p>Stable model identifier in the reference corpus.</p>
+</td></tr>
+<tr><td><code id="library_reference_compare_+3A_root">root</code></td>
+<td>
+<p>Reference-corpus root.</p>
+</td></tr>
+<tr><td><code id="library_reference_compare_+3A_predictions">predictions</code></td>
+<td>
+<p>Prediction directory produced by
+<code>library_reference_run()</code> (or its <code>predictions</code> subdirectory).</p>
+</td></tr>
+<tr><td><code id="library_reference_compare_+3A_variant">variant</code></td>
+<td>
+<p>Primary <code>prediction</code> or a stored extraction variant such as
+<code>text</code>, <code>vision</code>, or <code>reconciled</code>.</p>
+</td></tr>
+<tr><td><code id="library_reference_compare_+3A_relative_tolerance">relative_tolerance</code></td>
+<td>
+<p>Relative numeric tolerance used to label matches.</p>
+</td></tr>
+<tr><td><code id="library_reference_compare_+3A_absolute_tolerance">absolute_tolerance</code></td>
+<td>
+<p>Absolute numeric tolerance used to label matches.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A list containing the record, prediction envelope, available
+variants, selected prediction, and comparison data frame.
+</p>
+
+<h2 id='library_reference_get'>Read a reference-corpus model</h2><span id='topic+library_reference_get'></span>
+
+<h3>Description</h3>
+
+<p>Read a reference-corpus model
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>library_reference_get(reference_id, root)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="library_reference_get_+3A_reference_id">reference_id</code></td>
+<td>
+<p>Stable reference id.</p>
+</td></tr>
+<tr><td><code id="library_reference_get_+3A_root">root</code></td>
+<td>
+<p>Reference corpus root.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Parsed model record.
+</p>
+
+<h2 id='library_reference_list'>List reference-corpus models</h2><span id='topic+library_reference_list'></span>
+
+<h3>Description</h3>
+
+<p>List reference-corpus models
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>library_reference_list(root, partition = NULL, tiers = NULL)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="library_reference_list_+3A_root">root</code></td>
+<td>
+<p>Reference corpus root.</p>
+</td></tr>
+<tr><td><code id="library_reference_list_+3A_partition">partition</code></td>
+<td>
+<p>Optional <code>train</code>, <code>validation</code>, or <code>test</code> filter.</p>
+</td></tr>
+<tr><td><code id="library_reference_list_+3A_tiers">tiers</code></td>
+<td>
+<p>Optional quality-tier filter.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Data frame with one row per model.
+</p>
+
+<h2 id='library_reference_release_gate'>Apply a fail-closed quality gate to a reference benchmark</h2><span id='topic+library_reference_release_gate'></span>
+
+<h3>Description</h3>
+
+<p>The gate only uses strict Tier A/B records. Silver Tier C/D results remain
+useful development evidence but can never satisfy this gate. This prevents
+an appendix-derived or otherwise incomplete reference from being presented
+as gold-standard release qualification.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>library_reference_release_gate(
+  benchmark,
+  min_strict = 20L,
+  min_scalar_coverage = 0.9,
+  min_scalar_score = 0.85,
+  min_numeric_coverage = 0.9,
+  min_numeric_accuracy = 0.9,
+  min_semantic_coverage = 0.85,
+  min_semantic_accuracy = 0.85,
+  require_complete = TRUE,
+  error = FALSE
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="library_reference_release_gate_+3A_benchmark">benchmark</code></td>
+<td>
+<p>Result from <code>library_reference_benchmark()</code>, its summary
+object, or a path to <code>summary.json</code>.</p>
+</td></tr>
+<tr><td><code id="library_reference_release_gate_+3A_min_strict">min_strict</code></td>
+<td>
+<p>Minimum number of strict Tier A/B records.</p>
+</td></tr>
+<tr><td><code id="library_reference_release_gate_+3A_min_scalar_coverage">min_scalar_coverage</code>, <code id="library_reference_release_gate_+3A_min_scalar_score">min_scalar_score</code></td>
+<td>
+<p>Minimum scalar-field metrics.</p>
+</td></tr>
+<tr><td><code id="library_reference_release_gate_+3A_min_numeric_coverage">min_numeric_coverage</code>, <code id="library_reference_release_gate_+3A_min_numeric_accuracy">min_numeric_accuracy</code></td>
+<td>
+<p>Minimum numeric-parameter
+metrics.</p>
+</td></tr>
+<tr><td><code id="library_reference_release_gate_+3A_min_semantic_coverage">min_semantic_coverage</code>, <code id="library_reference_release_gate_+3A_min_semantic_accuracy">min_semantic_accuracy</code></td>
+<td>
+<p>Minimum canonical semantic
+metrics.</p>
+</td></tr>
+<tr><td><code id="library_reference_release_gate_+3A_require_complete">require_complete</code></td>
+<td>
+<p>Require a prediction for every strict record.</p>
+</td></tr>
+<tr><td><code id="library_reference_release_gate_+3A_error">error</code></td>
+<td>
+<p>If <code>TRUE</code>, fail when any condition is not met.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A <code>library_reference_gate</code> with individual checks and an overall
+<code>passed</code> flag.
+</p>
+
+<h2 id='library_reference_revise'>Create a reviewed successor version of a reference corpus</h2><span id='topic+library_reference_revise'></span>
+
+<h3>Description</h3>
+
+<p>The source version is never edited. Curation decisions are applied to a new
+directory and recorded in each model's audit trail. Test records can be
+promoted for strict scoring but can never become training eligible.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>library_reference_revise(
+  root,
+  output_dir,
+  decisions,
+  version,
+  curator,
+  corrections = NULL
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="library_reference_revise_+3A_root">root</code></td>
+<td>
+<p>Existing reference corpus root.</p>
+</td></tr>
+<tr><td><code id="library_reference_revise_+3A_output_dir">output_dir</code></td>
+<td>
+<p>Empty directory for the successor version.</p>
+</td></tr>
+<tr><td><code id="library_reference_revise_+3A_decisions">decisions</code></td>
+<td>
+<p>Data frame or CSV path with <code>reference_id</code>, <code>tier</code>, and
+optional <code>training_eligible</code>, <code>notes</code>, and <code>review_status</code> columns.</p>
+</td></tr>
+<tr><td><code id="library_reference_revise_+3A_version">version</code></td>
+<td>
+<p>New semantic corpus version.</p>
+</td></tr>
+<tr><td><code id="library_reference_revise_+3A_curator">curator</code></td>
+<td>
+<p>Name or identifier of the reviewer.</p>
+</td></tr>
+<tr><td><code id="library_reference_revise_+3A_corrections">corrections</code></td>
+<td>
+<p>Optional data frame or CSV path containing field-level
+corrections with <code>reference_id</code>, JSON <code>pointer</code>, decision <code>source</code>, and
+<code>value_json</code>. Corrections are applied only to the successor's normalized
+<code>reference$extraction_target</code>; the historical <code>raw</code> transcription remains
+untouched.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>New manifest invisibly.
+</p>
+
+<h2 id='library_reference_run'>Run the current LibeRary pipeline on a protected reference partition</h2><span id='topic+library_reference_run'></span>
+
+<h3>Description</h3>
+
+<p>Only article metadata and source documents are supplied to the model. The
+appendix-derived target is never placed in a prompt or copied into the run
+directory. Results are resumable and can be scored separately with
+<code>library_reference_benchmark()</code>.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>library_reference_run(
+  root,
+  source_dir,
+  output_dir,
+  cfg = NULL,
+  task = c("extraction", "triage"),
+  partition = "test",
+  extraction_mode = c("dual", "text"),
+  limit = Inf,
+  resume = TRUE,
+  assess = FALSE,
+  progress = NULL
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="library_reference_run_+3A_root">root</code></td>
+<td>
+<p>Reference corpus root.</p>
+</td></tr>
+<tr><td><code id="library_reference_run_+3A_source_dir">source_dir</code></td>
+<td>
+<p>Original AED PK/PD review directory containing the PDFs.</p>
+</td></tr>
+<tr><td><code id="library_reference_run_+3A_output_dir">output_dir</code></td>
+<td>
+<p>Directory for prediction envelopes.</p>
+</td></tr>
+<tr><td><code id="library_reference_run_+3A_cfg">cfg</code></td>
+<td>
+<p>LibeRary configuration.</p>
+</td></tr>
+<tr><td><code id="library_reference_run_+3A_task">task</code></td>
+<td>
+<p><code>"extraction"</code> or <code>"triage"</code>.</p>
+</td></tr>
+<tr><td><code id="library_reference_run_+3A_partition">partition</code></td>
+<td>
+<p>Protected partition to run.</p>
+</td></tr>
+<tr><td><code id="library_reference_run_+3A_extraction_mode">extraction_mode</code></td>
+<td>
+<p>For extraction, use the complete independent
+text/vision/adjudication pipeline or the legacy text-only lane.</p>
+</td></tr>
+<tr><td><code id="library_reference_run_+3A_limit">limit</code></td>
+<td>
+<p>Optional maximum number of unique articles.</p>
+</td></tr>
+<tr><td><code id="library_reference_run_+3A_resume">resume</code></td>
+<td>
+<p>Reuse completed prediction files.</p>
+</td></tr>
+<tr><td><code id="library_reference_run_+3A_assess">assess</code></td>
+<td>
+<p>Run LibeRary's independent assessment after extraction.</p>
+</td></tr>
+<tr><td><code id="library_reference_run_+3A_progress">progress</code></td>
+<td>
+<p>Optional callback accepting fraction, message, index, total.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Run manifest invisibly.
+</p>
+
+<h2 id='library_reference_shiny'>Launch the LibeRary reference comparison and curation application</h2><span id='topic+library_reference_shiny'></span>
+
+<h3>Description</h3>
+
+<p>Displays the historical systematic-review appendix, normalized reference,
+and a selected LibeRary extraction side by side. Field decisions are kept in
+session until the reviewer explicitly creates an immutable successor corpus.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>library_reference_shiny(
+  corpus = NULL,
+  predictions = NULL,
+  source_dir = NULL,
+  host = "127.0.0.1",
+  port = NULL,
+  launch.browser = TRUE
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="library_reference_shiny_+3A_corpus">corpus</code></td>
+<td>
+<p>Reference-corpus root. When <code>NULL</code>, the application tries
+<code>LIBERARY_REFERENCE_ROOT</code> and the local validation directory.</p>
+</td></tr>
+<tr><td><code id="library_reference_shiny_+3A_predictions">predictions</code></td>
+<td>
+<p>Prediction directory produced by
+<code>library_reference_run()</code>.</p>
+</td></tr>
+<tr><td><code id="library_reference_shiny_+3A_source_dir">source_dir</code></td>
+<td>
+<p>Original systematic-review directory used to locate PDFs.</p>
+</td></tr>
+<tr><td><code id="library_reference_shiny_+3A_host">host</code></td>
+<td>
+<p>Passed to <code>shiny::runApp()</code>.</p>
+</td></tr>
+<tr><td><code id="library_reference_shiny_+3A_port">port</code></td>
+<td>
+<p>Port or <code>NULL</code>.</p>
+</td></tr>
+<tr><td><code id="library_reference_shiny_+3A_launch.browser">launch.browser</code></td>
+<td>
+<p>Open a browser.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Invisibly, the Shiny app object.
+</p>
+
+<h2 id='library_reference_training_export'>Export leakage-checked adapter-training examples</h2><span id='topic+library_reference_training_export'></span>
+
+<h3>Description</h3>
+
+<p>Extraction examples pair source-paper text with reviewed JSON targets. The
+appendix text itself is never included in the user message. By default only
+reviewed A/B records explicitly marked training-eligible are exported.
+Locked test data is rejected unconditionally.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>library_reference_training_export(
+  root,
+  source_dir,
+  output_dir,
+  tasks = c("extraction", "triage"),
+  partitions = c("train", "validation"),
+  tiers = c("A", "B"),
+  allow_silver = FALSE,
+  require_training_eligible = TRUE,
+  max_source_chars = 60000L
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="library_reference_training_export_+3A_root">root</code></td>
+<td>
+<p>Reference corpus root.</p>
+</td></tr>
+<tr><td><code id="library_reference_training_export_+3A_source_dir">source_dir</code></td>
+<td>
+<p>Original AED PK/PD review directory containing PDFs.</p>
+</td></tr>
+<tr><td><code id="library_reference_training_export_+3A_output_dir">output_dir</code></td>
+<td>
+<p>Empty or existing output directory.</p>
+</td></tr>
+<tr><td><code id="library_reference_training_export_+3A_tasks">tasks</code></td>
+<td>
+<p>Any of <code>"extraction"</code> and <code>"triage"</code>.</p>
+</td></tr>
+<tr><td><code id="library_reference_training_export_+3A_partitions">partitions</code></td>
+<td>
+<p>Training/development partitions; <code>test</code> is forbidden.</p>
+</td></tr>
+<tr><td><code id="library_reference_training_export_+3A_tiers">tiers</code></td>
+<td>
+<p>Eligible quality tiers.</p>
+</td></tr>
+<tr><td><code id="library_reference_training_export_+3A_allow_silver">allow_silver</code></td>
+<td>
+<p>Permit C/D extraction targets for experiments. These are
+labelled silver and should not be used for a production adapter.</p>
+</td></tr>
+<tr><td><code id="library_reference_training_export_+3A_require_training_eligible">require_training_eligible</code></td>
+<td>
+<p>Require the model-level review flag.</p>
+</td></tr>
+<tr><td><code id="library_reference_training_export_+3A_max_source_chars">max_source_chars</code></td>
+<td>
+<p>Maximum source-paper characters per extraction example.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Export manifest invisibly.
+</p>
+
+<h2 id='library_reference_training_files'>Locate the optional local-adapter training tools</h2><span id='topic+library_reference_training_files'></span>
+
+<h3>Description</h3>
+
+<p>Locate the optional local-adapter training tools
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>library_reference_training_files()
+</code></pre>
+
+
+<h3>Value</h3>
+
+<p>Named paths to the Python trainer and its requirements file.
+</p>
+
+<h2 id='library_reference_validate'>Validate a reference corpus and its leakage safeguards</h2><span id='topic+library_reference_validate'></span>
+
+<h3>Description</h3>
+
+<p>Validate a reference corpus and its leakage safeguards
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>library_reference_validate(root, check_hashes = FALSE, source_dir = NULL)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="library_reference_validate_+3A_root">root</code></td>
+<td>
+<p>Reference corpus root.</p>
+</td></tr>
+<tr><td><code id="library_reference_validate_+3A_check_hashes">check_hashes</code></td>
+<td>
+<p>Recompute locally available appendix/PDF hashes when <code>source_dir</code> is supplied.</p>
+</td></tr>
+<tr><td><code id="library_reference_validate_+3A_source_dir">source_dir</code></td>
+<td>
+<p>Optional original AED PK/PD review directory.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A list containing <code>valid</code>, <code>errors</code>, <code>warnings</code>, and counts.
+</p>
+
+<h2 id='library_repository_wipe'>Permanently empty the mutable LibeRary repository</h2><span id='topic+library_repository_wipe'></span>
+
+<h3>Description</h3>
+
+<p>Removes all LibeRary-managed catalogue entries, acquired publications,
+parsed documents, manifests, triage records, caches, and job logs beneath
+<code>data_dir</code>. The upgrade-safe configuration YAML and any unrelated files in
+the data-directory root are retained. Package-bundled example entries are
+not copied back into a repository explicitly emptied by this function.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>library_repository_wipe(confirmation, data_dir = library_home())
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="library_repository_wipe_+3A_confirmation">confirmation</code></td>
+<td>
+<p>Must be exactly <code>"YES"</code> (case-sensitive).</p>
+</td></tr>
+<tr><td><code id="library_repository_wipe_+3A_data_dir">data_dir</code></td>
+<td>
+<p>Persistent LibeRary data directory.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A summary containing the normalized root and number of removed
+filesystem entries, invisibly.
+</p>
+
+<h2 id='library_reproduction_plan'>Prepare an auditable article-reproduction plan</h2><span id='topic+library_reproduction_plan'></span>
+
+<h3>Description</h3>
+
+<p>A plan is conservative by default: generated parameter defaults block
+execution unless explicitly allowed. Missing concentration targets do not
+prevent simulation, but they do prevent quantitative reproduction scoring.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>library_reproduction_plan(
+  extraction,
+  times = NULL,
+  n_subjects = NULL,
+  allow_generated_defaults = FALSE
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="library_reproduction_plan_+3A_extraction">extraction</code></td>
+<td>
+<p>Enriched or legacy LibeRary extraction.</p>
+</td></tr>
+<tr><td><code id="library_reproduction_plan_+3A_times">times</code></td>
+<td>
+<p>Optional simulation times.</p>
+</td></tr>
+<tr><td><code id="library_reproduction_plan_+3A_n_subjects">n_subjects</code></td>
+<td>
+<p>Optional synthetic-population size.</p>
+</td></tr>
+<tr><td><code id="library_reproduction_plan_+3A_allow_generated_defaults">allow_generated_defaults</code></td>
+<td>
+<p>Permit generated model parameters.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A <code>library_reproduction_plan</code>.
+</p>
+
+<h2 id='library_reproduction_run'>Execute an article-reproduction plan with LibeRation</h2><span id='topic+library_reproduction_run'></span>
+
+<h3>Description</h3>
+
+<p>Execute an article-reproduction plan with LibeRation
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>library_reproduction_run(
+  x,
+  output_dir = NULL,
+  nsim = 200L,
+  seed = 20260716L,
+  n_cores = 1L,
+  allow_generated_defaults = FALSE
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="library_reproduction_run_+3A_x">x</code></td>
+<td>
+<p>Extraction or object returned by <code>library_reproduction_plan()</code>.</p>
+</td></tr>
+<tr><td><code id="library_reproduction_run_+3A_output_dir">output_dir</code></td>
+<td>
+<p>Optional artifact directory.</p>
+</td></tr>
+<tr><td><code id="library_reproduction_run_+3A_nsim">nsim</code></td>
+<td>
+<p>Number of population simulations.</p>
+</td></tr>
+<tr><td><code id="library_reproduction_run_+3A_seed">seed</code></td>
+<td>
+<p>RNG seed.</p>
+</td></tr>
+<tr><td><code id="library_reproduction_run_+3A_n_cores">n_cores</code></td>
+<td>
+<p>Simulation workers.</p>
+</td></tr>
+<tr><td><code id="library_reproduction_run_+3A_allow_generated_defaults">allow_generated_defaults</code></td>
+<td>
+<p>Allow generated parameter defaults.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A <code>library_reproduction_result</code>.
+</p>
+
+<h2 id='library_reproduction_score'>Compare simulated and digitized concentration-time targets</h2><span id='topic+library_reproduction_score'></span>
+
+<h3>Description</h3>
+
+<p>Compare simulated and digitized concentration-time targets
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>library_reproduction_score(simulated, targets, value = "IPRED")
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="library_reproduction_score_+3A_simulated">simulated</code></td>
+<td>
+<p>Simulation output from LibeRation.</p>
+</td></tr>
+<tr><td><code id="library_reproduction_score_+3A_targets">targets</code></td>
+<td>
+<p>Target data frame from a reproduction plan.</p>
+</td></tr>
+<tr><td><code id="library_reproduction_score_+3A_value">value</code></td>
+<td>
+<p>Simulation column, normally <code>IPRED</code> or <code>DV</code>.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Per-point comparison and summary metrics.
+</p>
+
+<h2 id='library_review'>Record a human review decision</h2><span id='topic+library_review'></span>
+
+<h3>Description</h3>
+
+<p>Status changes are auditable. Promotion to <code>validated</code> requires an explicit
+confirmation when any model code or parameter value was generated.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>library_review(
+  library_id,
+  status = c("review", "validated", "deprecated"),
+  reviewer,
+  notes = "",
+  confirm_generated = FALSE,
+  root = library_catalog_root()
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="library_review_+3A_library_id">library_id</code></td>
+<td>
+<p>Catalogue id.</p>
+</td></tr>
+<tr><td><code id="library_review_+3A_status">status</code></td>
+<td>
+<p>New workflow status.</p>
+</td></tr>
+<tr><td><code id="library_review_+3A_reviewer">reviewer</code></td>
+<td>
+<p>Reviewer name or identifier.</p>
+</td></tr>
+<tr><td><code id="library_review_+3A_notes">notes</code></td>
+<td>
+<p>Review notes.</p>
+</td></tr>
+<tr><td><code id="library_review_+3A_confirm_generated">confirm_generated</code></td>
+<td>
+<p>Confirm that generated suggestions were reviewed.</p>
+</td></tr>
+<tr><td><code id="library_review_+3A_root">root</code></td>
+<td>
+<p>Catalogue root.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Updated manifest, invisibly.
+</p>
+
+<h2 id='library_save_config'>Save upgrade-safe LibeRary settings</h2><span id='topic+library_save_config'></span>
+
+<h3>Description</h3>
+
+<p>API keys are removed before writing; configure their environment-variable
+names in YAML and put the actual secrets in the worker environment.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>library_save_config(cfg, path = library_config_path(create = TRUE))
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="library_save_config_+3A_cfg">cfg</code></td>
+<td>
+<p>LibeRary configuration.</p>
+</td></tr>
+<tr><td><code id="library_save_config_+3A_path">path</code></td>
+<td>
+<p>Destination YAML path.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Path, invisibly.
+</p>
+
+<h2 id='library_search'>Search the catalog</h2><span id='topic+library_search'></span>
+
+<h3>Description</h3>
+
+<p>Keyword search over title, compound, population, keywords, and abstract
+(when present in manifest).
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>library_search(
+  query = "",
+  compound = NULL,
+  population = NULL,
+  status = NULL,
+  min_confidence = NULL,
+  advan = NULL,
+  model_type = NULL,
+  assessment = NULL,
+  root = library_catalog_root()
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="library_search_+3A_query">query</code></td>
+<td>
+<p>Free-text query (case-insensitive).</p>
+</td></tr>
+<tr><td><code id="library_search_+3A_compound">compound</code></td>
+<td>
+<p>Filter by compound name (partial match).</p>
+</td></tr>
+<tr><td><code id="library_search_+3A_population">population</code></td>
+<td>
+<p>Filter by population (partial match).</p>
+</td></tr>
+<tr><td><code id="library_search_+3A_status">status</code></td>
+<td>
+<p>Filter by status.</p>
+</td></tr>
+<tr><td><code id="library_search_+3A_min_confidence">min_confidence</code></td>
+<td>
+<p>Minimum overall confidence score.</p>
+</td></tr>
+<tr><td><code id="library_search_+3A_advan">advan</code></td>
+<td>
+<p>Optional ADVAN number.</p>
+</td></tr>
+<tr><td><code id="library_search_+3A_model_type">model_type</code></td>
+<td>
+<p>Optional model type (<code>pk</code>, <code>pd</code>, or <code>pkpd</code>).</p>
+</td></tr>
+<tr><td><code id="library_search_+3A_assessment">assessment</code></td>
+<td>
+<p>Optional assessment verdict.</p>
+</td></tr>
+<tr><td><code id="library_search_+3A_root">root</code></td>
+<td>
+<p>Catalog root.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Data frame of matching entries (same columns as <code>library_list()</code>).
+</p>
+
+<h2 id='library_shiny'>Launch the LibeRary catalog browser (Shiny)</h2><span id='topic+library_shiny'></span>
+
+<h3>Description</h3>
+
+<p>Browse pharmacometric models in the catalog: search, filter, inspect manifests,
+preview control streams, and import entries into a LibeRation workspace.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>library_shiny(
+  catalog = NULL,
+  mode = c("catalog", "ingest", "reference"),
+  host = "127.0.0.1",
+  port = NULL,
+  launch.browser = TRUE,
+  reference_root = NULL,
+  predictions = NULL,
+  source_dir = NULL
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="library_shiny_+3A_catalog">catalog</code></td>
+<td>
+<p>Root directory of the catalog (see <code>library_catalog_root()</code>).</p>
+</td></tr>
+<tr><td><code id="library_shiny_+3A_mode">mode</code></td>
+<td>
+<p>Open the catalogue browser, literature-ingestion workflow, or
+reference comparison and curation workflow.</p>
+</td></tr>
+<tr><td><code id="library_shiny_+3A_host">host</code></td>
+<td>
+<p>Passed to <code>runApp</code>.</p>
+</td></tr>
+<tr><td><code id="library_shiny_+3A_port">port</code></td>
+<td>
+<p>Port; <code>NULL</code> picks a random free port.</p>
+</td></tr>
+<tr><td><code id="library_shiny_+3A_launch.browser">launch.browser</code></td>
+<td>
+<p>Open browser when <code>TRUE</code>.</p>
+</td></tr>
+<tr><td><code id="library_shiny_+3A_reference_root">reference_root</code></td>
+<td>
+<p>Optional reference-corpus root used in <code>reference</code> mode.</p>
+</td></tr>
+<tr><td><code id="library_shiny_+3A_predictions">predictions</code></td>
+<td>
+<p>Optional benchmark prediction directory used in
+<code>reference</code> mode.</p>
+</td></tr>
+<tr><td><code id="library_shiny_+3A_source_dir">source_dir</code></td>
+<td>
+<p>Optional source-review directory used to open publication
+PDFs in <code>reference</code> mode.</p>
+</td></tr>
+</table>
+
+
+<h3>Details</h3>
+
+<p>Requires Suggested packages <span class="pkg">shiny</span> and <span class="pkg">DT</span>.
+</p>
+
+
+<h3>Value</h3>
+
+<p>Invisibly, the Shiny app object.
+</p>
+
+<h2 id='library_source_pdf'>Locate the source PDF for a catalogue entry</h2><span id='topic+library_source_pdf'></span>
+
+<h3>Description</h3>
+
+<p>Resolves the immutable document bundle recorded in the entry provenance and
+falls back to the persistent ingest inbox for older entries.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>library_source_pdf(library_id, root = library_catalog_root())
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="library_source_pdf_+3A_library_id">library_id</code></td>
+<td>
+<p>Entry identifier.</p>
+</td></tr>
+<tr><td><code id="library_source_pdf_+3A_root">root</code></td>
+<td>
+<p>Catalog root.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Normalized PDF path, or an empty string when no source PDF is available.
+</p>
+
+<h2 id='library_use_in_workspace'>Import a catalogue model into a LibeRation workspace</h2><span id='topic+library_use_in_workspace'></span>
+
+<h3>Description</h3>
+
+<p>The control stream is parsed and compiled by LibeRation before it is stored.
+Catalogue identity, version, evidence provenance, and qualification state are
+retained in the immutable model-version provenance record.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>library_use_in_workspace(
+  library_id,
+  project = NULL,
+  workspace = NULL,
+  version_label = NULL,
+  root = library_catalog_root()
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="library_use_in_workspace_+3A_library_id">library_id</code></td>
+<td>
+<p>Catalogue entry id.</p>
+</td></tr>
+<tr><td><code id="library_use_in_workspace_+3A_project">project</code></td>
+<td>
+<p>Existing project id or a name for a new project. By default a
+stable project id is derived from <code>library_id</code>.</p>
+</td></tr>
+<tr><td><code id="library_use_in_workspace_+3A_workspace">workspace</code></td>
+<td>
+<p>An <code>nm_workspace</code>, path, or <code>NULL</code> for LibeRation's default.</p>
+</td></tr>
+<tr><td><code id="library_use_in_workspace_+3A_version_label">version_label</code></td>
+<td>
+<p>Optional model-version label.</p>
+</td></tr>
+<tr><td><code id="library_use_in_workspace_+3A_root">root</code></td>
+<td>
+<p>Catalogue root.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Project id, model-version id, workspace, and compatibility report.
+</p>
+
+<h2 id='library_validate'>Validate a LibeRary manifest or catalogue entry</h2><span id='topic+library_validate'></span>
+
+<h3>Description</h3>
+
+<p>Validate a LibeRary manifest or catalogue entry
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>library_validate(
+  library_id = NULL,
+  manifest = NULL,
+  root = library_catalog_root(),
+  check_artifact = TRUE
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="library_validate_+3A_library_id">library_id</code></td>
+<td>
+<p>Optional catalogue id.</p>
+</td></tr>
+<tr><td><code id="library_validate_+3A_manifest">manifest</code></td>
+<td>
+<p>Optional parsed manifest.</p>
+</td></tr>
+<tr><td><code id="library_validate_+3A_root">root</code></td>
+<td>
+<p>Catalogue root.</p>
+</td></tr>
+<tr><td><code id="library_validate_+3A_check_artifact">check_artifact</code></td>
+<td>
+<p>Verify that the model artifact exists.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A list of <code>valid</code>, <code>errors</code>, and <code>warnings</code>.
+</p>
+
+<h2 id='library_worker_task'>Execute a typed LibeRary worker task</h2><span id='topic+library_worker_task'></span>
+
+<h3>Description</h3>
+
+<p>This is the only LibeRary entry point callable by LibeRties workers.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>library_worker_task(type, payload, arguments = list())
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="library_worker_task_+3A_type">type</code></td>
+<td>
+<p>A typed LibeRary pipeline job.</p>
+</td></tr>
+<tr><td><code id="library_worker_task_+3A_payload">payload</code></td>
+<td>
+<p>Validated data payload.</p>
+</td></tr>
+<tr><td><code id="library_worker_task_+3A_arguments">arguments</code></td>
+<td>
+<p>Named task controls.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Extraction or assessment result.
+</p>
+
+</body></html>
