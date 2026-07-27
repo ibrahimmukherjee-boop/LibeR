@@ -145,7 +145,13 @@ downloaded <- utils::download.packages(
   type = "source",
   quiet = FALSE
 )
-downloaded <- stats::setNames(downloaded[, "destfile"], downloaded[, "Package"])
+if (!is.matrix(downloaded) || ncol(downloaded) != 2L) {
+  stop("CRAN returned an unexpected source-download index.", call. = FALSE)
+}
+downloaded <- stats::setNames(
+  downloaded[, 2L, drop = TRUE],
+  downloaded[, 1L, drop = TRUE]
+)
 for (package in dependencies$Package) {
   archive <- unname(downloaded[[package]])
   version <- dependencies[package, "Version"]
