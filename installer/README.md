@@ -44,7 +44,9 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass `
 ```
 
 Use `-PlanOnly` to validate inputs and generate the build plan without copying
-the runtime or installing packages.
+the runtime or installing packages. If staging completed but a later packaging
+step failed, `-SkipStage` reuses it only after verifying its release, profile,
+commit, publishable flag, and safety marker.
 
 The build requires Inno Setup 6 (`ISCC.exe`). The output installer and its
 SHA-256 manifest are written to the external LibeR development cache by

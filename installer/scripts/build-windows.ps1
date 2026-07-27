@@ -6,7 +6,8 @@ param(
   [string]$OutputDirectory = "",
   [string]$ISCC = "",
   [switch]$PlanOnly,
-  [switch]$AllowDirty
+  [switch]$AllowDirty,
+  [switch]$SkipStage
 )
 
 $ErrorActionPreference = "Stop"
@@ -32,25 +33,53 @@ if (-not $OutputDirectory) {
   $OutputDirectory = Join-Path $devCache "installer\output\$release"
 }
 
-$stageArguments = @{
-  Profile = $Profile
-  Root = $Root
-  StageDirectory = $StageDirectory
-  PlanOnly = $PlanOnly
-  AllowDirty = $AllowDirty
+if ($SkipStage -and $PlanOnly) {
+  throw "-SkipStage and -PlanOnly cannot be combined."
 }
-& (Join-Path $PSScriptRoot "stage-runtime.ps1") @stageArguments
-if ($PlanOnly) { exit $LASTEXITCODE }
+if (-not $SkipStage) {
+  $stageArguments = @{
+    Profile = $Profile
+    Root = $Root
+    StageDirectory = $StageDirectory
+    PlanOnly = $PlanOnly
+    AllowDirty = $AllowDirty
+  }
+  & (Join-Path $PSScriptRoot "stage-runtime.ps1") @stageArguments
+  if ($PlanOnly) { exit $LASTEXITCODE }
+} else {
+  $tracked = @(git -C $Root status --porcelain=v1 --untracked-files=all)
+  if ($tracked.Count) {
+    throw "-SkipStage requires a clean source checkout."
+  }
+  $stageMarker = Join-Path $StageDirectory ".liber-installer-stage.json"
+  $planPath = Join-Path $StageDirectory "build-plan.json"
+  if (-not (Test-Path -LiteralPath $stageMarker) -or
+      -not (Test-Path -LiteralPath $planPath)) {
+    throw "-SkipStage requires a marked, completed stage directory."
+  }
+  $plan = Get-Content -LiteralPath $planPath -Raw | ConvertFrom-Json
+  $currentCommit = (git -C $Root rev-parse HEAD).Trim()
+  if ([string]$plan.schema -ne "liber.installer-plan/1" -or
+      [string]$plan.release -ne $release -or
+      [string]$plan.profile -ne $Profile.ToLower() -or
+      [string]$plan.source_commit -ne $currentCommit -or
+      -not [bool]$plan.publishable) {
+    throw "The existing installer stage does not match the current source."
+  }
+}
 
 if (-not $ISCC) {
-  $candidates = @(
-    $env:INNO_SETUP_HOME | ForEach-Object {
-      if ($_) { Join-Path $_ "ISCC.exe" }
-    },
+  $candidates = @()
+  if ($env:INNO_SETUP_HOME) {
+    $candidates += Join-Path $env:INNO_SETUP_HOME "ISCC.exe"
+  }
+  $candidates += @(
     "$env:ProgramFiles(x86)\Inno Setup 6\ISCC.exe",
     "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe"
-  ) | Where-Object { $_ -and (Test-Path -LiteralPath $_) }
-  $ISCC = $candidates | Select-Object -First 1
+  )
+  $ISCC = $candidates |
+    Where-Object { $_ -and (Test-Path -LiteralPath $_) } |
+    Select-Object -First 1
 }
 if (-not $ISCC) {
   throw "Inno Setup 6 was not found. Install it or pass -ISCC."
