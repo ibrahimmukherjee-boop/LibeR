@@ -6,8 +6,10 @@ liber_installer_layout_check <- function(root = getwd()) {
     "installer/launchers/launch.R",
     "installer/scripts/build-windows.ps1",
     "installer/scripts/build-icon.py",
+    "installer/scripts/collect-sources.R",
     "installer/scripts/populate-library.R",
     "installer/scripts/stage-runtime.ps1",
+    "installer/legal/SOURCE-OFFER.txt",
     "installer/windows/liber.ico",
     "installer/windows/LibeR.iss"
   )
@@ -27,7 +29,7 @@ liber_installer_layout_check <- function(root = getwd()) {
     identical(config$schema, "liber.installer/1"),
     identical(config$runtime$r_version, "4.6.0"),
     identical(config$runtime$r_platform, "x86_64-w64-mingw32"),
-    isTRUE(config$research_profile$include_cpp_toolchain),
+    identical(config$research_profile$include_cpp_toolchain, FALSE),
     isTRUE(config$research_profile$include_package_sources),
     identical(config$runtime_profile$include_cpp_toolchain, FALSE),
     identical(config$runtime_profile$include_package_sources, FALSE)
@@ -60,6 +62,16 @@ liber_installer_layout_check <- function(root = getwd()) {
     grepl('"PopED"', population, fixed = TRUE) == FALSE,
     grepl("runtime_optional", population, fixed = TRUE),
     grepl("research_optional", population, fixed = TRUE)
+  )
+
+  collector <- paste(readLines(
+    file.path(root, "installer", "scripts", "collect-sources.R"),
+    warn = FALSE
+  ), collapse = "\n")
+  stopifnot(
+    grepl("/src/base/R-", collector, fixed = TRUE),
+    grepl("download.packages", collector, fixed = TRUE),
+    grepl("sources.csv", collector, fixed = TRUE)
   )
 
   inno <- paste(readLines(

@@ -20,7 +20,7 @@
     "include_r_headers": true,
     "include_package_headers": true,
     "include_package_sources": true,
-    "include_cpp_toolchain": true
+    "include_cpp_toolchain": false
   },
   "data_roots": {
     "workspace": "Documents/LibeR/workspace",

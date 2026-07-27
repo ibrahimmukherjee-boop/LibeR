@@ -1,0 +1,19 @@
+LibeR bundled-runtime corresponding source
+===========================================
+
+The LibeR installer redistributes R and open-source R packages in binary form.
+The exact corresponding source archives, versions, origins, and SHA-256
+checksums are provided in the companion
+`LibeR-<version>-corresponding-source.zip` archive. Research-profile
+installations also include this material under `developer\sources`.
+
+For components licensed under the GNU General Public License, the distributor
+offers to provide the same machine-readable corresponding source for at least
+three years after the last distribution of the applicable installer, for no
+more than the reasonable physical cost of providing it. Requests can be made
+through https://github.com/svdijkman/LibeR/issues.
+
+Each component remains subject to its own licence. Installed package metadata,
+licence files, provenance records, and the generated `sources.csv` manifest
+identify the redistributed versions. This notice does not replace the licence
+texts shipped with R or individual packages.

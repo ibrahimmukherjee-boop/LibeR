@@ -57,6 +57,50 @@ if (-not $ISCC) {
 }
 New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
 
+$sourceDirectory = if ($Profile -eq "Research") {
+  Join-Path $StageDirectory "developer\sources"
+} else {
+  Join-Path $OutputDirectory "$release-corresponding-source"
+}
+if ($Profile -eq "Runtime") {
+  $sourceMarker = Join-Path $sourceDirectory ".liber-corresponding-source.json"
+  if (Test-Path -LiteralPath $sourceDirectory) {
+    if (-not (Test-Path -LiteralPath $sourceMarker)) {
+      throw "Refusing to replace an unmarked corresponding-source directory."
+    }
+    $marker = Get-Content -LiteralPath $sourceMarker -Raw | ConvertFrom-Json
+    if ([string]$marker.schema -ne "liber.corresponding-source/1" -or
+        [string]$marker.release -ne $release) {
+      throw "The existing corresponding-source marker is invalid."
+    }
+    Remove-Item -LiteralPath $sourceDirectory -Recurse -Force
+  }
+  New-Item -ItemType Directory -Path $sourceDirectory -Force | Out-Null
+  & (Join-Path $StageDirectory "runtime\R\bin\Rscript.exe") `
+    (Join-Path $Root "installer\scripts\collect-sources.R") `
+    "--root=$Root" "--library=$(Join-Path $StageDirectory 'library')" `
+    "--destination=$sourceDirectory"
+  if ($LASTEXITCODE -ne 0) {
+    throw "Unable to collect the corresponding-source archive."
+  }
+  [ordered]@{
+    schema = "liber.corresponding-source/1"
+    release = $release
+    created_at_utc = [DateTime]::UtcNow.ToString("o")
+  } | ConvertTo-Json | Set-Content -LiteralPath $sourceMarker -Encoding UTF8
+}
+if (-not (Test-Path -LiteralPath (Join-Path $sourceDirectory "sources.csv"))) {
+  throw "The staged corresponding-source manifest is missing."
+}
+$sourceArchive = Join-Path (
+  $OutputDirectory
+) "LibeR-$release-corresponding-source.zip"
+if (Test-Path -LiteralPath $sourceArchive) {
+  Remove-Item -LiteralPath $sourceArchive -Force
+}
+Compress-Archive -Path (Join-Path $sourceDirectory "*") `
+  -DestinationPath $sourceArchive -CompressionLevel Optimal
+
 $definition = @(
   "/Qp",
   "/DStageDir=$StageDirectory",
@@ -68,8 +112,9 @@ $definition = @(
 & $ISCC @definition (Join-Path $Root "installer\windows\LibeR.iss")
 if ($LASTEXITCODE -ne 0) { throw "Inno Setup compilation failed." }
 
-$installers = Get-ChildItem -LiteralPath $OutputDirectory -File -Filter "*.exe"
-$checksums = foreach ($file in $installers) {
+$artifacts = Get-ChildItem -LiteralPath $OutputDirectory -File |
+  Where-Object { $_.Extension -in @(".exe", ".zip") }
+$checksums = foreach ($file in $artifacts) {
   "{0}  {1}" -f (
     Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256
   ).Hash, $file.Name

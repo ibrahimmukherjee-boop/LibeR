@@ -54,7 +54,7 @@ Name: "custom"; Description: "Custom installation"; Flags: iscustom
 [Components]
 #if InstallerProfile == "research"
 Name: "runtime"; Description: "LibeR private R runtime and applications"; Types: full runtime custom; Flags: fixed
-Name: "developer"; Description: "Developer SDK, source archives and private C++ toolchain"; Types: full
+Name: "developer"; Description: "Developer headers and source archives"; Types: full
 #else
 Name: "runtime"; Description: "LibeR private R runtime and applications"; Types: runtime custom; Flags: fixed
 #endif

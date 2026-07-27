@@ -23,22 +23,6 @@ Sys.setenv(
   LIBER_RUNTIME_ROOT = install_root
 )
 
-toolchain <- file.path(install_root, "developer", "rtools")
-if (dir.exists(toolchain)) {
-  compiler <- file.path(
-    toolchain, "x86_64-w64-mingw32.static.posix", "bin"
-  )
-  utilities <- file.path(toolchain, "usr", "bin")
-  available <- c(compiler, utilities)[dir.exists(c(compiler, utilities))]
-  if (length(available)) {
-    Sys.setenv(PATH = paste(
-      c(normalizePath(available, winslash = "/", mustWork = TRUE),
-        Sys.getenv("PATH")),
-      collapse = .Platform$path.sep
-    ))
-  }
-}
-
 launchers <- list(
   libertad = function() LibeRtAD::libertad_gui(),
   liberation = function() LibeRation::liber_gui(),

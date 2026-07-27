@@ -63,8 +63,11 @@ directory. It does not modify a system R installation or take ownership of
 application data under `Documents`.
 
 Early research installers include an optional developer component with package
-sources, CppAD/Eigen and R headers, and a private C++ toolchain. The mature
-runtime profile uses the same layout but omits those files.
+sources and CppAD/Eigen and R headers. The official matching Rtools release is
+used to build the installer but is not redistributed; users who compile
+packages install Rtools separately. The mature runtime profile uses the same
+layout but omits development files. Both profiles are accompanied by an exact
+corresponding-source archive for redistributed open-source components.
 
 Build and validate the Windows installer from a source checkout with:
 

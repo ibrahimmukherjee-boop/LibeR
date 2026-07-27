@@ -107,7 +107,7 @@ $plan = [ordered]@{
   r_platform = $rPlatform
   build_rtools_home = $RtoolsHome
   include_developer = $includeDeveloper
-  bundled_rtools_home = if ($includeDeveloper) { $RtoolsHome } else { $null }
+  bundled_rtools_home = $null
   publishable = -not [bool]$tracked.Count
   source_commit = (git -C $Root rev-parse HEAD).Trim()
   created_at_utc = [DateTime]::UtcNow.ToString("o")
@@ -178,29 +178,14 @@ Copy-Item -LiteralPath (Join-Path $Root "installer\launchers\doctor.R") `
   -Destination $app
 Copy-Item -LiteralPath (Join-Path $Root "installer\windows\liber.ico") `
   -Destination $app
+Copy-Item -LiteralPath (
+  Join-Path $Root "installer\legal\SOURCE-OFFER.txt"
+) -Destination $app
 Copy-Item -LiteralPath (Join-Path $Root "ecosystem.json") -Destination $app
 Copy-Item -LiteralPath (Join-Path $Root "LICENSES") -Destination $app -Recurse
 
 if ($includeDeveloper) {
   New-Item -ItemType Directory -Path $developer -Force | Out-Null
-  $bundledRtools = Join-Path $developer "rtools"
-  New-Item -ItemType Directory -Path $bundledRtools -Force | Out-Null
-  foreach ($name in @(
-      "x86_64-w64-mingw32.static.posix", "usr", "etc", "var"
-    )) {
-    $source = Join-Path $RtoolsHome $name
-    if (Test-Path -LiteralPath $source) {
-      Copy-Item -LiteralPath $source -Destination (
-        Join-Path $bundledRtools $name
-      ) -Recurse
-    }
-  }
-  foreach ($name in @("autorebase.bat", "msys2.exe", "msys2_shell.cmd")) {
-    $source = Join-Path $RtoolsHome $name
-    if (Test-Path -LiteralPath $source) {
-      Copy-Item -LiteralPath $source -Destination $bundledRtools
-    }
-  }
   $sources = Join-Path $developer "sources"
   New-Item -ItemType Directory -Path $sources -Force | Out-Null
 }
@@ -212,23 +197,11 @@ if ($includeDeveloper) {
 if ($LASTEXITCODE -ne 0) { throw "Unable to populate the private R library." }
 
 if ($includeDeveloper) {
-  $oldRLibs = $env:R_LIBS
-  $env:R_LIBS = @(
-    $privateLibrary,
-    (Join-Path $RHome "library")
-  ) -join [IO.Path]::PathSeparator
-  Push-Location $sources
-  try {
-    foreach ($package in $manifest.packages.PSObject.Properties.Name) {
-      & (Join-Path $RHome "bin\R.exe") CMD build --no-manual `
-        --no-build-vignettes (Join-Path $Root $package)
-      if ($LASTEXITCODE -ne 0) {
-        throw "Unable to build source archive: $package"
-      }
-    }
-  } finally {
-    Pop-Location
-    $env:R_LIBS = $oldRLibs
+  & (Join-Path $RHome "bin\Rscript.exe") `
+    (Join-Path $Root "installer\scripts\collect-sources.R") `
+    "--root=$Root" "--library=$privateLibrary" "--destination=$sources"
+  if ($LASTEXITCODE -ne 0) {
+    throw "Unable to collect exact corresponding source."
   }
 }
 

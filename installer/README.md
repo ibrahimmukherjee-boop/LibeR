@@ -9,8 +9,9 @@ The Windows installer contains:
 - an isolated R package library containing one exact `ecosystem.json` set;
 - launchers for each LibeR GUI;
 - integrity, package, licence, and source-provenance manifests;
-- an optional developer component containing package sources, headers, and a
-  private C++ toolchain.
+- an optional developer component containing package sources and headers;
+- a corresponding-source archive for the bundled R runtime and installed
+  packages.
 
 The installer is per-user and never writes to a system R library. Application
 data remains outside the installation:
@@ -24,7 +25,10 @@ data remains outside the installation:
 ## Profiles
 
 `research` is the early-release default. It includes the developer component,
-allowing source-package installation and compilation-oriented workflows.
+allowing source inspection and compilation-oriented workflows. Rtools is used
+on the build machine but is not redistributed. Users who want to compile
+packages inside the installed Research environment should install the matching
+official Rtools release separately.
 
 `runtime` creates the mature target layout: the private runtime and compiled
 packages are retained, while toolchains, source archives, and exported
@@ -73,7 +77,12 @@ compiler or move the final packaging step to a permissively licensed backend.
 The staged runtime is packaging-neutral, so that choice does not affect the R
 runtime, package library, manifests, or launchers.
 
-The package and file manifests freeze the contents of a completed installer.
+The package, source, and file manifests freeze the contents of a completed
+installer. Every build also creates a companion corresponding-source archive.
+The Research installer includes the same material in its developer component.
+This avoids redistributing the much larger Rtools/MSYS2 toolchain and its
+separate source-compliance surface.
+
 Before a 1.0 production release, the build pipeline should additionally resolve
 CRAN dependencies through a dated binary snapshot so that an installer can be
 rebuilt from the same inputs after CRAN advances.
