@@ -1,3 +1,21 @@
+# LibeRality 0.2.6
+
+- Adds a unified model browser for built-in LibeRation templates, existing
+  LibeRation project versions and completed estimation runs, reviewed
+  LibeRary entries, and local NONMEM control streams.
+- Adds a dedicated Model tab with compartment structure, outcomes, nominal
+  parameters, parameter-source semantics, and immutable import provenance.
+- Lazily resolves full workspace and catalogue models only when previewed;
+  model changes remap compatible schedules, request missing design covariates,
+  clear dimension-dependent results, and retain an auditable revision history.
+- Adds `lity_model_from_liberation()` and fixes review-status handling in the
+  LibeRary importer.
+- Uses a lighter amber application header in the light theme with
+  high-contrast branding. The dark theme uses a warmer amber header and
+  reserves the lighter primary-action amber for the active theme-switch rail.
+- Advances the browser asset identifier so an upgraded installation cannot
+  reuse the former header stylesheet from cache.
+
 # LibeRality 0.2.5
 
 - Applies the ecosystem-wide non-fading busy-state behavior while retaining

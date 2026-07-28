@@ -25,7 +25,10 @@ Sys.setenv(
 
 launchers <- list(
   libertad = function() LibeRtAD::libertad_gui(),
-  liberation = function() LibeRation::liber_gui(),
+  # Rscript is non-interactive, so LibeRation's package-level default correctly
+  # avoids opening a browser. A desktop launcher is an explicit interactive
+  # request and must override that default.
+  liberation = function() LibeRation::liber_gui(launch.browser = TRUE),
   liberary = function() LibeRary::library_shiny(),
   `liberary-ingest` = function() LibeRary::ingest_shiny(),
   `liberary-reference` = function() LibeRary::library_reference_shiny(),

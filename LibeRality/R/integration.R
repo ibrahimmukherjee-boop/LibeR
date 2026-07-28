@@ -9,14 +9,61 @@ lity_model_from_liberary <- function(library_id, root = NULL, allow_draft = FALS
   if (!is.null(root)) arguments$root <- root
   entry <- do.call(LibeRary::library_get, arguments)
   if (!isTRUE(entry$validation$valid)) .lity_stop("LibeRary entry validation failed: ", paste(entry$validation$errors, collapse = "; "))
-  if (!allow_draft && !entry$status %in% c("review", "reviewed", "published", "qualified")) {
+  status <- as.character(entry$manifest$status %||% entry$summary$status %||% "")[[1L]]
+  if (!allow_draft && !status %in% c("validated", "review", "reviewed", "published", "qualified")) {
     .lity_stop("LibeRary entry is not reviewed; set `allow_draft = TRUE` for exploratory work.")
   }
   control <- do.call(LibeRary::library_model, arguments)
   parsed <- LibeRation::nm_control_read(control, strict = TRUE)
   model <- parsed$model %||% parsed
-  attr(model, "library_provenance") <- list(library_id = library_id, status = entry$status,
+  attr(model, "library_provenance") <- list(library_id = library_id, status = status,
                                              imported_at = .lity_now(), hash = .lity_hash(entry))
+  model
+}
+
+#' Import a LibeRation model version or completed estimation
+#'
+#' A model-version selection uses its stored initial parameter values. A
+#' completed estimation run uses its final THETA, OMEGA, and SIGMA estimates
+#' when `use_estimates = TRUE`. The imported object is a copy: subsequent
+#' changes to the LibeRation workspace cannot silently alter a design.
+#'
+#' @param workspace LibeRation workspace object or path.
+#' @param project Project identifier.
+#' @param snapshot Model-version or run identifier.
+#' @param use_estimates Use final estimates from a completed estimation run.
+#' @return A LibeRation `nm_model` with import provenance.
+#' @export
+lity_model_from_liberation <- function(workspace, project, snapshot = "latest",
+                                       use_estimates = TRUE) {
+  loaded <- LibeRation::nm_project_load(workspace, project, snapshot)
+  model <- loaded$model
+  if (is.null(model) || !inherits(model, "nm_model")) {
+    .lity_stop("The selected LibeRation entry does not contain a model.")
+  }
+  parameter_source <- "initial estimates"
+  result <- loaded$result
+  if (isTRUE(use_estimates) && inherits(result, "nm_fit")) {
+    if (length(result$theta) == nrow(model$THETAS)) {
+      model$THETAS$Value <- as.numeric(result$theta)
+    }
+    if (length(result$omega) == nrow(model$OMEGAS)) {
+      model$OMEGAS$Value <- as.numeric(result$omega)
+    }
+    if (length(result$sigma) == nrow(model$SIGMAS)) {
+      model$SIGMAS$Value <- as.numeric(result$sigma)
+    }
+    parameter_source <- paste("final", as.character(result$method %||% "estimation"),
+                              "estimates")
+  }
+  provenance <- list(
+    source = "LibeRation", project = as.character(project)[[1L]],
+    snapshot = as.character(loaded$id %||% snapshot)[[1L]],
+    label = as.character(loaded$label %||% snapshot)[[1L]],
+    parameter_source = parameter_source, imported_at = .lity_now(),
+    hash = .lity_hash(model)
+  )
+  attr(model, "liberation_provenance") <- provenance
   model
 }
 

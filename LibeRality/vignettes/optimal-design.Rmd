@@ -101,6 +101,12 @@ checks against theoretical precision.
 ## Ecosystem hand-off
 
 - `lity_model_from_liberary()` imports a reviewed catalogue model.
+- `lity_model_from_liberation()` imports either the initial values from a
+  model version or the final values from a completed estimation run.
+- `liberality_gui()` presents both sources, built-in structural/likelihood
+  templates, and local NONMEM control streams through a common preview and
+  compatibility workflow. The selected model is copied into the design with a
+  hash and provenance rather than linked to mutable external state.
 - `lity_endpoint_from_liberator()` preserves a therapeutic endpoint definition.
 - `lity_to_liberation()` produces an exact event template or simulated dataset.
 - `lity_job()` sends evaluation, optimisation, simulation, or Pareto work to a

@@ -24,6 +24,7 @@ lity_example <- function() {
     OMEGAS = data.frame(OMEGA = 1:3, Value = c(0.20, 0.10, 0.15)),
     SIGMAS = data.frame(SIGMA = 1, Value = 0.15), COVARIATES = "WT"
   )
+  attr(model, "name") <- "One-compartment oral PK"
   rich <- lity_arm(
     "Rich PK", lity_schedule(c(0.25, 0.5, 1, 2, 4, 8, 12, 24), dose = 500,
                               dose_cmt = 1, observation_cmt = 2, covariates = list(WT = 70)),
@@ -68,7 +69,12 @@ lity_example <- function() {
     endpoints = list(pk = lity_endpoint("Plasma concentration", "continuous", dvid = 1)),
     scenarios = scenarios, variables = variables, constraints = constraints,
     name = "Oral PK population design",
-    description = "Teaching design spanning rich and sparse sampling cohorts."
+    description = "Teaching design spanning rich and sparse sampling cohorts.",
+    metadata = list(model_provenance = list(
+      source = "Built-in", template = "teaching-oral-pk",
+      label = "One-compartment oral PK",
+      parameter_source = "template values"
+    ))
   )
   criteria <- list(
     local_D = lity_criterion_D(name = "Local D-optimality"),

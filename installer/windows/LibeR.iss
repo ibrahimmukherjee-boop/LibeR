@@ -13,6 +13,11 @@
 #ifndef VersionInfoVersion
   #define VersionInfoVersion "0.0.0.0"
 #endif
+#if InstallerProfile == "runtime"
+  #define LauncherFlags "runminimized closeonexit"
+#else
+  #define LauncherFlags "closeonexit"
+#endif
 
 #define AppName "LibeR Ecosystem"
 #define Publisher "Sven C. van Dijkman"
@@ -71,15 +76,15 @@ Source: "{#StageDir}\developer\*"; DestDir: "{app}\developer"; Flags: ignorevers
 #endif
 
 [Icons]
-Name: "{group}\LibeRation"; Filename: "{app}\runtime\R\bin\Rscript.exe"; Parameters: "--vanilla ""{app}\app\launch.R"" liberation"; WorkingDir: "{app}"; IconFilename: "{app}\app\liber.ico"
-Name: "{group}\LibeRality"; Filename: "{app}\runtime\R\bin\Rscript.exe"; Parameters: "--vanilla ""{app}\app\launch.R"" liberality"; WorkingDir: "{app}"; IconFilename: "{app}\app\liber.ico"
-Name: "{group}\LibeRator"; Filename: "{app}\runtime\R\bin\Rscript.exe"; Parameters: "--vanilla ""{app}\app\launch.R"" liberator"; WorkingDir: "{app}"; IconFilename: "{app}\app\liber.ico"
-Name: "{group}\LibeRtAD"; Filename: "{app}\runtime\R\bin\Rscript.exe"; Parameters: "--vanilla ""{app}\app\launch.R"" libertad"; WorkingDir: "{app}"; IconFilename: "{app}\app\liber.ico"
-Name: "{group}\LibeRary"; Filename: "{app}\runtime\R\bin\Rscript.exe"; Parameters: "--vanilla ""{app}\app\launch.R"" liberary"; WorkingDir: "{app}"; IconFilename: "{app}\app\liber.ico"
-Name: "{group}\LibeRary Ingest"; Filename: "{app}\runtime\R\bin\Rscript.exe"; Parameters: "--vanilla ""{app}\app\launch.R"" liberary-ingest"; WorkingDir: "{app}"; IconFilename: "{app}\app\liber.ico"
-Name: "{group}\LibeRary Reference"; Filename: "{app}\runtime\R\bin\Rscript.exe"; Parameters: "--vanilla ""{app}\app\launch.R"" liberary-reference"; WorkingDir: "{app}"; IconFilename: "{app}\app\liber.ico"
-Name: "{group}\LibeRties Admin"; Filename: "{app}\runtime\R\bin\Rscript.exe"; Parameters: "--vanilla ""{app}\app\launch.R"" liberties"; WorkingDir: "{app}"; IconFilename: "{app}\app\liber.ico"
-Name: "{group}\Validate installation"; Filename: "{app}\runtime\R\bin\Rscript.exe"; Parameters: "--vanilla ""{app}\app\doctor.R"""; WorkingDir: "{app}"; IconFilename: "{app}\app\liber.ico"
+Name: "{group}\LibeRation"; Filename: "{app}\runtime\R\bin\Rscript.exe"; Parameters: "--vanilla ""{app}\app\launch.R"" liberation"; WorkingDir: "{app}"; IconFilename: "{app}\app\liber.ico"; Flags: {#LauncherFlags}
+Name: "{group}\LibeRality"; Filename: "{app}\runtime\R\bin\Rscript.exe"; Parameters: "--vanilla ""{app}\app\launch.R"" liberality"; WorkingDir: "{app}"; IconFilename: "{app}\app\liber.ico"; Flags: {#LauncherFlags}
+Name: "{group}\LibeRator"; Filename: "{app}\runtime\R\bin\Rscript.exe"; Parameters: "--vanilla ""{app}\app\launch.R"" liberator"; WorkingDir: "{app}"; IconFilename: "{app}\app\liber.ico"; Flags: {#LauncherFlags}
+Name: "{group}\LibeRtAD"; Filename: "{app}\runtime\R\bin\Rscript.exe"; Parameters: "--vanilla ""{app}\app\launch.R"" libertad"; WorkingDir: "{app}"; IconFilename: "{app}\app\liber.ico"; Flags: {#LauncherFlags}
+Name: "{group}\LibeRary"; Filename: "{app}\runtime\R\bin\Rscript.exe"; Parameters: "--vanilla ""{app}\app\launch.R"" liberary"; WorkingDir: "{app}"; IconFilename: "{app}\app\liber.ico"; Flags: {#LauncherFlags}
+Name: "{group}\LibeRary Ingest"; Filename: "{app}\runtime\R\bin\Rscript.exe"; Parameters: "--vanilla ""{app}\app\launch.R"" liberary-ingest"; WorkingDir: "{app}"; IconFilename: "{app}\app\liber.ico"; Flags: {#LauncherFlags}
+Name: "{group}\LibeRary Reference"; Filename: "{app}\runtime\R\bin\Rscript.exe"; Parameters: "--vanilla ""{app}\app\launch.R"" liberary-reference"; WorkingDir: "{app}"; IconFilename: "{app}\app\liber.ico"; Flags: {#LauncherFlags}
+Name: "{group}\LibeRties Admin"; Filename: "{app}\runtime\R\bin\Rscript.exe"; Parameters: "--vanilla ""{app}\app\launch.R"" liberties"; WorkingDir: "{app}"; IconFilename: "{app}\app\liber.ico"; Flags: {#LauncherFlags}
+Name: "{group}\Validate installation"; Filename: "{app}\runtime\R\bin\Rscript.exe"; Parameters: "--vanilla ""{app}\app\doctor.R"""; WorkingDir: "{app}"; IconFilename: "{app}\app\liber.ico"; Flags: {#LauncherFlags}
 Name: "{group}\Uninstall LibeR"; Filename: "{uninstallexe}"
 
 [Run]

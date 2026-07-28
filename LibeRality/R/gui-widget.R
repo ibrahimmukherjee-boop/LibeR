@@ -3,7 +3,8 @@
                               status = list(level = "info", text = "Design workbench ready"),
                               icon = NULL, queue = FALSE,
                               task = list(running = FALSE, id = "", label = "",
-                                          cancellable = FALSE)) {
+                                          cancellable = FALSE),
+                              model_catalogue = list(records = list(), messages = list())) {
   arms <- lapply(names(design$arms), function(id) {
     arm <- design$arms[[id]]; observed <- arm$events$EVID == 0 & arm$events$MDV == 0
     list(id = id, name = arm$name, size = arm$size, allocation = arm$allocation,
@@ -62,6 +63,13 @@
                   subjects = sum(vapply(design$arms, `[[`, numeric(1), "size")),
                   cost = .lity_design_cost(design), burden = .lity_design_burden(design),
                   alternatives = length(design$alternative_models)),
+    model = .lity_model_detail(
+      design$model, design$metadata$model_provenance %||% NULL
+    ),
+    modelBrowser = list(
+      catalogue = model_catalogue, preview = NULL, selectedKey = "",
+      busy = FALSE, applied = FALSE
+    ),
     arms = arms, endpoints = endpoints, scenarios = scenarios, variables = variables,
     constraints = .lity_rows(constraints), criterion = list(
       name = criterion$name, type = criterion$type, direction = criterion$direction

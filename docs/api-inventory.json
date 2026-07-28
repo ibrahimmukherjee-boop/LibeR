@@ -1,6 +1,6 @@
 {
   "schema": "liber.api-inventory/1",
-  "release": "0.9.0-research-beta.5",
+  "release": "0.9.0-research-beta.6",
   "lifecycle_schema": "liber.api-lifecycle/1",
   "policy": {
     "default": "evolving",
@@ -11,11 +11,11 @@
   },
   "summary": {
     "LibeRality": {
-      "evolving": 50,
+      "evolving": 51,
       "stable-contract": 5
     },
     "LibeRary": {
-      "evolving": 85,
+      "evolving": 89,
       "stable-contract": 6
     },
     "LibeRation": {
@@ -24,7 +24,7 @@
       "stable-contract": 9
     },
     "LibeRator": {
-      "evolving": 22,
+      "evolving": 39,
       "stable-contract": 8
     },
     "LibeRtAD": {
@@ -135,1735 +135,1867 @@
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "NMEngine",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "liber_doctor",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "liber_support_bundle",
       "status": "stable-contract"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "liber_support_matrix",
       "status": "stable-contract"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "liber_gui",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "liber_workbench",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "liberWorkbenchOutput",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "renderLiberWorkbench",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_compile",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_control_read",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_control_write",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_bootstrap",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_compare",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_compare_read",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_compare_save",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_benchmark_gate",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_benchmark_provenance",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_cov_step",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_etab",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_gof",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_dataset",
       "status": "stable-contract"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_est",
       "status": "stable-contract"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_est_sequence",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_est_stage",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_matrix_model",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_lik_config",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_outcome",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_outcomes",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_irt_outcomes",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_outcome_diagnostics",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_hmm_config",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_cthmm_config",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_residual_group",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_kalman_config",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_kalman_decode",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_sde_config",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_switching_state_space_config",
       "status": "experimental"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_re_block",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_re_config",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_arma_config",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_hsmm_config",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_factorial_chain",
       "status": "experimental"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_factorial_hmm_config",
       "status": "experimental"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_hmm_decode",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_experimental_config",
       "status": "experimental"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_dde_config",
       "status": "experimental"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_dae_config",
       "status": "experimental"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_component",
       "status": "experimental"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_component_code",
       "status": "experimental"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_qsp_system",
       "status": "experimental"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_qsp_model",
       "status": "experimental"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_individual_fit",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_model",
       "status": "stable-contract"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_mu",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_model_contract_fields",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_model_from_contract",
       "status": "stable-contract"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_model_to_contract",
       "status": "stable-contract"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_model_template",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_structural_templates",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_piecewise",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_spline",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_model_outputs",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_model_diagram",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_diagram_preview",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_diagram_generate",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_model_diagram_get",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_report_block",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_report_design",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_report_design_save",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_report_design_load",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_report_design_render",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_model_cpp",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_mixture",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_mixture_posterior",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_npc",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_npde",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_objective",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_ode_tape_benchmark",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_prediction_derivatives",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_project_create",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_project_copy",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_project_delete",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_project_delete_snapshot",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_project_list",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_project_load",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_project_save",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_project_save_run",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_project_save_diagnostics",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_project_load_diagnostics",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_prior",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_report",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_profile",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_log_lik",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_ppc",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_psis_loo",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_sir",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_scm",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_simulate",
       "status": "stable-contract"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_tape_profile",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_vpc",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_vpc_categorical",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_vpc_competing",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_vpc_count",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_vpc_recurrent",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_vpc_tte",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_waic",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_validation_gate",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_support_matrix",
       "status": "stable-contract"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_workspace",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_workspace_backup",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_workspace_gc",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_workspace_migrate",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.9.5",
+      "version": "0.9.6",
       "symbol": "nm_workspace_verify",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_adjudicate_extractions",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_assess_model",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_classify_entry",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_compare_extractions",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_default_query",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_deliberative_extract",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_discover",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_docling_available",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_docling_parse",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_document_bundle",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_download_pdf",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_dual_extract",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_entrez_count",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_entrez_fetch_metadata",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_entrez_search",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_europe_pmc_lookup",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_extract_batch",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_extract_model",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_extract_text_lane",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_extract_vision_lane",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_fetch_institutional",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_find_supplements",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_generate_fetch_script",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_gui_worker",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_latest_manifest",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_load_config",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_make_logger",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_map_to_ctl",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_ollama_available",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_ollama_chat",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_parse_llm_json",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_pdf_text",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_pmc_oa_lookup",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_pmc_pdf_url",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_process_batch",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_publish_catalog_entry",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_read_document_bundle",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_read_manifest",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_read_progress",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_render_pdf_pages",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_shiny",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_stub_extraction",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_triage_abstract",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_triage_batch",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_unpaywall_lookup",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_validate_config",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_write_manifest",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "ingest_write_progress",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "library_catalog_root",
       "status": "stable-contract"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
+      "symbol": "library_clinical_qualification",
+      "status": "evolving"
+    },
+    {
+      "package": "LibeRary",
+      "version": "0.7.9",
+      "symbol": "library_clinical_qualification_validate",
+      "status": "evolving"
+    },
+    {
+      "package": "LibeRary",
+      "version": "0.7.9",
+      "symbol": "library_clinical_qualifications",
+      "status": "evolving"
+    },
+    {
+      "package": "LibeRary",
+      "version": "0.7.9",
+      "symbol": "library_clinical_qualify",
+      "status": "evolving"
+    },
+    {
+      "package": "LibeRary",
+      "version": "0.7.9",
       "symbol": "library_config_path",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "library_dosing_normalize",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "library_get",
       "status": "stable-contract"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "library_home",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "library_image_message",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "library_infer_implementation",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "library_ingest_shiny",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "library_job",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "library_list",
       "status": "stable-contract"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "library_llm_available",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "library_llm_chat",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "library_llm_models",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "library_llm_providers",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "library_model",
       "status": "stable-contract"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "library_model_enrich",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "library_population_normalize",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "library_provenance",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "library_qualification_check",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "library_reference_benchmark",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "library_reference_build",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "library_reference_compare",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "library_reference_get",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "library_reference_list",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "library_reference_release_gate",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "library_reference_revise",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "library_reference_run",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "library_reference_shiny",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "library_reference_training_export",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "library_reference_training_files",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "library_reference_validate",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "library_repository_wipe",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "library_reproduction_plan",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "library_reproduction_run",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "library_reproduction_score",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "library_review",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "library_save_config",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "library_search",
       "status": "stable-contract"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "library_shiny",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "library_source_pdf",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "library_use_in_workspace",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "library_validate",
       "status": "stable-contract"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.7",
+      "version": "0.7.9",
       "symbol": "library_worker_task",
       "status": "evolving"
     },
     {
       "package": "LibeRator",
-      "version": "0.2.7",
+      "version": "0.2.9",
       "symbol": "lator_assess",
       "status": "stable-contract"
     },
     {
       "package": "LibeRator",
-      "version": "0.2.7",
+      "version": "0.2.9",
       "symbol": "lator_covariate_at",
       "status": "evolving"
     },
     {
       "package": "LibeRator",
-      "version": "0.2.7",
+      "version": "0.2.9",
       "symbol": "lator_endpoint",
       "status": "evolving"
     },
     {
       "package": "LibeRator",
-      "version": "0.2.7",
+      "version": "0.2.9",
       "symbol": "lator_endpoint_aed",
       "status": "evolving"
     },
     {
       "package": "LibeRator",
-      "version": "0.2.7",
+      "version": "0.2.9",
+      "symbol": "lator_endpoint_aminoglycoside",
+      "status": "evolving"
+    },
+    {
+      "package": "LibeRator",
+      "version": "0.2.9",
       "symbol": "lator_endpoint_atg",
       "status": "evolving"
     },
     {
       "package": "LibeRator",
-      "version": "0.2.7",
+      "version": "0.2.9",
       "symbol": "lator_endpoint_beta_lactam",
       "status": "evolving"
     },
     {
       "package": "LibeRator",
-      "version": "0.2.7",
+      "version": "0.2.9",
+      "symbol": "lator_endpoint_busulfan",
+      "status": "evolving"
+    },
+    {
+      "package": "LibeRator",
+      "version": "0.2.9",
       "symbol": "lator_endpoint_evaluate",
       "status": "evolving"
     },
     {
       "package": "LibeRator",
-      "version": "0.2.7",
+      "version": "0.2.9",
       "symbol": "lator_endpoint_library",
       "status": "evolving"
     },
     {
       "package": "LibeRator",
-      "version": "0.2.7",
+      "version": "0.2.9",
+      "symbol": "lator_endpoint_methotrexate",
+      "status": "evolving"
+    },
+    {
+      "package": "LibeRator",
+      "version": "0.2.9",
+      "symbol": "lator_endpoint_mycophenolate",
+      "status": "evolving"
+    },
+    {
+      "package": "LibeRator",
+      "version": "0.2.9",
       "symbol": "lator_endpoint_register",
       "status": "evolving"
     },
     {
       "package": "LibeRator",
-      "version": "0.2.7",
+      "version": "0.2.9",
+      "symbol": "lator_endpoint_tacrolimus",
+      "status": "evolving"
+    },
+    {
+      "package": "LibeRator",
+      "version": "0.2.9",
       "symbol": "lator_endpoint_validate",
       "status": "evolving"
     },
     {
       "package": "LibeRator",
-      "version": "0.2.7",
+      "version": "0.2.9",
+      "symbol": "lator_endpoint_vancomycin",
+      "status": "evolving"
+    },
+    {
+      "package": "LibeRator",
+      "version": "0.2.9",
+      "symbol": "lator_endpoint_warfarin",
+      "status": "evolving"
+    },
+    {
+      "package": "LibeRator",
+      "version": "0.2.9",
       "symbol": "lator_example_aed",
       "status": "evolving"
     },
     {
       "package": "LibeRator",
-      "version": "0.2.7",
+      "version": "0.2.9",
       "symbol": "lator_gui",
       "status": "evolving"
     },
     {
       "package": "LibeRator",
-      "version": "0.2.7",
+      "version": "0.2.9",
       "symbol": "lator_job",
       "status": "evolving"
     },
     {
       "package": "LibeRator",
-      "version": "0.2.7",
+      "version": "0.2.9",
       "symbol": "lator_model_from_liberary",
       "status": "evolving"
     },
     {
       "package": "LibeRator",
-      "version": "0.2.7",
+      "version": "0.2.9",
+      "symbol": "lator_model_candidates_from_liberary",
+      "status": "evolving"
+    },
+    {
+      "package": "LibeRator",
+      "version": "0.2.9",
       "symbol": "lator_model_register",
       "status": "evolving"
     },
     {
       "package": "LibeRator",
-      "version": "0.2.7",
+      "version": "0.2.9",
+      "symbol": "lator_model_select",
+      "status": "evolving"
+    },
+    {
+      "package": "LibeRator",
+      "version": "0.2.9",
+      "symbol": "lator_model_select_from_liberary",
+      "status": "evolving"
+    },
+    {
+      "package": "LibeRator",
+      "version": "0.2.9",
+      "symbol": "lator_model_selection_save",
+      "status": "evolving"
+    },
+    {
+      "package": "LibeRator",
+      "version": "0.2.9",
+      "symbol": "lator_patient_context",
+      "status": "evolving"
+    },
+    {
+      "package": "LibeRator",
+      "version": "0.2.9",
       "symbol": "lator_patient_add_event",
       "status": "stable-contract"
     },
     {
       "package": "LibeRator",
-      "version": "0.2.7",
+      "version": "0.2.9",
       "symbol": "lator_patient_add_events",
       "status": "evolving"
     },
     {
       "package": "LibeRator",
-      "version": "0.2.7",
+      "version": "0.2.9",
+      "symbol": "lator_patient_delete",
+      "status": "evolving"
+    },
+    {
+      "package": "LibeRator",
+      "version": "0.2.9",
       "symbol": "lator_patient_get",
       "status": "stable-contract"
     },
     {
       "package": "LibeRator",
-      "version": "0.2.7",
+      "version": "0.2.9",
       "symbol": "lator_patient_list",
       "status": "evolving"
     },
     {
       "package": "LibeRator",
-      "version": "0.2.7",
+      "version": "0.2.9",
+      "symbol": "lator_patient_medication_add",
+      "status": "evolving"
+    },
+    {
+      "package": "LibeRator",
+      "version": "0.2.9",
+      "symbol": "lator_patient_medications",
+      "status": "evolving"
+    },
+    {
+      "package": "LibeRator",
+      "version": "0.2.9",
       "symbol": "lator_patient_new",
       "status": "stable-contract"
     },
     {
       "package": "LibeRator",
-      "version": "0.2.7",
+      "version": "0.2.9",
+      "symbol": "lator_patient_endpoint_get",
+      "status": "evolving"
+    },
+    {
+      "package": "LibeRator",
+      "version": "0.2.9",
+      "symbol": "lator_patient_endpoint_set",
+      "status": "evolving"
+    },
+    {
+      "package": "LibeRator",
+      "version": "0.2.9",
       "symbol": "lator_patient_save",
       "status": "stable-contract"
     },
     {
       "package": "LibeRator",
-      "version": "0.2.7",
+      "version": "0.2.9",
       "symbol": "lator_regimen_candidates",
       "status": "stable-contract"
     },
     {
       "package": "LibeRator",
-      "version": "0.2.7",
+      "version": "0.2.9",
       "symbol": "lator_regimen_optimise",
       "status": "stable-contract"
     },
     {
       "package": "LibeRator",
-      "version": "0.2.7",
+      "version": "0.2.9",
       "symbol": "lator_regimen_predict",
       "status": "stable-contract"
     },
     {
       "package": "LibeRator",
-      "version": "0.2.7",
+      "version": "0.2.9",
       "symbol": "lator_workspace",
       "status": "evolving"
     },
     {
       "package": "LibeRator",
-      "version": "0.2.7",
+      "version": "0.2.9",
       "symbol": "lator_workspace_audit",
       "status": "evolving"
     },
     {
       "package": "LibeRator",
-      "version": "0.2.7",
+      "version": "0.2.9",
       "symbol": "lator_worker_task",
       "status": "evolving"
     },
     {
       "package": "LibeRator",
-      "version": "0.2.7",
+      "version": "0.2.9",
       "symbol": "liberatorWorkbenchOutput",
       "status": "evolving"
     },
     {
       "package": "LibeRator",
-      "version": "0.2.7",
+      "version": "0.2.9",
       "symbol": "liberator_workbench",
       "status": "evolving"
     },
     {
       "package": "LibeRator",
-      "version": "0.2.7",
+      "version": "0.2.9",
       "symbol": "renderLiberatorWorkbench",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "liberality_gui",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "liberality_workbench",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "liberalityWorkbenchOutput",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "renderLiberalityWorkbench",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_arm",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_constraint",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_contract_restore",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_constraint_check",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_criterion",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_criterion_A",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_criterion_D",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_criterion_Ds",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_criterion_E",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_criterion_bayesian",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_criterion_burden",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_criterion_c",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_criterion_compound",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_criterion_correct_dose",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_criterion_cost",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_criterion_discrimination",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_criterion_expected_utility",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_criterion_L",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_criterion_maximin",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_criterion_minimax",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_criterion_model_average",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_criterion_pareto",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_criterion_power",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_criterion_precision_probability",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_criterion_prediction",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_criterion_robust",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_criterion_rse",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_criterion_target",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_design",
       "status": "stable-contract"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_endpoint",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_endpoint_from_liberator",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_evaluate",
       "status": "stable-contract"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_example",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_external_validate",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_external_validation_fixtures",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_external_validation_report",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_information",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_job",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_model_from_liberary",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
+      "symbol": "lity_model_from_liberation",
+      "status": "evolving"
+    },
+    {
+      "package": "LibeRality",
+      "version": "0.2.6",
       "symbol": "lity_operating_characteristics",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_optimise",
       "status": "stable-contract"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_pareto",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_population",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_report",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_scenario",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_schedule",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_simulate_trials",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_to_liberation",
       "status": "stable-contract"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_validate",
       "status": "stable-contract"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_variable",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.5",
+      "version": "0.2.6",
       "symbol": "lity_worker_task",
       "status": "evolving"
     },

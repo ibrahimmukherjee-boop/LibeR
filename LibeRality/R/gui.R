@@ -37,16 +37,22 @@
 #' @param design Initial design; the teaching example is used when omitted.
 #' @param criterion Initial criterion.
 #' @param queue Optional LibeRties local or remote queue.
+#' @param workspace Optional LibeRation workspace path. By default the shared
+#'   LibeR workspace is discovered without creating it.
+#' @param library_root Optional LibeRary catalogue root.
 #' @param host,port,launch.browser Passed to [shiny::runApp()]. Set
 #'   `launch.browser = NULL` to return the Shiny application object for hosted
 #'   deployment.
 #' @return Invisibly, the Shiny app.
 #' @export
 liberality_gui <- function(design = NULL, criterion = lity_criterion_D(), queue = NULL,
+                           workspace = NULL, library_root = NULL,
                            host = "127.0.0.1", port = NULL, launch.browser = TRUE) {
   if (is.null(design)) design <- lity_example()$design
   validation <- lity_validate(design)
   if (!validation$valid) .lity_stop("Cannot launch an invalid design: ", paste(validation$errors, collapse = "; "))
+  workspace <- workspace %||% .lity_default_liberation_workspace()
+  model_catalogue <- .lity_model_catalogue(workspace, library_root)
   favicon <- system.file("assets", "favicon.svg", package = "LibeRality")
   if (!nzchar(favicon)) favicon <- file.path(getwd(), "LibeRality", "inst", "assets", "favicon.svg")
   prefix <- paste0("liberality-assets-", substr(.lity_id("gui"), 5, 16))
@@ -69,6 +75,7 @@ liberality_gui <- function(design = NULL, criterion = lity_criterion_D(), queue 
     state <- shiny::reactiveValues(
       design = design, criterion = criterion, evaluation = NULL,
       optimisation = NULL, simulation = NULL,
+      model_candidate = NULL,
       revision = 0L,
       status = list(level = "info", text = "Design workbench ready")
     )
@@ -76,7 +83,7 @@ liberality_gui <- function(design = NULL, criterion = lity_criterion_D(), queue 
       liberality_workbench(.lity_gui_payload(
         state$design, state$criterion, state$evaluation, state$optimisation,
         state$simulation, state$status, favicon_href, !is.null(queue),
-        .liber_shared_task_snapshot(tasks)
+        .liber_shared_task_snapshot(tasks), model_catalogue
       ))
     })
     shiny::observeEvent(input$liberality_workbench_event, {
@@ -87,6 +94,77 @@ liberality_gui <- function(design = NULL, criterion = lity_criterion_D(), queue 
           state$criterion <- .lity_gui_criterion(as.character(event$type), state$design)
           state$revision <- state$revision + 1L
           state$status <- list(level = "info", text = paste("Selected", state$criterion$name))
+        } else if (action == "model_preview") {
+          key <- as.character(event$key %||% "")[[1L]]
+          records <- model_catalogue$records
+          index <- match(key, vapply(records, `[[`, character(1), "key"))
+          if (is.na(index)) .lity_stop("Unknown model selection.")
+          session$sendCustomMessage("liberality-model-browser", list(
+            selectedKey = key, busy = TRUE, applied = FALSE, error = NULL
+          ))
+          resolved <- .lity_resolve_model_record(
+            records[[index]], workspace = workspace, library_root = library_root
+          )
+          compatibility <- .lity_model_compatibility(state$design, resolved$model)
+          detail <- .lity_model_detail(resolved$model, resolved$provenance)
+          detail$compatibility <- compatibility
+          state$model_candidate <- list(
+            key = key, model = resolved$model, provenance = resolved$provenance
+          )
+          session$sendCustomMessage("liberality-model-browser", list(
+            preview = detail, selectedKey = key, busy = FALSE, applied = FALSE,
+            error = NULL
+          ))
+        } else if (action == "model_control_preview") {
+          path <- normalizePath(
+            path.expand(as.character(event$path %||% "")[[1L]]),
+            winslash = "/", mustWork = TRUE
+          )
+          key <- paste0("control:", path)
+          session$sendCustomMessage("liberality-model-browser", list(
+            selectedKey = key, busy = TRUE, applied = FALSE, error = NULL
+          ))
+          parsed <- LibeRation::nm_control_read(path, strict = TRUE)
+          model <- parsed$model %||% parsed
+          if (!inherits(model, "nm_model")) {
+            .lity_stop("The selected control stream did not produce a valid model.")
+          }
+          provenance <- list(
+            source = "Control stream", label = basename(path),
+            path = path, parameter_source = "control-stream values",
+            imported_at = .lity_now(), hash = .lity_hash(model)
+          )
+          detail <- .lity_model_detail(model, provenance)
+          detail$compatibility <- .lity_model_compatibility(state$design, model)
+          state$model_candidate <- list(
+            key = key, model = model, provenance = provenance
+          )
+          session$sendCustomMessage("liberality-model-browser", list(
+            preview = detail, selectedKey = key, busy = FALSE, applied = FALSE,
+            error = NULL
+          ))
+        } else if (action == "model_apply") {
+          key <- as.character(event$key %||% "")[[1L]]
+          candidate <- state$model_candidate
+          if (is.null(candidate) || !identical(candidate$key, key)) {
+            .lity_stop("Preview the selected model before applying it.")
+          }
+          covariates <- event$covariates %||% list()
+          state$design <- .lity_apply_model(
+            state$design, candidate$model, candidate$provenance, covariates
+          )
+          state$criterion <- .lity_gui_criterion(state$criterion$type, state$design)
+          state$evaluation <- state$optimisation <- state$simulation <- NULL
+          state$model_candidate <- NULL
+          state$revision <- state$revision + 1L
+          state$status <- list(
+            level = "success",
+            text = paste("Selected", .lity_model_name(state$design$model))
+          )
+          session$sendCustomMessage("liberality-model-browser", list(
+            preview = NULL, selectedKey = "", busy = FALSE, applied = TRUE,
+            error = NULL
+          ))
         } else if (action == "evaluate") {
           .liber_shared_task_start(
             tasks, "LibeRality", ".lity_gui_background_task",
@@ -181,6 +259,8 @@ liberality_gui <- function(design = NULL, criterion = lity_criterion_D(), queue 
           loaded <- readRDS(as.character(event$path)); validation <- lity_validate(loaded)
           if (!validation$valid) .lity_stop("Saved design is invalid.")
           state$design <- loaded; state$evaluation <- state$optimisation <- state$simulation <- NULL
+          state$criterion <- .lity_gui_criterion(state$criterion$type, state$design)
+          state$model_candidate <- NULL
           state$revision <- state$revision + 1L
           state$status <- list(level = "success", text = paste("Loaded", loaded$name))
         } else if (action == "report") {
@@ -204,6 +284,7 @@ liberality_gui <- function(design = NULL, criterion = lity_criterion_D(), queue 
         } else if (action == "reset") {
           state$design <- lity_example()$design; state$criterion <- lity_criterion_D()
           state$evaluation <- state$optimisation <- state$simulation <- NULL
+          state$model_candidate <- NULL
           state$revision <- state$revision + 1L
           state$status <- list(level = "info", text = "Teaching example restored")
         } else if (action == "cancel_task") {
@@ -218,6 +299,11 @@ liberality_gui <- function(design = NULL, criterion = lity_criterion_D(), queue 
         }
       }, error = function(error) {
         state$status <- list(level = "error", text = conditionMessage(error))
+        if (action %in% c("model_preview", "model_control_preview", "model_apply")) {
+          session$sendCustomMessage("liberality-model-browser", list(
+            busy = FALSE, applied = FALSE, error = conditionMessage(error)
+          ))
+        }
         shiny::showNotification(conditionMessage(error), type = "error", duration = 9)
       })
     }, ignoreInit = TRUE)

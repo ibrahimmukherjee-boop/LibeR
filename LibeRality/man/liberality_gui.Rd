@@ -8,6 +8,8 @@ liberality_gui(
   design = NULL,
   criterion = lity_criterion_D(),
   queue = NULL,
+  workspace = NULL,
+  library_root = NULL,
   host = "127.0.0.1",
   port = NULL,
   launch.browser = TRUE
@@ -19,6 +21,11 @@ liberality_gui(
 \item{criterion}{Initial criterion.}
 
 \item{queue}{Optional LibeRties local or remote queue.}
+
+\item{workspace}{Optional LibeRation workspace path. By default the shared
+LibeR workspace is discovered without creating it.}
+
+\item{library_root}{Optional LibeRary catalogue root.}
 
 \item{host, port, launch.browser}{Passed to [shiny::runApp()]. Set
 `launch.browser = NULL` to return the Shiny application object for hosted

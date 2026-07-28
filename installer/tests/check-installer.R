@@ -50,6 +50,7 @@ liber_installer_layout_check <- function(root = getwd()) {
   )))
   stopifnot(
     grepl('file.path(R.home(), "library")', launcher, fixed = TRUE),
+    grepl("LibeRation::liber_gui(launch.browser = TRUE)", launcher, fixed = TRUE),
     !grepl("c(private_library, .libPaths())", launcher, fixed = TRUE)
   )
 
@@ -83,7 +84,9 @@ liber_installer_layout_check <- function(root = getwd()) {
     grepl("SetupIconFile=liber.ico", inno, fixed = TRUE),
     grepl("Components: developer", inno, fixed = TRUE),
     grepl("LibeR-{#AppVersion}-{#InstallerProfile}", inno, fixed = TRUE),
-    grepl('Parameters: "--vanilla', inno, fixed = TRUE)
+    grepl('Parameters: "--vanilla', inno, fixed = TRUE),
+    grepl('#define LauncherFlags "runminimized closeonexit"', inno, fixed = TRUE),
+    grepl("Flags: {#LauncherFlags}", inno, fixed = TRUE)
   )
 
   message("Bundled installer layout checks passed.")

@@ -31,6 +31,10 @@ matched PopED/PFIM and which currently have internal verification only.
   particle-swarm, Fedorov-Wynn, multiplicative, and hybrid optimisation.
 - Empirical complete-trial simulation, optional LibeRation re-estimation,
   operating characteristics, HTML reports, and typed LibeRties jobs.
+- A unified model browser for curated templates, LibeRation model versions or
+  completed fitted runs, reviewed LibeRary entries, and NONMEM control streams.
+  Full models are loaded only when previewed, and selected copies retain source
+  and parameter provenance.
 - Executable external validation of complete population-FO Fisher matrices,
   RSEs, D-optimal rankings, and cold/warm runtimes against PopED and PFIM.
 - A responsive React workbench with light/dark themes and an amber LibeR dove.

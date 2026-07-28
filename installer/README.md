@@ -32,7 +32,9 @@ official Rtools release separately.
 
 `runtime` creates the mature target layout: the private runtime and compiled
 packages are retained, while toolchains, source archives, and exported
-development headers are excluded.
+development headers are excluded. Its Start-menu launchers open the supporting
+R console minimized. Research-profile launchers keep the console visible so
+early testers can inspect startup messages and errors.
 
 ## Build
 

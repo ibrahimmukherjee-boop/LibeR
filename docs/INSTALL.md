@@ -24,7 +24,7 @@ reproducible environment:
 
 ```r
 liber_install(channel = "stable")
-liber_install(tag = "v0.9.0-research-beta.5")
+liber_install(tag = "v0.9.0-research-beta.6")
 ```
 
 `LIBER_RELEASE_CHANNEL` and `LIBER_RELEASE_TAG` provide equivalent
@@ -66,8 +66,10 @@ Early research installers include an optional developer component with package
 sources and CppAD/Eigen and R headers. The official matching Rtools release is
 used to build the installer but is not redistributed; users who compile
 packages install Rtools separately. The mature runtime profile uses the same
-layout but omits development files. Both profiles are accompanied by an exact
-corresponding-source archive for redistributed open-source components.
+layout but omits development files and starts its supporting R consoles
+minimized. Research builds keep those consoles visible for testing and fault
+diagnosis. Both profiles are accompanied by an exact corresponding-source
+archive for redistributed open-source components.
 
 Build and validate the Windows installer from a source checkout with:
 
