@@ -151,16 +151,29 @@ for (package in packages) {
     )
     tag_exists <- length(remote_tag) > 0L
     if (tag_exists) {
-      tagged_commit <- trimws(
-        run("git", c("rev-list", "-n", "1", tag), clone, capture = TRUE)[[1L]]
+      tagged_tree <- trimws(
+        run(
+          "git", c("rev-parse", paste0(tag, "^{tree}")),
+          clone, capture = TRUE
+        )[[1L]]
       )
-      if (!identical(tagged_commit, mirror_commit)) {
+      mirror_tree <- trimws(
+        run(
+          "git", c("rev-parse", paste0(mirror_commit, "^{tree}")),
+          clone, capture = TRUE
+        )[[1L]]
+      )
+      if (!identical(tagged_tree, mirror_tree)) {
         stop(
           "Remote tag ", tag, " for ", package,
-          " points to a different source commit.", call. = FALSE
+          " contains a different source tree. Advance the package version ",
+          "instead of rewriting the immutable tag.", call. = FALSE
         )
       }
-      message("  existing tag ", tag, " already matches the mirror source")
+      message(
+        "  existing tag ", tag,
+        " already matches the mirror source tree"
+      )
     } else {
       run(
         "git", c("tag", "-a", tag, "-m",

@@ -1,3 +1,10 @@
+# LibeRtAD 0.7.11
+
+- Publishes the shared, configurable LibeR storage-root behavior and its
+  regression coverage under a new immutable package version.
+- Refreshes the benchmark GUI integration guidance and source documentation
+  that had advanced on the package mirror after the 0.7.10 tag.
+
 # LibeRtAD 0.7.10
 
 - Streams benchmark runtime-log updates without rebuilding the full React
