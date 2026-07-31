@@ -21,10 +21,11 @@ if (!requireNamespace("remotes", quietly = TRUE)) {
 }
 
 for (package in packages) {
-  description <- tryCatch(
+  description <- suppressWarnings(tryCatch(
     utils::packageDescription(package, lib.loc = library_path),
     error = function(error) NULL
-  )
+  ))
+  if (!is.list(description)) description <- NULL
   reusable <- !is.null(description) &&
     identical(description$Version, expected[[package]]) &&
     identical(description$RemoteRepo, package) &&
