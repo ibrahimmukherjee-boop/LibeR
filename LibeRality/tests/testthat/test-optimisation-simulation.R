@@ -30,6 +30,26 @@ test_that("complete trial simulation is reproducible", {
   expect_equal(first$scenario_draws, second$scenario_draws)
   expect_equal(first$data, second$data)
   expect_equal(nrow(first$summary), 2)
+  expect_gt(nrow(first$endpoint_summary), 0)
+  expect_gt(nrow(first$nca$summary), 0)
+  expect_identical(first$nca$backend, "LibeRation native C++ NCA")
+
+  payload <- LibeRality:::.lity_gui_payload(
+    design, lity_criterion_D(), simulation = first
+  )
+  expect_gt(length(payload$simulation$endpointCurves), 0)
+  expect_gt(length(payload$simulation$nca$summary), 0)
+})
+
+test_that("robustness and constraint details are explicit in the workbench", {
+  design <- lity_example()$design
+  evaluation <- lity_evaluate(design, lity_criterion_D())
+  payload <- LibeRality:::.lity_gui_payload(
+    design, lity_criterion_D(), evaluation = evaluation
+  )
+  expect_true(payload$workflow$robustnessEvaluated)
+  expect_equal(length(payload$evaluation$robustness), length(design$scenarios))
+  expect_true(all(c("rule", "detail", "id") %in% names(payload$constraints[[1L]])))
 })
 
 test_that("LibeRation hand-off and reports are materialised", {

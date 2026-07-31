@@ -1,7 +1,7 @@
 # LibeR algorithm inventory and final pre-1.0 gap review
 
-Review date: 2026-07-26
-Repository baseline: `0.9.0-research-beta.5`
+Review date: 2026-07-31
+Repository baseline: `0.9.0-research-beta.9`
 
 ## Executive assessment
 
@@ -12,9 +12,10 @@ identified by this review—MU referencing, sampling importance resampling,
 first-class reproducible model comparison, Bayesian PPC/WAIC/PSIS-LOO, and
 broader bootstrap designs—have now been implemented.
 
-NCA, BA/BE, and dose proportionality remain genuine clinical-pharmacology gaps
-and are explicitly scheduled for 1.1 rather than silently broadening the 1.0
-release promise.
+The principal NCA gap has now been addressed with an independent native C++
+engine and external `ncar`/`NonCompart` comparison. BA/BE, dose
+proportionality, and specialised NCA workflows remain clinical-pharmacology
+items for 1.1.
 
 ## 1. Current algorithm surface
 
@@ -207,24 +208,24 @@ checkpoint/resume for very large campaigns.
 
 #### F. Noncompartmental analysis
 
-**Status:** no NCA implementation was found.
+**Status:** implemented in LibeRation 0.9.8 and consumed by LibeRality and
+LibeRator.
 
 **Why it matters:** NCA is an everyday clinical-pharmacology and
 pharmacometric workflow for AUC, Cmax, Tmax, terminal half-life, accumulation,
 dose proportionality, and exposure summaries.
 
-**Recommendation:** create a first-class NCA module with:
+The first-class `nm_nca()` module now provides:
 
 - linear-up/log-down and selectable trapezoidal rules;
 - auditable terminal-phase selection and sensitivity analysis;
 - single/multiple-dose and partial-AUC support;
-- dose normalization and accumulation;
-- sparse-sampling summaries where valid;
-- tabular/graphical reporting; and
-- validation against an independent NCA implementation.
+- dose normalisation and dosing-interval exposure summaries;
+- tabular/graphical reporting in LibeRality simulations; and
+- executable validation and fallback against `ncar`/`NonCompart`.
 
-NCA need not block 1.0 if the release promise is explicitly limited to
-population modelling, but its absence should be visible in the support matrix.
+Specialised sparse/composite, urine, and regulatory reporting workflows remain
+future extensions and must not be inferred from the core NCA API.
 
 #### G. Bioequivalence and dose-proportionality workflows
 
@@ -300,9 +301,10 @@ The recommended scope decision is:
 1. qualify the implemented MU referencing, SIR, first-class model comparison,
    Bayesian predictive checking, and richer bootstrap controls before
    `1.0.0-rc.1`;
-2. add NCA only if 1.0 is intended to claim a complete pharmacometric and
-   clinical-pharmacology workbench;
-3. otherwise document NCA/bioequivalence as the leading 1.1 roadmap item;
+2. qualify the new native NCA and its independent comparison fixtures before
+   making it part of the 1.0 supported surface;
+3. retain bioequivalence and specialised clinical-pharmacology workflows as
+   leading 1.1 roadmap items;
 4. retain experimental advanced numerical families without allowing them to
    delay the supported classical and latent-state release; and
 5. spend the majority of remaining pre-1.0 effort on independent validation,

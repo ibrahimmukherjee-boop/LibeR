@@ -6,17 +6,15 @@ Depends on: completion of the [LibeR 1.0 release roadmap](ROADMAP-1.0.md)
 
 ## Scope
 
-Version 1.1 will extend the population-modelling ecosystem with the
-clinical-pharmacology workflows that are deliberately outside the 1.0 scope:
+Version 1.1 will extend the population-modelling ecosystem with specialised
+clinical-pharmacology workflows beyond the core NCA delivered before 1.0:
 
-1. **Noncompartmental analysis (NCA)**
-   - linear, linear-up/log-down, and configurable trapezoidal integration;
-   - auditable terminal-phase selection and sensitivity analysis;
-   - AUC, partial AUC, AUMC, MRT, Cmax, Tmax, terminal half-life, clearance,
-     volume, accumulation, fluctuation, and dose-normalized exposure;
-   - single-dose, multiple-dose, steady-state, urine, and sparse/composite
-     sampling workflows where statistically defensible; and
-   - independent validation against an established NCA implementation.
+1. **Specialised NCA workflows**
+   - terminal-phase sensitivity analysis and interactive review;
+   - accumulation comparisons across linked dose occasions;
+   - urine and sparse/composite-sampling workflows where statistically
+     defensible; and
+   - regulatory-style tables and reports built on the validated core engine.
 
 2. **Bioavailability and bioequivalence (BA/BE)**
    - conventional average bioequivalence;

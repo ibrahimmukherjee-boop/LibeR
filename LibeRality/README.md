@@ -29,7 +29,8 @@ matched PopED/PFIM and which currently have internal verification only.
 - Compound criteria, explicit constraints, and unscalarised Pareto frontiers.
 - Continuous, integer, discrete, categorical, allocation, coordinate-exchange,
   particle-swarm, Fedorov-Wynn, multiplicative, and hybrid optimisation.
-- Empirical complete-trial simulation, optional LibeRation re-estimation,
+- Empirical complete-trial simulation with endpoint curves and tables, native
+  NCA exposure summaries where applicable, optional LibeRation re-estimation,
   operating characteristics, HTML reports, and typed LibeRties jobs.
 - A unified model browser for curated templates, LibeRation model versions or
   completed fitted runs, reviewed LibeRary entries, and NONMEM control streams.

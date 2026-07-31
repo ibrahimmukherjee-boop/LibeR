@@ -1,3 +1,12 @@
+# LibeRality 0.2.11
+
+- Adds simulated endpoint profiles and tabular summaries to the Simulation tab,
+  including native LibeRation NCA exposure summaries where scientifically
+  applicable.
+- Marks Robustness complete after all configured scenario information has been
+  evaluated and makes feasibility results clickable with plain-language rule,
+  observed-value, limit, and violation details.
+
 # LibeRality 0.2.10
 
 - Consolidates the workflow progress row and content tabs into one navigation

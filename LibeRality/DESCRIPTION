@@ -1,7 +1,7 @@
 Package: LibeRality
 Type: Package
 Title: Model-Informed Optimal Clinical Trial Design
-Version: 0.2.10
+Version: 0.2.11
 Authors@R: person("Sven C.", "van Dijkman",
     email = "svdijkman@users.noreply.github.com", role = c("aut", "cre"))
 Author: Sven C. van Dijkman [aut, cre]
@@ -25,7 +25,7 @@ Imports:
     digest,
     htmltools,
     htmlwidgets,
-    LibeRation (>= 0.9.7),
+    LibeRation (>= 0.9.8),
     Rcpp,
     reactR,
     shiny,

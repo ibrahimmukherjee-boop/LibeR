@@ -60,6 +60,37 @@
       scripted = identical(item$type, "custom")
     )
   })
+  constraint_type_explanation <- c(
+    min_separation = "The shortest interval between two samples must be at least the configured limit.",
+    max_samples = "The number of samples per subject must not exceed the configured limit.",
+    total_subjects = "The total number of randomised subjects must not exceed the configured limit.",
+    total_cost = "The calculated total study cost must remain at or below the configured budget.",
+    max_blood_volume = "The sampled blood volume per subject must not exceed the configured safety limit.",
+    max_duration = "The duration of each selected arm must not exceed the configured limit.",
+    arm_size = "The selected arm size must not exceed the configured limit.",
+    allocation = "The selected allocation value must not exceed the configured limit.",
+    max_rse = "The largest selected parameter relative standard error must not exceed the configured precision limit.",
+    minimum_power = "The lowest evaluated power must meet or exceed the configured minimum.",
+    exposure = "The lowest evaluated target-attainment probability must meet or exceed the configured minimum.",
+    custom = "A user-supplied deterministic constraint function defines feasibility."
+  )
+  if (nrow(constraints)) {
+    constraints$id <- vapply(seq_len(nrow(constraints)), function(i) {
+      match <- which(vapply(design$constraints, function(x) identical(x$name, constraints$name[[i]]), logical(1)))
+      if (length(match)) names(design$constraints)[match[[1L]]] else paste0("constraint-", i)
+    }, character(1))
+    constraints$rule <- unname(constraint_type_explanation[constraints$type])
+    constraints$detail <- vapply(seq_len(nrow(constraints)), function(i) {
+      row <- constraints[i, , drop = FALSE]
+      relation <- if (row$type %in% c("min_separation", "minimum_power", "exposure")) "at least" else "at most"
+      status <- if (isTRUE(row$feasible)) "satisfies" else "violates"
+      paste0(
+        "The evaluated value is ", format(row$value, digits = 5), ", which ",
+        status, " the requirement of ", relation, " ", format(row$limit, digits = 5),
+        if (!isTRUE(row$feasible)) paste0(" (violation magnitude ", format(row$violation, digits = 5), ").") else "."
+      )
+    }, character(1))
+  }
   precision <- criteria <- information <- list()
   if (!is.null(evaluation)) {
     criteria <- .lity_rows(evaluation$criteria)
@@ -82,8 +113,20 @@
     n = simulation$n, method = simulation$method, elapsed = simulation$elapsed_seconds,
     convergence = simulation$operating_characteristics$convergence,
     summary = .lity_rows(simulation$summary),
-    estimates = .lity_rows(simulation$operating_characteristics$estimates %||% data.frame())
+    estimates = .lity_rows(simulation$operating_characteristics$estimates %||% data.frame()),
+    endpointCurves = .lity_rows(simulation$endpoint_summary %||% data.frame()),
+    nca = list(
+      backend = simulation$nca$backend %||% "LibeRation native C++ NCA",
+      summary = .lity_rows(simulation$nca$summary %||% data.frame()),
+      applicability = .lity_rows(simulation$nca$applicability %||% data.frame())
+    )
   )
+  robustness <- if (is.null(evaluation)) list() else unname(lapply(evaluation$information, function(item) list(
+    scenario = item$scenario, rank = item$rank,
+    condition = item$condition_number, logDeterminant = item$log_determinant,
+    method = item$diagnostics$method %||% "",
+    predictionDerivatives = item$diagnostics$prediction_derivatives %||% ""
+  )))
   route <- .lity_model_route(design$model)
   list(
     design = list(id = design$id, name = design$name, description = design$description,
@@ -112,7 +155,8 @@
       guidance = .lity_criterion_guidance()[[criterion$type]]
     ), evaluation = if (is.null(evaluation)) NULL else list(
       id = evaluation$id, elapsed = evaluation$elapsed_seconds, criteria = criteria,
-      precision = precision, information = information
+      precision = precision, information = information,
+      robustness = robustness
     ),
     optimisation = if (is.null(optimisation)) NULL else list(
       method = optimisation$method, convergence = optimisation$convergence,
@@ -130,6 +174,8 @@
       designReady = length(design$arms) > 0L && length(design$endpoints) > 0L,
       objectivesReady = inherits(criterion, "lity_criterion"),
       evaluated = !is.null(evaluation),
+      robustnessEvaluated = !is.null(evaluation) &&
+        length(evaluation$information) >= length(design$scenarios),
       optimised = !is.null(optimisation),
       simulated = !is.null(simulation),
       violatedConstraints = if (nrow(constraints)) sum(!constraints$feasible) else 0L

@@ -45,7 +45,7 @@
   function Field(p) { return e("label", { className: "ly-field " + val(p.className, "") }, e("span", null, p.label), p.children, p.help ? e("small", null, p.help) : null); }
   function Status(p) { var s = p.status || {}, task = s.task || {}; return e("div", { className: "ly-status ly-status-" + val(s.level, "info") }, e("i", null), e("span", null, task.running ? val(task.label, "Background calculation") + " is running" : val(s.text, "Ready")), task.running && task.cancellable ? e(Button, { className: "ly-task-cancel", onClick: function () { emit({ inputId: s.inputId }, "cancel_task", { id: task.id }); } }, "Cancel") : null); }
   function Metric(p) { return e("div", { className: "ly-metric" }, e("span", null, p.label), e("strong", null, p.value), p.detail ? e("small", null, p.detail) : null); }
-  function Table(p) { var rows = list(p.rows); if (!rows.length) return e(Empty, { title: val(p.empty, "No results"), detail: "Run the corresponding analysis to populate this view." }); var cols = p.columns || Object.keys(rows[0]); return e("div", { className: "ly-table-wrap" }, e("table", { className: "ly-table" }, e("thead", null, e("tr", null, cols.map(function (c) { return e("th", { key: c.key || c }, c.label || c); }))), e("tbody", null, rows.map(function (r, i) { return e("tr", { key: i }, cols.map(function (c) { var key = c.key || c, value = r[key]; if (c.format) value = c.format(value, r); return e("td", { key: key }, value === null || value === undefined ? "--" : String(value)); })); })))); }
+  function Table(p) { var rows = list(p.rows); if (!rows.length) return e(Empty, { title: val(p.empty, "No results"), detail: "Run the corresponding analysis to populate this view." }); var cols = p.columns || Object.keys(rows[0]); return e("div", { className: "ly-table-wrap" }, e("table", { className: "ly-table" }, e("thead", null, e("tr", null, cols.map(function (c) { return e("th", { key: c.key || c }, c.label || c); }))), e("tbody", null, rows.map(function (r, i) { return e("tr", { key: i, className: p.onRowClick ? "ly-clickable-row" : "", tabIndex: p.onRowClick ? 0 : undefined, onClick: p.onRowClick ? function () { p.onRowClick(r); } : undefined, onKeyDown: p.onRowClick ? function (event) { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); p.onRowClick(r); } } : undefined }, cols.map(function (c) { var key = c.key || c, value = r[key]; if (c.format) value = c.format(value, r); return e("td", { key: key }, value === null || value === undefined ? "--" : String(value)); })); })))); }
   function csv(values, key) {
     return list(values).map(function (x) {
       return key ? val(x[key], "") : x;
@@ -390,6 +390,41 @@
   function SchedulePlot(p) { var arms = list(p.arms); if (!arms.length) return null; var all = [].concat.apply([], arms.map(function (a) { return list(a.samplingTimes).concat(list(a.doses).map(function (d) { return Number(d.TIME); })); })).filter(isFinite); var min = Math.min.apply(null, all.concat([0])), max = Math.max.apply(null, all.concat([1])); if (max <= min) max = min + 1; function x(t) { return 145 + (Number(t) - min) / (max - min) * 720; } var height = 70 + arms.length * 72; return e("div", { className: "ly-chart" }, e("svg", { viewBox: "0 0 920 " + height, role: "img", "aria-label": "Study arm schedule" }, arms.map(function (arm, i) { var y = 55 + i * 72; return e("g", { key: arm.id }, e("text", { x: 15, y: y + 5, className: "ly-chart-name" }, arm.name), e("line", { x1: 145, y1: y, x2: 865, y2: y, className: "ly-axis" }), list(arm.doses).map(function (d, j) { return e("g", { key: "d" + j }, e("line", { x1: x(d.TIME), y1: y - 22, x2: x(d.TIME), y2: y + 22, className: "ly-dose" }), e("text", { x: x(d.TIME) + 4, y: y - 25, className: "ly-chart-label" }, fmt(d.AMT, 0))); }), list(arm.samplingTimes).map(function (t, j) { return e("circle", { key: "s" + j, cx: x(t), cy: y, r: 6, className: "ly-sample" }); })); }), e("text", { x: 145, y: height - 5, className: "ly-chart-label" }, fmt(min, 1) + " h"), e("text", { x: 840, y: height - 5, className: "ly-chart-label" }, fmt(max, 1) + " h"))); }
   function BarChart(p) { var rows = list(p.rows).filter(function (r) { return num(r[p.valueKey]) !== null; }); if (!rows.length) return e(Empty, { title: "No precision results", detail: "Evaluate the design first." }); var max = Math.max.apply(null, rows.map(function (r) { return Math.abs(Number(r[p.valueKey])); }).concat([1])); return e("div", { className: "ly-bars" }, rows.map(function (r) { var width = Math.min(100, Math.abs(Number(r[p.valueKey])) / max * 100); return e("div", { className: "ly-bar-row", key: r.parameter || r.name }, e("span", null, r.parameter || r.name), e("div", null, e("i", { style: { width: width + "%" } })), e("strong", null, fmt(r[p.valueKey], 2) + val(p.suffix, ""))); })); }
   function TracePlot(p) { var rows = list(p.rows).filter(function (r) { return num(r.criterion) !== null; }); if (!rows.length) return e(Empty, { title: "No optimisation trace", detail: "Run an optimisation to inspect convergence." }); var vals = rows.map(function (r) { return Number(r.criterion); }), min = Math.min.apply(null, vals), max = Math.max.apply(null, vals); if (max === min) max = min + 1; function x(i) { return 50 + i / Math.max(1, rows.length - 1) * 810; } function y(v) { return 220 - (v - min) / (max - min) * 165; } var path = vals.map(function (v, i) { return (i ? "L" : "M") + x(i) + " " + y(v); }).join(" "); return e("div", { className: "ly-chart" }, e("svg", { viewBox: "0 0 900 260" }, e("line", { x1: 50, y1: 220, x2: 860, y2: 220, className: "ly-axis" }), e("path", { d: path, className: "ly-trace" }), e("text", { x: 55, y: 42, className: "ly-chart-label" }, fmt(max, 3)), e("text", { x: 55, y: 238, className: "ly-chart-label" }, fmt(min, 3)))); }
+  function EndpointSimulationPlot(p) {
+    var rows = list(p.rows).filter(function (r) { return num(r.time) !== null && num(r.median) !== null; });
+    if (!rows.length) return e(Empty, { title: "No endpoint curve", detail: "No finite continuous endpoint simulations are available." });
+    var times = rows.map(function (r) { return Number(r.time); });
+    var values = [].concat.apply([], rows.map(function (r) { return [num(r.lower), num(r.upper), num(r.median)]; })).filter(function (x) { return x !== null; });
+    var minX = Math.min.apply(null, times), maxX = Math.max.apply(null, times), minY = Math.min.apply(null, values), maxY = Math.max.apply(null, values);
+    if (maxX <= minX) maxX = minX + 1; if (maxY <= minY) maxY = minY + 1;
+    function x(value) { return 60 + (Number(value) - minX) / (maxX - minX) * 780; }
+    function y(value) { return 225 - (Number(value) - minY) / (maxY - minY) * 175; }
+    var arms = Array.from(new Set(rows.map(function (r) { return r.arm; })));
+    var colours = ["#B87333", "#397C83", "#7D6A91", "#71825B", "#B45F5F"];
+    return e("div", { className: "ly-chart ly-endpoint-chart" },
+      e("svg", { viewBox: "0 0 900 270", role: "img", "aria-label": "Simulated endpoint profile" },
+        e("line", { x1: 60, y1: 225, x2: 840, y2: 225, className: "ly-axis" }),
+        e("line", { x1: 60, y1: 50, x2: 60, y2: 225, className: "ly-axis" }),
+        arms.map(function (arm, index) {
+          var data = rows.filter(function (r) { return r.arm === arm; }).sort(function (a, b) { return Number(a.time) - Number(b.time); });
+          var upper = data.map(function (r) { return x(r.time) + "," + y(r.upper); });
+          var lower = data.slice().reverse().map(function (r) { return x(r.time) + "," + y(r.lower); });
+          var median = data.map(function (r, i) { return (i ? "L" : "M") + x(r.time) + " " + y(r.median); }).join(" ");
+          return e("g", { key: arm }, e("polygon", { points: upper.concat(lower).join(" "), fill: colours[index % colours.length], opacity: 0.14 }), e("path", { d: median, fill: "none", stroke: colours[index % colours.length], strokeWidth: 3 }), e("text", { x: 690, y: 24 + index * 17, fill: colours[index % colours.length], className: "ly-chart-label" }, arm));
+        }),
+        e("text", { x: 60, y: 247, className: "ly-chart-label" }, fmt(minX, 2) + " h"),
+        e("text", { x: 810, y: 247, className: "ly-chart-label" }, fmt(maxX, 2) + " h"),
+        e("text", { x: 8, y: 55, className: "ly-chart-label" }, fmt(maxY, 3)),
+        e("text", { x: 8, y: 225, className: "ly-chart-label" }, fmt(minY, 3))));
+  }
+  function ConstraintDetailsModal(p) {
+    var rows = list(p.rows), selected = p.selected;
+    if (selected) rows = rows.filter(function (x) { return x.id === selected.id; });
+    var violated = rows.filter(function (x) { return !x.feasible; });
+    if (!selected && violated.length) rows = violated;
+    return e(Modal, { title: violated.length ? "Feasibility constraints" : "Constraint evaluation", subtitle: violated.length ? violated.length + " violated constraint(s)" : "All evaluated constraints are feasible", onClose: p.onClose, className: "ly-modal-wide" },
+      rows.length ? e("div", { className: "ly-constraint-details" }, rows.map(function (row) { return e("article", { key: row.id || row.name, className: row.feasible ? "feasible" : "violated" }, e("header", null, e("strong", null, row.name), e(Badge, { tone: row.feasible ? "success" : "warning" }, row.feasible ? "Feasible" : "Violated")), e("p", null, row.rule), e("p", null, row.detail), e("dl", null, e("div", null, e("dt", null, "Evaluated"), e("dd", null, fmt(row.value, 5))), e("div", null, e("dt", null, "Limit"), e("dd", null, fmt(row.limit, 5))), e("div", null, e("dt", null, "Type"), e("dd", null, String(row.type).replace(/_/g, " "))))); })) : e(Empty, { title: "No constraints configured", detail: "Add feasibility constraints under Objectives." }));
+  }
   function ModelDiagram(p) {
     var compartments = list(p.diagram && p.diagram.compartments);
     if (!compartments.length) return e(Empty, { title: "No compartment diagram", detail: "The model is defined through likelihood or algorithm code." });
@@ -997,9 +1032,9 @@
       ["schedule", "Trial design", 2, workflow.designReady],
       ["objectives", "Objectives", 3, workflow.objectivesReady],
       ["precision", "Precision", 4, workflow.evaluated],
-      ["robustness", "Robustness"],
-      ["optimisation", "Optimisation", 5, workflow.optimised],
-      ["simulation", "Simulation", 6, workflow.simulated]
+      ["robustness", "Robustness", 5, workflow.robustnessEvaluated],
+      ["optimisation", "Optimisation", 6, workflow.optimised],
+      ["simulation", "Simulation", 7, workflow.simulated]
     ];
     function evaluateButton() {
       var violated = Number((props.workflow || {}).violatedConstraints || 0);
@@ -1024,7 +1059,7 @@
           { key: "name", label: "Constraint" }, { key: "value", label: "Value", format: fmt },
           { key: "limit", label: "Limit", format: fmt },
           { key: "feasible", label: "Status", format: function (x) { return x ? "Feasible" : "Violated"; } }
-        ] })),
+        ], onRowClick: function (row) { open({ type: "constraint-details", item: row }); } })),
         e("div", { className: "ly-page-actions" }, evaluateButton()));
       if (tab[0] === "model") return e("div", { className: "ly-stack" },
         e(Panel, { title: "Structural and statistical model", subtitle: "The model is copied into this design with immutable provenance" },
@@ -1091,9 +1126,9 @@
           { key: "dropout", label: "Dropout", format: function (x) { return fmt(100 * x, 0) + "%"; } },
           { key: "missedSample", label: "Missed", format: function (x) { return fmt(100 * x, 0) + "%"; } }
         ] })),
-        e(Panel, { title: "Information diagnostics", subtitle: "Numerical transparency" }, info.rank === undefined ?
+        e(Panel, { title: "Information diagnostics", subtitle: "Numerical transparency across scenarios" }, info.rank === undefined ?
           e(Empty, { title: "Not evaluated", detail: "Run an evaluation to calculate scenario information." }) :
-          e("div", { className: "ly-diagnostics" }, e(Metric, { label: "Log determinant", value: fmt(info.logDeterminant, 4) }), e(Metric, { label: "Condition number", value: fmt(info.condition, 3) }), e("p", null, val(info.diagnostics && info.diagnostics.method, "")), e("p", null, "Prediction derivatives: " + val(info.diagnostics && info.diagnostics.prediction_derivatives, "")))));
+          e("div", { className: "ly-diagnostics" }, e(Metric, { label: "Log determinant", value: fmt(info.logDeterminant, 4) }), e(Metric, { label: "Condition number", value: fmt(info.condition, 3) }), e("p", null, val(info.diagnostics && info.diagnostics.method, "")), e("p", null, "Prediction derivatives: " + val(info.diagnostics && info.diagnostics.prediction_derivatives, "")), e(Table, { rows: evaluation.robustness, columns: [{ key: "scenario", label: "Scenario" }, { key: "rank", label: "Rank" }, { key: "condition", label: "Condition", format: fmt }, { key: "logDeterminant", label: "Log determinant", format: fmt }] }))));
       if (tab[0] === "optimisation") return e("div", { className: "ly-stack" },
         e(Panel, {
           title: "Optimisation convergence", subtitle: optimisation.method ? optimisation.method + " · " + optimisation.evaluations + " evaluations" : "No optimisation has run",
@@ -1105,6 +1140,8 @@
             { key: "current", label: "Current", format: fmt }, { key: "lower", label: "Lower", format: fmt },
             { key: "upper", label: "Upper", format: fmt }, { key: "type", label: "Type" }
           ] })));
+      var endpointCurves = simulation ? list(simulation.endpointCurves) : [], nca = simulation && simulation.nca ? simulation.nca : {};
+      var endpointNames = Array.from(new Set(endpointCurves.map(function (x) { return x.endpoint; })));
       return e("div", { className: "ly-stack" },
         e(Panel, {
           title: "Empirical trial simulation", subtitle: simulation ? simulation.n + " replicated trials in " + fmt(simulation.elapsed, 2) + " seconds" : "Not run",
@@ -1112,7 +1149,15 @@
         }, simulation ? e("div", null,
           e("div", { className: "ly-metric-grid" }, e(Metric, { label: "Trials", value: simulation.n }), e(Metric, { label: "Analysis", value: simulation.method }), e(Metric, { label: "Convergence", value: simulation.convergence === null || simulation.convergence === undefined ? "Not fitted" : fmt(100 * simulation.convergence, 1) + "%" })),
           e(Table, { rows: simulation.estimates, columns: [{ key: "parameter", label: "Parameter" }, { key: "mean", label: "Mean", format: fmt }, { key: "bias", label: "Bias", format: fmt }, { key: "rmse", label: "RMSE", format: fmt }] })) :
-          e(Empty, { title: "No trial simulations", detail: "Simulate complete studies to verify theoretical information and operational robustness." })));
+          e(Empty, { title: "No trial simulations", detail: "Simulate complete studies to verify theoretical information and operational robustness." })),
+        simulation && endpointNames.length ? endpointNames.map(function (name) {
+          var rows = endpointCurves.filter(function (x) { return x.endpoint === name; });
+          return e(Panel, { key: name, title: name + " simulations", subtitle: "Median and 90% simulated interval across subjects and replicated trials" },
+            e(EndpointSimulationPlot, { rows: rows }),
+            e(Table, { rows: rows, columns: [{ key: "arm", label: "Arm" }, { key: "time", label: "Time", format: fmt }, { key: "n", label: "N" }, { key: "mean", label: "Mean", format: fmt }, { key: "median", label: "Median", format: fmt }, { key: "lower", label: "5th", format: fmt }, { key: "upper", label: "95th", format: fmt }] }));
+        }) : null,
+        simulation ? e(Panel, { title: "Noncompartmental exposure summaries", subtitle: val(nca.backend, "LibeRation native C++ NCA") },
+          list(nca.summary).length ? e(Table, { rows: nca.summary, columns: [{ key: "endpoint", label: "Endpoint" }, { key: "arm", label: "Arm" }, { key: "metric", label: "NCA metric" }, { key: "n", label: "N" }, { key: "median", label: "Median", format: fmt }, { key: "lower", label: "5th", format: fmt }, { key: "upper", label: "95th", format: fmt }] }) : e(Table, { rows: nca.applicability, columns: [{ key: "endpoint", label: "Endpoint" }, { key: "arm", label: "Arm" }, { key: "applicable", label: "NCA", format: function (x) { return x ? "Available" : "Not applicable"; } }, { key: "reason", label: "Reason" }] })) : null);
     }
     var currentModal = modal[0] || {};
     return e("div", { className: "ly-app " + (dark[0] ? "ly-dark" : "ly-light") },
@@ -1165,7 +1210,7 @@
           e("h4", null, "Current objective"),
           e("div", { className: "ly-endpoint" }, e("strong", null, val(props.criterion && props.criterion.guidance && props.criterion.guidance.label, props.criterion && props.criterion.type)), e("span", null, val(props.criterion && props.criterion.direction, ""))),
           e("h4", null, "Feasibility"),
-          e("p", { className: (props.workflow && props.workflow.violatedConstraints ? "ly-warning-text" : "ly-success-text") }, props.workflow && props.workflow.violatedConstraints ? props.workflow.violatedConstraints + " constraint(s) currently violated" : "All evaluated structural constraints are feasible"),
+          e("button", { type: "button", className: "ly-feasibility-link " + (props.workflow && props.workflow.violatedConstraints ? "ly-warning-text" : "ly-success-text"), onClick: function () { open({ type: "constraint-details", item: null }); } }, props.workflow && props.workflow.violatedConstraints ? props.workflow.violatedConstraints + " constraint(s) currently violated — view details" : "All evaluated structural constraints are feasible — view details"),
           e("h4", null, "Endpoints"),
           list(props.endpoints).map(function (x) { return e("div", { className: "ly-endpoint", key: x.id }, e("strong", null, x.name), e("span", null, x.type + " · DVID " + x.dvid)); }),
           e("h4", null, "Reproducibility"),
@@ -1179,6 +1224,7 @@
       currentModal.type === "scenario" ? e(ScenarioModal, { owner: props, item: currentModal.item, onClose: close }) : null,
       currentModal.type === "variable" ? e(VariableModal, { owner: props, item: currentModal.item, onClose: close }) : null,
       currentModal.type === "constraint" ? e(ConstraintModal, { owner: props, item: currentModal.item, onClose: close }) : null,
+      currentModal.type === "constraint-details" ? e(ConstraintDetailsModal, { rows: props.constraints, selected: currentModal.item, onClose: close }) : null,
       currentModal.type === "criterion-help" ? e(CriterionHelpModal, { item: currentModal.item, onClose: close }) : null,
       currentModal.type === "optimise" ? e(OptimiseModal, { owner: props, onClose: close }) : null,
       currentModal.type === "simulate" ? e(SimulateModal, { owner: props, onClose: close }) : null,
