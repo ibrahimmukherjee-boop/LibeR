@@ -1,6 +1,6 @@
 {
   "schema": "liber.api-inventory/1",
-  "release": "0.9.0-research-beta.9",
+  "release": "0.9.0-research-beta.10",
   "lifecycle_schema": "liber.api-lifecycle/1",
   "policy": {
     "default": "evolving",
@@ -1707,373 +1707,373 @@
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "liberality_gui",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "liberality_workbench",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "liberalityWorkbenchOutput",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "renderLiberalityWorkbench",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_arm",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_constraint",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_contract_restore",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_constraint_check",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_criterion",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_criterion_A",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_criterion_D",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_criterion_ED",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_criterion_Ds",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_criterion_E",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_criterion_bayesian",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_criterion_burden",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_criterion_c",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_criterion_compound",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_criterion_correct_dose",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_criterion_cost",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_criterion_discrimination",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_criterion_expected_utility",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_criterion_L",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_criterion_maximin",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_criterion_minimax",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_criterion_model_average",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_criterion_pareto",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_criterion_power",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_criterion_precision_probability",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_criterion_prediction",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_criterion_robust",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_criterion_rse",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_criterion_target",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_design",
       "status": "stable-contract"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_design_from_template",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_design_history",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_design_templates",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_design_version_load",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_design_version_save",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_endpoint",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_endpoint_from_liberator",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_evaluate",
       "status": "stable-contract"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_example",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_external_validate",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_external_validation_fixtures",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_external_validation_report",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_information",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_job",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_model_from_liberary",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_model_from_liberation",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_operating_characteristics",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_optimise",
       "status": "stable-contract"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_pareto",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_population",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_report",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_scenario",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_schedule",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_simulate_trials",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_to_liberation",
       "status": "stable-contract"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_validate",
       "status": "stable-contract"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_variable",
       "status": "evolving"
     },
     {
       "package": "LibeRality",
-      "version": "0.2.11",
+      "version": "0.2.12",
       "symbol": "lity_worker_task",
       "status": "evolving"
     },

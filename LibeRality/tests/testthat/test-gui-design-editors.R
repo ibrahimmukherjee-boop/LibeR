@@ -83,12 +83,50 @@ test_that("trial wizard templates produce ordinary validated design objects", {
   )
   regulatory <- catalogue[catalogue$regulatory, , drop = FALSE]
   expect_setequal(regulatory$template, c(
+    "ftih-sad-escalation",
     "standard-be-2x2", "rsabe-full-replicate", "food-effect-2x2",
     "ddi-fixed-sequence", "tqt-four-arm", "cqt-exposure-response",
     "renal-impairment-parallel", "hepatic-impairment-parallel"
   ))
   expect_true(all(nzchar(regulatory$framework)))
   expect_true(all(nzchar(regulatory$caution)))
+
+  ftih <- designs[[match("ftih-sad-escalation", catalogue$template)]]
+  expect_length(ftih$arms, 5L)
+  expect_equal(
+    unname(vapply(ftih$arms, function(arm) arm$size, integer(1))),
+    rep(6L, 5L)
+  )
+  expect_equal(
+    unname(vapply(ftih$arms, function(arm) {
+      arm$events$AMT[arm$events$EVID == 1L][[1L]]
+    }, numeric(1))),
+    c(1, 2, 4, 8, 16)
+  )
+  expect_equal(
+    unname(vapply(ftih$arms, function(arm) {
+      arm$metadata$escalation_order
+    }, integer(1))),
+    seq_len(5L)
+  )
+  expect_true(all(vapply(ftih$arms, function(arm) {
+    isTRUE(arm$metadata$review_gate_before_next_cohort) &&
+      identical(arm$metadata$sentinel_plan, list(active = 1L, placebo = 1L))
+  }, logical(1))))
+  expect_equal(
+    ftih$metadata$design_template$risk_controls$planned_placebo_per_cohort,
+    2L
+  )
+  ftih_quarter_mg <- lity_design_from_template(
+    "ftih-sad-escalation", model = example$model,
+    endpoints = example$design$endpoints, base_dose = 0.25
+  )
+  expect_equal(
+    unname(vapply(ftih_quarter_mg$arms, function(arm) {
+      arm$events$AMT[arm$events$EVID == 1L][[1L]]
+    }, numeric(1))),
+    c(0.25, 0.5, 1, 2, 4)
+  )
 
   be <- designs[[match("standard-be-2x2", catalogue$template)]]
   expect_equal(

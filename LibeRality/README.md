@@ -39,9 +39,9 @@ matched PopED/PFIM and which currently have internal verification only.
 - A shared, validated model editor for structural/statistical source, THETA
   values and bounds, OMEGA, and SIGMA, plus a trial-design wizard that converts
   common clinical study patterns into ordinary editable `lity_design` objects.
-  Regulatory-informed starting layouts cover standard 2×2 BE, full-replicate
-  RSABE, food-effect, fixed-sequence DDI, TQT, concentration-QTc, renal-
-  impairment, and hepatic-impairment studies.
+  Regulatory-informed starting layouts cover FTIH single-ascending-dose,
+  standard 2×2 BE, full-replicate RSABE, food-effect, fixed-sequence DDI,
+  TQT, concentration-QTc, renal-impairment, and hepatic-impairment studies.
 - Immutable, workspace-backed design histories with named designs, sequential
   versions, visible unsaved-change state, and guarded switching. Portable RDS
   import/export remains available independently.

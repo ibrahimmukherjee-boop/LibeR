@@ -142,6 +142,55 @@
         )
       )
     ),
+    "ftih-sad-escalation" = list(
+      name = "FTIH single-ascending-dose escalation",
+      category = "Regulatory / First-in-human",
+      summary = paste(
+        "Five sequential active-dose cohorts with rich PK sampling for",
+        "joint optimisation of dose-level information and sample timing."
+      ),
+      regulatory = TRUE,
+      framework = paste(
+        "EMA first-in-human risk-mitigation guidance / FDA maximum",
+        "recommended starting-dose guidance"
+      ),
+      caution = paste(
+        "The reference dose must be replaced by a justified starting dose",
+        "derived from the compound-specific nonclinical, pharmacological,",
+        "PK/PD, MABEL and/or MRSD assessment. The generated arms represent",
+        "the PK-informative active participants only. Sentinel dosing,",
+        "placebo allocation, review gates, escalation increments, stopping",
+        "rules, maximum exposure and safety monitoring must be specified and",
+        "approved separately before clinical use."
+      ),
+      default_dose = 1,
+      default_subjects = 6L,
+      risk_controls = list(
+        planned_total_per_cohort = 8L,
+        planned_active_per_cohort = 6L,
+        planned_placebo_per_cohort = 2L,
+        sentinel_active = 1L,
+        sentinel_placebo = 1L,
+        escalation_requires_review = TRUE
+      ),
+      arms = lapply(seq_len(5L), function(cohort) {
+        list(
+          name = paste("SAD cohort", cohort),
+          samples = c(0, 0.25, 0.5, 1, 1.5, 2, 3, 4, 6, 8, 12, 24,
+                      36, 48, 72),
+          dose_factor = 2^(cohort - 1L),
+          sample_volume = 2,
+          covariates = list(COHORT = cohort, DOSE_LEVEL = cohort,
+                            ACTIVE = 1),
+          metadata = list(
+            escalation_order = cohort,
+            sentinel_plan = list(active = 1L, placebo = 1L),
+            planned_allocation = list(active = 6L, placebo = 2L),
+            review_gate_before_next_cohort = TRUE
+          )
+        )
+      })
+    ),
     "standard-be-2x2" = list(
       name = "Standard 2\u00D72 crossover bioequivalence",
       category = "Regulatory / Bioequivalence",
@@ -543,7 +592,7 @@ lity_design_from_template <- function(
     lity_arm(
       arm$name, events, size = subjects_per_arm,
       sample_volume = as.numeric(arm$sample_volume %||% 3),
-      metadata = list(
+      metadata = utils::modifyList(list(
         route = as.character(
           attr(events, "lity_schedule")$route %||% "extravascular"
         ),
@@ -557,7 +606,7 @@ lity_design_from_template <- function(
           start = as.numeric(periods[[index]]$start %||% 0),
           treatment = as.character(periods[[index]]$treatment %||% "")
         ))
-      )
+      ), arm$metadata %||% list())
     )
   })
   names(arms) <- make.unique(vapply(
@@ -587,7 +636,8 @@ lity_design_from_template <- function(
         subjects_per_arm = subjects_per_arm,
         regulatory = isTRUE(spec$regulatory),
         framework = as.character(spec$framework %||% ""),
-        caution = as.character(spec$caution %||% "")
+        caution = as.character(spec$caution %||% ""),
+        risk_controls = spec$risk_controls %||% list()
       )
     ))
   )

@@ -1,7 +1,7 @@
 # LibeR algorithm inventory and final pre-1.0 gap review
 
 Review date: 2026-07-31
-Repository baseline: `0.9.0-research-beta.9`
+Repository baseline: `0.9.0-research-beta.10`
 
 ## Executive assessment
 

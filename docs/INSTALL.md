@@ -24,7 +24,7 @@ reproducible environment:
 
 ```r
 liber_install(channel = "stable")
-liber_install(tag = "v0.9.0-research-beta.9")
+liber_install(tag = "v0.9.0-research-beta.10")
 ```
 
 `LIBER_RELEASE_CHANNEL` and `LIBER_RELEASE_TAG` provide equivalent
