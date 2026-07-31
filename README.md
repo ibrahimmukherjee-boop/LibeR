@@ -200,6 +200,18 @@ For optimal-design work, start with `LibeRality::lity_example()` and
 `LibeRality::liberality_gui()`. Final designs can be exported as exact
 LibeRation event templates or submitted as typed LibeRties jobs.
 
+## Acknowledgements
+
+Sebastian G. Wicha is gratefully acknowledged for his contributions to early
+conceptual and scientific discussions that helped shape the foundations and
+direction of the LibeR ecosystem.
+
+GPT-5.6 was subsequently used as an AI engineering collaborator to help
+implement and review numerical methods, software architecture, interfaces,
+tests, validation infrastructure, and documentation. Scientific direction,
+validation criteria, interpretation, and release decisions remain the
+responsibility of the project owner.
+
 ## Licensing
 
 LibeRtAD, LibeRation, LibeRties, LibeRary, LibeRator, and LibeRality are MIT licensed. Bundled CppAD and other
