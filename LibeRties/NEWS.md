@@ -1,3 +1,8 @@
+# LibeRties 0.7.7
+
+- Publishes the final shared asynchronous task-state runtime under a new
+  immutable package version after the 0.7.6 release tag.
+
 # LibeRties 0.7.6
 
 - Adopts the consolidated asynchronous task-state refresh helper so local and

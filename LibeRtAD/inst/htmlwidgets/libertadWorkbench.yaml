@@ -1,6 +1,6 @@
 dependencies:
   - name: libertad-benchmark-style
-    version: 0.7.12
+    version: 0.7.13
     src: htmlwidgets
     script: liber-design-system.js
     stylesheet:

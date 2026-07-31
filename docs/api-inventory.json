@@ -39,97 +39,97 @@
   "entries": [
     {
       "package": "LibeRtAD",
-      "version": "0.7.12",
+      "version": "0.7.13",
       "symbol": "ADModel",
       "status": "evolving"
     },
     {
       "package": "LibeRtAD",
-      "version": "0.7.12",
+      "version": "0.7.13",
       "symbol": "ad_allocator_info",
       "status": "evolving"
     },
     {
       "package": "LibeRtAD",
-      "version": "0.7.12",
+      "version": "0.7.13",
       "symbol": "ad_benchmark",
       "status": "evolving"
     },
     {
       "package": "LibeRtAD",
-      "version": "0.7.12",
+      "version": "0.7.13",
       "symbol": "ad_benchmark_cases",
       "status": "evolving"
     },
     {
       "package": "LibeRtAD",
-      "version": "0.7.12",
+      "version": "0.7.13",
       "symbol": "ad_checkpoint_probe",
       "status": "evolving"
     },
     {
       "package": "LibeRtAD",
-      "version": "0.7.12",
+      "version": "0.7.13",
       "symbol": "ad_compile",
       "status": "stable-contract"
     },
     {
       "package": "LibeRtAD",
-      "version": "0.7.12",
+      "version": "0.7.13",
       "symbol": "ad_engine_info",
       "status": "stable-contract"
     },
     {
       "package": "LibeRtAD",
-      "version": "0.7.12",
+      "version": "0.7.13",
       "symbol": "ad_gauss_hermite",
       "status": "evolving"
     },
     {
       "package": "LibeRtAD",
-      "version": "0.7.12",
+      "version": "0.7.13",
       "symbol": "ad_smolyak_gauss_hermite",
       "status": "evolving"
     },
     {
       "package": "LibeRtAD",
-      "version": "0.7.12",
+      "version": "0.7.13",
       "symbol": "ad_ir",
       "status": "stable-contract"
     },
     {
       "package": "LibeRtAD",
-      "version": "0.7.12",
+      "version": "0.7.13",
       "symbol": "ad_load_tape",
       "status": "stable-contract"
     },
     {
       "package": "LibeRtAD",
-      "version": "0.7.12",
+      "version": "0.7.13",
       "symbol": "ad_supported",
       "status": "evolving"
     },
     {
       "package": "LibeRtAD",
-      "version": "0.7.12",
+      "version": "0.7.13",
       "symbol": "libertad_gui",
       "status": "evolving"
     },
     {
       "package": "LibeRtAD",
-      "version": "0.7.12",
+      "version": "0.7.13",
       "symbol": "libertad_workbench",
       "status": "evolving"
     },
     {
       "package": "LibeRtAD",
-      "version": "0.7.12",
+      "version": "0.7.13",
       "symbol": "libertadWorkbenchOutput",
       "status": "evolving"
     },
     {
       "package": "LibeRtAD",
-      "version": "0.7.12",
+      "version": "0.7.13",
       "symbol": "renderLibertadWorkbench",
       "status": "evolving"
     },
@@ -831,571 +831,571 @@
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_adjudicate_extractions",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_assess_model",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_classify_entry",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_compare_extractions",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_default_query",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_deliberative_extract",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_discover",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_docling_available",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_docling_parse",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_document_bundle",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_download_pdf",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_dual_extract",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_entrez_count",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_entrez_fetch_metadata",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_entrez_search",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_europe_pmc_lookup",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_extract_batch",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_extract_model",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_extract_text_lane",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_extract_vision_lane",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_fetch_institutional",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_find_supplements",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_generate_fetch_script",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_gui_worker",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_latest_manifest",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_load_config",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_make_logger",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_map_to_ctl",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_ollama_available",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_ollama_chat",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_parse_llm_json",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_pdf_text",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_pmc_oa_lookup",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_pmc_pdf_url",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_process_batch",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_publish_catalog_entry",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_read_document_bundle",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_read_manifest",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_read_progress",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_render_pdf_pages",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_shiny",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_stub_extraction",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_triage_abstract",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_triage_batch",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_unpaywall_lookup",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_validate_config",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_write_manifest",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "ingest_write_progress",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_catalog_root",
       "status": "stable-contract"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_clinical_qualification",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_clinical_qualification_validate",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_clinical_qualifications",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_clinical_qualify",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_config_path",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_dosing_normalize",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_get",
       "status": "stable-contract"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_home",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_image_message",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_infer_implementation",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_ingest_shiny",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_job",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_list",
       "status": "stable-contract"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_llm_available",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_llm_chat",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_llm_models",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_llm_providers",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_model",
       "status": "stable-contract"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_model_enrich",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_population_normalize",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_provenance",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_qualification_check",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_reference_benchmark",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_reference_build",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_reference_compare",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_reference_get",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_reference_list",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_reference_release_gate",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_reference_revise",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_reference_run",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_reference_shiny",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_reference_training_export",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_reference_training_files",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_reference_validate",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_repository_wipe",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_reproduction_plan",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_reproduction_run",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_reproduction_score",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_review",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_save_config",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_search",
       "status": "stable-contract"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_shiny",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_source_pdf",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_use_in_workspace",
       "status": "evolving"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_validate",
       "status": "stable-contract"
     },
     {
       "package": "LibeRary",
-      "version": "0.7.10",
+      "version": "0.7.11",
       "symbol": "library_worker_task",
       "status": "evolving"
     },
@@ -2079,199 +2079,199 @@
     },
     {
       "package": "LibeRties",
-      "version": "0.7.6",
+      "version": "0.7.7",
       "symbol": "LibeRQueue",
       "status": "evolving"
     },
     {
       "package": "LibeRties",
-      "version": "0.7.6",
+      "version": "0.7.7",
       "symbol": "LibeRRemote",
       "status": "evolving"
     },
     {
       "package": "LibeRties",
-      "version": "0.7.6",
+      "version": "0.7.7",
       "symbol": "LibeRServer",
       "status": "evolving"
     },
     {
       "package": "LibeRties",
-      "version": "0.7.6",
+      "version": "0.7.7",
       "symbol": "ls_api",
       "status": "evolving"
     },
     {
       "package": "LibeRties",
-      "version": "0.7.6",
+      "version": "0.7.7",
       "symbol": "ls_admin_gui",
       "status": "evolving"
     },
     {
       "package": "LibeRties",
-      "version": "0.7.6",
+      "version": "0.7.7",
       "symbol": "ls_audit_read",
       "status": "evolving"
     },
     {
       "package": "LibeRties",
-      "version": "0.7.6",
+      "version": "0.7.7",
       "symbol": "ls_job",
       "status": "stable-contract"
     },
     {
       "package": "LibeRties",
-      "version": "0.7.6",
+      "version": "0.7.7",
       "symbol": "ls_generate_storage_key",
       "status": "evolving"
     },
     {
       "package": "LibeRties",
-      "version": "0.7.6",
+      "version": "0.7.7",
       "symbol": "ls_library_job",
       "status": "evolving"
     },
     {
       "package": "LibeRties",
-      "version": "0.7.6",
+      "version": "0.7.7",
       "symbol": "ls_job_decode",
       "status": "stable-contract"
     },
     {
       "package": "LibeRties",
-      "version": "0.7.6",
+      "version": "0.7.7",
       "symbol": "ls_job_encode",
       "status": "stable-contract"
     },
     {
       "package": "LibeRties",
-      "version": "0.7.6",
+      "version": "0.7.7",
       "symbol": "ls_job_from_wire",
       "status": "evolving"
     },
     {
       "package": "LibeRties",
-      "version": "0.7.6",
+      "version": "0.7.7",
       "symbol": "ls_job_manifest",
       "status": "evolving"
     },
     {
       "package": "LibeRties",
-      "version": "0.7.6",
+      "version": "0.7.7",
       "symbol": "ls_job_to_wire",
       "status": "evolving"
     },
     {
       "package": "LibeRties",
-      "version": "0.7.6",
+      "version": "0.7.7",
       "symbol": "ls_local_queue",
       "status": "evolving"
     },
     {
       "package": "LibeRties",
-      "version": "0.7.6",
+      "version": "0.7.7",
       "symbol": "ls_queue_capabilities",
       "status": "evolving"
     },
     {
       "package": "LibeRties",
-      "version": "0.7.6",
+      "version": "0.7.7",
       "symbol": "ls_process_supervisor",
       "status": "evolving"
     },
     {
       "package": "LibeRties",
-      "version": "0.7.6",
+      "version": "0.7.7",
       "symbol": "ls_supervise_process",
       "status": "evolving"
     },
     {
       "package": "LibeRties",
-      "version": "0.7.6",
+      "version": "0.7.7",
       "symbol": "ls_remote",
       "status": "evolving"
     },
     {
       "package": "LibeRties",
-      "version": "0.7.6",
+      "version": "0.7.7",
       "symbol": "ls_result_decode",
       "status": "stable-contract"
     },
     {
       "package": "LibeRties",
-      "version": "0.7.6",
+      "version": "0.7.7",
       "symbol": "ls_result_encode",
       "status": "stable-contract"
     },
     {
       "package": "LibeRties",
-      "version": "0.7.6",
+      "version": "0.7.7",
       "symbol": "ls_result_from_wire",
       "status": "evolving"
     },
     {
       "package": "LibeRties",
-      "version": "0.7.6",
+      "version": "0.7.7",
       "symbol": "ls_result_to_wire",
       "status": "evolving"
     },
     {
       "package": "LibeRties",
-      "version": "0.7.6",
+      "version": "0.7.7",
       "symbol": "ls_run_api",
       "status": "evolving"
     },
     {
       "package": "LibeRties",
-      "version": "0.7.6",
+      "version": "0.7.7",
       "symbol": "ls_run_admin",
       "status": "evolving"
     },
     {
       "package": "LibeRties",
-      "version": "0.7.6",
+      "version": "0.7.7",
       "symbol": "ls_security_policy",
       "status": "stable-contract"
     },
     {
       "package": "LibeRties",
-      "version": "0.7.6",
+      "version": "0.7.7",
       "symbol": "ls_server",
       "status": "evolving"
     },
     {
       "package": "LibeRties",
-      "version": "0.7.6",
+      "version": "0.7.7",
       "symbol": "ls_server_preflight",
       "status": "stable-contract"
     },
     {
       "package": "LibeRties",
-      "version": "0.7.6",
+      "version": "0.7.7",
       "symbol": "ls_user_create",
       "status": "evolving"
     },
     {
       "package": "LibeRties",
-      "version": "0.7.6",
+      "version": "0.7.7",
       "symbol": "ls_user_delete",
       "status": "evolving"
     },
     {
       "package": "LibeRties",
-      "version": "0.7.6",
+      "version": "0.7.7",
       "symbol": "ls_user_list",
       "status": "evolving"
     },
     {
       "package": "LibeRties",
-      "version": "0.7.6",
+      "version": "0.7.7",
       "symbol": "ls_user_rotate_token",
       "status": "evolving"
     },
     {
       "package": "LibeRties",
-      "version": "0.7.6",
+      "version": "0.7.7",
       "symbol": "ls_user_update",
       "status": "evolving"
     }

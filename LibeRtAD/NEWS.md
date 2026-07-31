@@ -1,3 +1,8 @@
+# LibeRtAD 0.7.13
+
+- Publishes the final shared asynchronous task-state runtime under a new
+  immutable package version after the 0.7.12 release tag.
+
 # LibeRtAD 0.7.12
 
 - Adopts the shared asynchronous task-state refresh improvements used across
