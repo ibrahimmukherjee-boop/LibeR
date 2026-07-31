@@ -1,3 +1,9 @@
+# LibeRties 0.7.6
+
+- Adopts the consolidated asynchronous task-state refresh helper so local and
+  remote queue views avoid redundant reactive invalidation when worker state
+  has not changed.
+
 # LibeRties 0.7.5
 
 - Updates admin users, jobs, and logs only when their persisted state changes,

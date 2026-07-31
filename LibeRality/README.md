@@ -22,7 +22,7 @@ matched PopED/PFIM and which currently have internal verification only.
   endpoints, including multi-endpoint designs.
 - Population strata, covariate distributions, parameter/model uncertainty,
   dropout, adherence, and missed-sample scenarios.
-- D-, A-, E-, Ds-, c-, L-, RSE-, and prediction-optimality.
+- D-, ED-, A-, E-, Ds-, c-, L-, RSE-, and prediction-optimality.
 - Bayesian/robust, minimax/maximin, model-average, precision-probability,
   T- and KL-discrimination, power, superiority, non-inferiority, target
   attainment, correct-dose selection, expected utility, cost, and burden.
@@ -35,9 +35,20 @@ matched PopED/PFIM and which currently have internal verification only.
   completed fitted runs, reviewed LibeRary entries, and NONMEM control streams.
   Full models are loaded only when previewed, and selected copies retain source
   and parameter provenance.
+- A shared, validated model editor for structural/statistical source, THETA
+  values and bounds, OMEGA, and SIGMA, plus a trial-design wizard that converts
+  common clinical study patterns into ordinary editable `lity_design` objects.
+  Regulatory-informed starting layouts cover standard 2×2 BE, full-replicate
+  RSABE, food-effect, fixed-sequence DDI, TQT, concentration-QTc, renal-
+  impairment, and hepatic-impairment studies.
+- Immutable, workspace-backed design histories with named designs, sequential
+  versions, visible unsaved-change state, and guarded switching. Portable RDS
+  import/export remains available independently.
 - Executable external validation of complete population-FO Fisher matrices,
   RSEs, D-optimal rankings, and cold/warm runtimes against PopED and PFIM.
-- A responsive React workbench with light/dark themes and an amber LibeR dove.
+- A guided React workbench with editable arms, endpoints, scenarios, variables,
+  and constraints; grouped criteria with plain-language and statistical help;
+  responsive light/dark themes; and a Mineral Slate and Copper visual identity.
 
 ## Quick start
 
@@ -67,6 +78,29 @@ optimised <- lity_optimise(
 simulation <- lity_simulate_trials(optimised$design, n = 100)
 liberality_gui(optimised$design)
 ```
+
+The workbench follows the same sequence a study-design review normally does:
+choose and inspect the model, define the trial architecture, declare the
+scientific objective and uncertainty, evaluate expected precision, optimise
+permitted variables, and finally stress-test the design by simulation. The `?`
+control beside the criterion selector explains both the underlying statistic
+and when the criterion is—or is not—a sensible choice.
+
+`lity_design_templates()` lists the wizard's built-in starting points and
+`lity_design_from_template()` creates the same codified, serializable design
+object that the GUI edits. Direct `$PRED` models remain compatible with the
+shared LibeRation schema but are identified by their execution route rather
+than by the unused ADVAN/TRANS placeholders.
+
+The regulatory-informed templates are configurable protocol skeletons. They do
+not determine product-specific sample size, washout, assay, acceptance limits,
+analysis populations, safety monitoring, or regional regulatory adequacy.
+
+Use `lity_design_version_save()` to create an immutable version,
+`lity_design_history()` to list current and previous designs, and
+`lity_design_version_load()` to restore a specific version. The workbench
+provides the same workflow visually and prevents a version switch from silently
+discarding an edited working copy.
 
 The final event template can be returned directly to LibeRation with
 `lity_to_liberation()`. When LibeRties is installed, `lity_job()` creates a

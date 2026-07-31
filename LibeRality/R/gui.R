@@ -4,7 +4,8 @@
   # strict partial-match checks remain quiet.
   if (identical(type, "E")) return(lity_criterion_E())
   switch(type,
-    D = lity_criterion_D(), A = lity_criterion_A(),
+    D = lity_criterion_D(), ED = lity_criterion_ED(),
+    A = lity_criterion_A(),
     Ds = lity_criterion_Ds(parameter_names[grepl("^THETA", parameter_names)]),
     c = lity_criterion_c(c(1, rep(0, max(0, length(parameter_names) - 1L)))),
     L = lity_criterion_L(diag(length(parameter_names))),
@@ -53,6 +54,19 @@ liberality_gui <- function(design = NULL, criterion = lity_criterion_D(), queue 
   if (!validation$valid) .lity_stop("Cannot launch an invalid design: ", paste(validation$errors, collapse = "; "))
   workspace <- workspace %||% .lity_default_liberation_workspace()
   model_catalogue <- .lity_model_catalogue(workspace, library_root)
+  initial_history <- lity_design_history(workspace)
+  initial_hash <- .lity_hash(design)
+  initial_match <- which(initial_history$design_hash == initial_hash)
+  if (length(initial_match)) {
+    initial_match <- initial_match[[1L]]
+    initial_series <- initial_history$series_id[[initial_match]]
+    initial_version <- initial_history$version_id[[initial_match]]
+    initial_saved_hash <- initial_hash
+  } else {
+    initial_series <- ""
+    initial_version <- ""
+    initial_saved_hash <- ""
+  }
   favicon <- system.file("assets", "favicon.svg", package = "LibeRality")
   if (!nzchar(favicon)) favicon <- file.path(getwd(), "LibeRality", "inst", "assets", "favicon.svg")
   prefix <- paste0("liberality-assets-", substr(.lity_id("gui"), 5, 16))
@@ -65,7 +79,7 @@ liberality_gui <- function(design = NULL, criterion = lity_criterion_D(), queue 
       htmltools::tags$script(htmltools::HTML(
         "(function(){try{var t=localStorage.getItem('liber.theme');if(t!=='dark'&&t!=='light'){var l=localStorage.getItem('LibeRality.theme');t=l==='dark'?'dark':l==='light'?'light':(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');}document.documentElement.setAttribute('data-liber-theme',t);}catch(e){}})();"
       )),
-      htmltools::tags$style("html,body{margin:0;min-height:100%;background:#f8f5ef;font-family:'Segoe UI',Arial,sans-serif}html[data-liber-theme='dark'] body{background:#20201e}")
+      htmltools::tags$style("html,body{margin:0;min-height:100%;background:#f3f5f6;font-family:'Segoe UI',Arial,sans-serif}html[data-liber-theme='dark'] body{background:#111a20}")
     ),
     htmltools::tags$body(liberalityWorkbenchOutput("liberality_workbench"))
   )
@@ -76,14 +90,57 @@ liberality_gui <- function(design = NULL, criterion = lity_criterion_D(), queue 
       design = design, criterion = criterion, evaluation = NULL,
       optimisation = NULL, simulation = NULL,
       model_candidate = NULL,
+      design_history = initial_history,
+      current_series = initial_series,
+      current_version = initial_version,
+      saved_hash = initial_saved_hash,
       revision = 0L,
       status = list(level = "info", text = "Design workbench ready")
     )
+    hosted <- identical(tolower(Sys.getenv("LIBER_HOSTED", "")), "true") ||
+      nzchar(Sys.getenv("RSCONNECT_USER", "")) ||
+      nzchar(Sys.getenv("SHINYAPPS_ACCOUNT", ""))
+    invalidate_design <- function(text, level = "success") {
+      state$evaluation <- NULL
+      state$optimisation <- NULL
+      state$simulation <- NULL
+      state$revision <- state$revision + 1L
+      state$status <- list(level = level, text = text)
+      invisible(NULL)
+    }
+    design_dirty <- function() {
+      !nzchar(state$saved_hash) ||
+        !identical(.lity_hash(state$design), state$saved_hash)
+    }
+    refresh_design_history <- function(record = NULL) {
+      state$design_history <- lity_design_history(workspace)
+      if (!is.null(record)) {
+        state$current_series <- record$series_id
+        state$current_version <- record$version_id
+        state$saved_hash <- record$design_hash
+      }
+      invisible(record)
+    }
+    save_design_version <- function(series_id = NULL, series_name = NULL,
+                                    label = NULL) {
+      state$design$metadata$design_criterion <- state$criterion
+      record <- lity_design_version_save(
+        state$design, workspace = workspace, series_id = series_id,
+        series_name = series_name, label = label
+      )
+      refresh_design_history(record)
+      record
+    }
     output$liberality_workbench <- renderLiberalityWorkbench({
       liberality_workbench(.lity_gui_payload(
         state$design, state$criterion, state$evaluation, state$optimisation,
         state$simulation, state$status, favicon_href, !is.null(queue),
-        .liber_shared_task_snapshot(tasks), model_catalogue
+        .liber_shared_task_snapshot(tasks), model_catalogue,
+        revision = state$revision, hosted = hosted,
+        design_history = .lity_design_history_payload(
+          state$design_history, state$current_series,
+          state$current_version, design_dirty()
+        )
       ))
     })
     shiny::observeEvent(input$liberality_workbench_event, {
@@ -92,8 +149,17 @@ liberality_gui <- function(design = NULL, criterion = lity_criterion_D(), queue 
       tryCatch({
         if (action == "set_criterion") {
           state$criterion <- .lity_gui_criterion(as.character(event$type), state$design)
-          state$revision <- state$revision + 1L
-          state$status <- list(level = "info", text = paste("Selected", state$criterion$name))
+          state$design$metadata$design_criterion <- state$criterion
+          invalidate_design(
+            paste("Selected", state$criterion$name, "\u2014 evaluation is now out of date"),
+            "info"
+          )
+        } else if (action == "set_design_identity") {
+          state$design$name <- .lity_scalar(event$name, "name")
+          state$design$description <- .lity_scalar(
+            event$description %||% "", "description", TRUE
+          )
+          invalidate_design("Updated design identity")
         } else if (action == "model_preview") {
           key <- as.character(event$key %||% "")[[1L]]
           records <- model_catalogue$records
@@ -165,6 +231,24 @@ liberality_gui <- function(design = NULL, criterion = lity_criterion_D(), queue 
             preview = NULL, selectedKey = "", busy = FALSE, applied = TRUE,
             error = NULL
           ))
+        } else if (action == "model_edit") {
+          state$design <- .lity_gui_update_model(state$design, event)
+          state$criterion <- .lity_gui_criterion(
+            state$criterion$type, state$design
+          )
+          invalidate_design("Validated and applied model changes")
+        } else if (action == "wizard_apply") {
+          state$design <- .lity_gui_apply_design_template(
+            state$design, event
+          )
+          state$criterion <- .lity_gui_criterion(
+            state$criterion$type, state$design
+          )
+          state$model_candidate <- NULL
+          invalidate_design(paste(
+            "Loaded", state$design$name,
+            "as a fully editable design"
+          ))
         } else if (action == "evaluate") {
           .liber_shared_task_start(
             tasks, "LibeRality", ".lity_gui_background_task",
@@ -194,9 +278,62 @@ liberality_gui <- function(design = NULL, criterion = lity_criterion_D(), queue 
           if (length(dose_rows) && is.finite(dose) && dose >= 0) arm$events$AMT[dose_rows[[1L]]] <- dose
           arm$events <- arm$events[order(arm$events$TIME, -arm$events$EVID), , drop = FALSE]
           state$design$arms[[arm_id]] <- arm
-          state$evaluation <- state$optimisation <- state$simulation <- NULL
-          state$revision <- state$revision + 1L
-          state$status <- list(level = "success", text = paste("Updated", arm$name))
+          invalidate_design(paste("Updated", arm$name))
+        } else if (action == "arm_save") {
+          state$design <- .lity_gui_upsert_arm(state$design, event)
+          invalidate_design(
+            paste(if (nzchar(as.character(event$id %||% ""))) "Updated" else "Added",
+                  trimws(as.character(event$name %||% "design arm")))
+          )
+        } else if (action == "arm_delete") {
+          id <- as.character(event$id %||% "")[[1L]]
+          label <- state$design$arms[[id]]$name %||% id
+          state$design <- .lity_gui_remove_arm(state$design, id)
+          invalidate_design(paste("Deleted", label), "warning")
+        } else if (action == "endpoint_save") {
+          state$design <- .lity_gui_upsert_endpoint(state$design, event)
+          invalidate_design(
+            paste(if (nzchar(as.character(event$id %||% ""))) "Updated" else "Added",
+                  trimws(as.character(event$name %||% "endpoint")))
+          )
+        } else if (action == "endpoint_delete") {
+          id <- as.character(event$id %||% "")[[1L]]
+          label <- state$design$endpoints[[id]]$name %||% id
+          state$design <- .lity_gui_remove_endpoint(state$design, id)
+          invalidate_design(paste("Deleted", label), "warning")
+        } else if (action == "scenario_save") {
+          state$design <- .lity_gui_upsert_scenario(state$design, event)
+          invalidate_design(
+            paste(if (nzchar(as.character(event$id %||% ""))) "Updated" else "Added",
+                  trimws(as.character(event$name %||% "scenario")))
+          )
+        } else if (action == "scenario_delete") {
+          id <- as.character(event$id %||% "")[[1L]]
+          label <- state$design$scenarios[[id]]$name %||% id
+          state$design <- .lity_gui_remove_scenario(state$design, id)
+          invalidate_design(paste("Deleted", label), "warning")
+        } else if (action == "variable_save") {
+          state$design <- .lity_gui_upsert_variable(state$design, event)
+          invalidate_design(
+            paste(if (nzchar(as.character(event$id %||% ""))) "Updated" else "Added",
+                  trimws(as.character(event$name %||% "design variable")))
+          )
+        } else if (action == "variable_delete") {
+          id <- as.character(event$id %||% "")[[1L]]
+          label <- state$design$variables[[id]]$name %||% id
+          state$design <- .lity_gui_remove_variable(state$design, id)
+          invalidate_design(paste("Deleted", label), "warning")
+        } else if (action == "constraint_save") {
+          state$design <- .lity_gui_upsert_constraint(state$design, event)
+          invalidate_design(
+            paste(if (nzchar(as.character(event$id %||% ""))) "Updated" else "Added",
+                  trimws(as.character(event$name %||% "constraint")))
+          )
+        } else if (action == "constraint_delete") {
+          id <- as.character(event$id %||% "")[[1L]]
+          label <- state$design$constraints[[id]]$name %||% id
+          state$design <- .lity_gui_remove_constraint(state$design, id)
+          invalidate_design(paste("Deleted", label), "warning")
         } else if (action == "optimise") {
           method <- as.character(event$method %||% "auto")
           maxit <- as.integer(event$maxit %||% 40L)
@@ -226,13 +363,15 @@ liberality_gui <- function(design = NULL, criterion = lity_criterion_D(), queue 
           )
         } else if (action == "simulate") {
           n <- as.integer(event$n %||% 20L); fit <- isTRUE(event$fit)
+          seed <- as.integer(event$seed %||% 7301L)
           .liber_shared_task_start(
             tasks, "LibeRality", ".lity_gui_background_task",
             args = list(
               operation = "simulate",
               arguments = list(
                 design = state$design, n = n, fit = fit,
-                method = as.character(event$method %||% "FOCEI")
+                method = as.character(event$method %||% "FOCEI"),
+                seed = seed
               )
             ),
             label = paste(n, "trial simulations"),
@@ -251,6 +390,75 @@ liberality_gui <- function(design = NULL, criterion = lity_criterion_D(), queue 
                           arguments = list(method = as.character(event$method %||% "auto")))
           id <- queue$submit(job)
           state$status <- list(level = "success", text = paste("Submitted optimal-design job", id))
+        } else if (action == "design_save_version") {
+          new_series <- isTRUE(event$newSeries)
+          series_id <- if (!new_series && nzchar(state$current_series)) {
+            state$current_series
+          } else {
+            NULL
+          }
+          record <- save_design_version(
+            series_id = series_id,
+            series_name = trimws(as.character(
+              event$seriesName %||% state$design$name
+            )[[1L]]),
+            label = trimws(as.character(event$label %||% "")[[1L]])
+          )
+          state$status <- list(
+            level = "success",
+            text = paste("Saved", record$series_name, "\u2014", record$label)
+          )
+        } else if (action == "design_switch") {
+          target_series <- as.character(event$seriesId %||% "")[[1L]]
+          target_version <- as.character(event$versionId %||% "latest")[[1L]]
+          resolution <- tolower(as.character(event$resolution %||% "")[[1L]])
+          if (design_dirty() && !resolution %in% c("save", "discard")) {
+            .lity_stop(
+              "This design has unsaved changes. Save a new version or ",
+              "explicitly discard the changes before switching."
+            )
+          }
+          if (identical(resolution, "save")) {
+            save_design_version(
+              series_id = if (nzchar(state$current_series)) {
+                state$current_series
+              } else {
+                NULL
+              },
+              series_name = state$design$name
+            )
+          }
+          loaded <- lity_design_version_load(
+            workspace, target_series, target_version
+          )
+          selected <- lity_design_history(workspace)
+          selected <- selected[
+            selected$series_id == target_series &
+              selected$version_id == target_version,
+            , drop = FALSE
+          ]
+          if (nrow(selected) != 1L) {
+            .lity_stop("The selected design version is no longer available.")
+          }
+          state$design <- loaded
+          restored_criterion <- state$design$metadata$design_criterion %||% NULL
+          state$criterion <- if (inherits(restored_criterion, "lity_criterion")) {
+            restored_criterion
+          } else {
+            .lity_gui_criterion(state$criterion$type, state$design)
+          }
+          state$evaluation <- state$optimisation <- state$simulation <- NULL
+          state$model_candidate <- NULL
+          state$design_history <- lity_design_history(workspace)
+          state$current_series <- target_series
+          state$current_version <- target_version
+          state$saved_hash <- .lity_hash(loaded)
+          state$revision <- state$revision + 1L
+          state$status <- list(
+            level = "success",
+            text = paste("Loaded", selected$series_name[[1L]], "\u2014",
+                         selected$label[[1L]])
+          )
         } else if (action == "save") {
           path <- normalizePath(as.character(event$path), winslash = "/", mustWork = FALSE)
           saveRDS(state$design, path, version = 3)
@@ -259,8 +467,16 @@ liberality_gui <- function(design = NULL, criterion = lity_criterion_D(), queue 
           loaded <- readRDS(as.character(event$path)); validation <- lity_validate(loaded)
           if (!validation$valid) .lity_stop("Saved design is invalid.")
           state$design <- loaded; state$evaluation <- state$optimisation <- state$simulation <- NULL
-          state$criterion <- .lity_gui_criterion(state$criterion$type, state$design)
+          restored_criterion <- state$design$metadata$design_criterion %||% NULL
+          state$criterion <- if (inherits(restored_criterion, "lity_criterion")) {
+            restored_criterion
+          } else {
+            .lity_gui_criterion(state$criterion$type, state$design)
+          }
           state$model_candidate <- NULL
+          state$current_series <- ""
+          state$current_version <- ""
+          state$saved_hash <- .lity_hash(loaded)
           state$revision <- state$revision + 1L
           state$status <- list(level = "success", text = paste("Loaded", loaded$name))
         } else if (action == "report") {
@@ -282,9 +498,15 @@ liberality_gui <- function(design = NULL, criterion = lity_criterion_D(), queue 
             session, "liberality_workbench", tasks
           )
         } else if (action == "reset") {
+          if (!identical(as.character(event$confirmation %||% ""), "YES")) {
+            .lity_stop("Type YES to confirm resetting the design.")
+          }
           state$design <- lity_example()$design; state$criterion <- lity_criterion_D()
           state$evaluation <- state$optimisation <- state$simulation <- NULL
           state$model_candidate <- NULL
+          state$current_series <- ""
+          state$current_version <- ""
+          state$saved_hash <- ""
           state$revision <- state$revision + 1L
           state$status <- list(level = "info", text = "Teaching example restored")
         } else if (action == "cancel_task") {

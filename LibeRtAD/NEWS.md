@@ -1,3 +1,9 @@
+# LibeRtAD 0.7.12
+
+- Adopts the shared asynchronous task-state refresh improvements used across
+  the ecosystem so unchanged background state does not trigger unnecessary
+  full-widget updates.
+
 # LibeRtAD 0.7.11
 
 - Publishes the shared, configurable LibeR storage-root behavior and its

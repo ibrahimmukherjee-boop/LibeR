@@ -97,3 +97,50 @@ test_that("workbench exposes the model browser and dedicated Model tab", {
   expect_match(source, "Control stream", fixed = TRUE)
   expect_match(source, "[\"model\", \"Model\"]", fixed = TRUE)
 })
+
+test_that("direct PRED models retain backend compatibility without ADVAN labels", {
+  model <- LibeRation::nm_model(
+    INPUT = c("ID", "TIME", "DV"),
+    ADVAN = 1, TRANS = 1, PRED_MODE = "pred",
+    PRED_SOURCE = "SLOPE=THETA(1); F=SLOPE*TIME",
+    ERROR = "Y=F+ERR(1)",
+    THETAS = data.frame(THETA = 1, Value = 2),
+    SIGMAS = data.frame(SIGMA = 1, Value = 0.1)
+  )
+  detail <- LibeRality:::.lity_model_detail(model)
+
+  expect_identical(model$ADVAN, 1L)
+  expect_identical(model$TRANS, 1L)
+  expect_identical(detail$predMode, "pred")
+  expect_identical(detail$typeLabel, "Direct $PRED")
+  expect_match(detail$typeDescription, "not used")
+  expect_identical(detail$name, "Direct $PRED model")
+})
+
+test_that("model editor delegates rebuilding and validation to LibeRation", {
+  design <- lity_example()$design
+  detail <- LibeRality:::.lity_model_detail(design$model)
+  rows <- detail$editor$parameters
+  theta <- Filter(function(row) identical(row$type, "THETA"), rows)
+  omega <- Filter(function(row) identical(row$type, "OMEGA"), rows)
+  sigma <- Filter(function(row) identical(row$type, "SIGMA"), rows)
+  theta[[2L]]$value <- 5
+  theta[[2L]]$lower <- 0.2
+
+  changed <- LibeRality:::.lity_gui_update_model(design, list(
+    name = "Edited oral PK",
+    pk = detail$editor$pk,
+    pred = detail$editor$pred,
+    des = detail$editor$des,
+    error = detail$editor$error,
+    errorEditable = detail$editor$errorEditable,
+    theta = theta, omega = omega, sigma = sigma
+  ))
+
+  expect_true(lity_validate(changed)$valid)
+  expect_identical(attr(changed$model, "name"), "Edited oral PK")
+  expect_equal(changed$model$THETAS$Value[[2L]], 5)
+  expect_equal(changed$model$THETAS$LOWER[[2L]], 0.2)
+  expect_null(changed$prior_fim)
+  expect_true(length(changed$metadata$model_history) >= 1L)
+})

@@ -84,6 +84,37 @@ lity_schedule <- function(sampling_times, dose = 0, dose_times = 0,
   events
 }
 
+.lity_endpoint_options <- function(type = NULL) {
+  options <- list(
+    continuous = list(
+      links = "identity",
+      distributions = "normal"
+    ),
+    binary = list(
+      links = c("logit", "probit", "cloglog"),
+      distributions = "bernoulli"
+    ),
+    ordinal = list(
+      links = c("logit", "probit"),
+      distributions = "categorical"
+    ),
+    count = list(
+      links = c("log", "identity"),
+      distributions = c("poisson", "negative_binomial")
+    ),
+    time_to_event = list(
+      links = c("log", "identity"),
+      distributions = c("exponential", "weibull")
+    ),
+    recurrent_event = list(
+      links = c("log", "identity"),
+      distributions = c("poisson", "negative_binomial")
+    )
+  )
+  if (is.null(type)) return(options)
+  options[[match.arg(type, names(options))]]
+}
+
 #' Define an outcome used by an optimal design
 #'
 #' @param name Outcome name.
@@ -113,6 +144,27 @@ lity_endpoint <- function(name, type = c("continuous", "binary", "ordinal", "cou
   default_distribution <- switch(type, continuous = "normal", binary = "bernoulli",
                                  ordinal = "categorical", count = "poisson",
                                  time_to_event = "exponential", recurrent_event = "poisson")
+  options <- .lity_endpoint_options(type)
+  link <- tolower(as.character(link %||% default_link)[[1L]])
+  distribution <- tolower(as.character(
+    distribution %||% default_distribution
+  )[[1L]])
+  if (identical(distribution, "negbin")) {
+    distribution <- "negative_binomial"
+  }
+  if (!link %in% options$links) {
+    .lity_stop(
+      "Unsupported ", type, " endpoint link `", link,
+      "`. Choose one of: ", paste(options$links, collapse = ", "), "."
+    )
+  }
+  if (!distribution %in% options$distributions) {
+    .lity_stop(
+      "Unsupported ", type, " endpoint distribution `", distribution,
+      "`. Choose one of: ",
+      paste(options$distributions, collapse = ", "), "."
+    )
+  }
   if (type == "ordinal") {
     thresholds <- as.numeric(thresholds)
     if (!length(thresholds) || any(!is.finite(thresholds)) || is.unsorted(thresholds, strictly = TRUE)) {
@@ -123,8 +175,8 @@ lity_endpoint <- function(name, type = c("continuous", "binary", "ordinal", "cou
   structure(list(
     schema = "liberality.endpoint", version = 1L,
     name = .lity_scalar(name, "name"), type = type, dvid = as.integer(dvid)[[1L]],
-    link = tolower(as.character(link %||% default_link)[[1L]]), scale = scale,
-    thresholds = thresholds, distribution = tolower(as.character(distribution %||% default_distribution)[[1L]]),
+    link = link, scale = scale,
+    thresholds = thresholds, distribution = distribution,
     dispersion = dispersion, target = target, metadata = metadata
   ), class = "lity_endpoint")
 }

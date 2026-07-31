@@ -1,5 +1,6 @@
 .lity_criterion_types <- c(
-  "D", "A", "E", "Ds", "c", "L", "rse", "max_rse", "prediction_variance",
+  "D", "ED", "A", "E", "Ds", "c", "L", "rse", "max_rse",
+  "prediction_variance",
   "bayesian", "robust", "minimax", "maximin", "model_average", "precision_probability",
   "T", "KL", "model_discrimination", "power", "superiority", "noninferiority",
   "correct_dose", "target_attainment", "expected_utility", "cost", "burden",
@@ -84,6 +85,15 @@ print.lity_criterion <- function(x, ...) {
 #' @rdname lity_criterion
 #' @export
 lity_criterion_D <- function(parameters = NULL, ...) lity_criterion("D", parameters = parameters, ...)
+#' @rdname lity_criterion
+#' @export
+lity_criterion_ED <- function(parameters = NULL, weights = NULL,
+                              name = "ED-optimality", ...) {
+  lity_criterion(
+    "ED", parameters = parameters, weights = weights,
+    name = name, ...
+  )
+}
 #' @rdname lity_criterion
 #' @export
 lity_criterion_A <- function(parameters = NULL, weights = NULL, ...) lity_criterion("A", parameters = parameters, weights = weights, ...)
@@ -435,6 +445,37 @@ lity_criterion_pareto <- function(components, ...) lity_criterion("pareto", comp
 .lity_evaluate_criterion <- function(criterion, design, information) {
   scenarios <- design$scenarios
   weights <- .lity_scenario_weights(design, criterion)
+  if (criterion$type == "ED") {
+    parameter_names <- rownames(information[[1L]]$matrix)
+    subset <- .lity_match_parameters(criterion$parameters, parameter_names)
+    log_determinants <- vapply(information, function(item) {
+      .lity_logdet(item$matrix[subset, subset, drop = FALSE])
+    }, numeric(1))
+    finite <- is.finite(log_determinants) & weights > 0
+    log_expected <- if (!any(finite)) {
+      -Inf
+    } else {
+      anchor <- max(log_determinants[finite])
+      anchor + log(sum(weights[finite] * exp(
+        log_determinants[finite] - anchor
+      )))
+    }
+    expected <- if (
+      is.finite(log_expected) &&
+        log_expected <= log(.Machine$double.xmax)
+    ) exp(log_expected) else if (identical(log_expected, -Inf)) 0 else Inf
+    names(log_determinants) <- names(scenarios)
+    return(list(
+      value = log_expected,
+      by_scenario = log_determinants,
+      details = list(
+        value_scale = "log_expected_determinant",
+        expected_determinant = expected,
+        scenario_log_determinants = log_determinants,
+        parameters = parameter_names[subset]
+      )
+    ))
+  }
   if (criterion$type == "model_average") {
     matrices <- lapply(information, `[[`, "matrix")
     averaged <- Reduce(`+`, Map(function(matrix, weight) matrix * weight, matrices, weights))

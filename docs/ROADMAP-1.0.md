@@ -2,7 +2,7 @@
 
 Status: proposed
 Roadmap baseline: 2026-07-26
-Current ecosystem release: `0.9.0-research-beta.7`
+Current ecosystem release: `0.9.0-research-beta.8`
 
 Post-1.0 clinical-pharmacology functionality is tracked separately in
 [`ROADMAP-1.1.md`](ROADMAP-1.1.md). NCA, BA/BE, and dose proportionality are

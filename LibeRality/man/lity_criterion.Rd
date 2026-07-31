@@ -3,6 +3,7 @@
 \name{lity_criterion}
 \alias{lity_criterion}
 \alias{lity_criterion_D}
+\alias{lity_criterion_ED}
 \alias{lity_criterion_A}
 \alias{lity_criterion_E}
 \alias{lity_criterion_Ds}
@@ -52,6 +53,13 @@ lity_criterion(
 )
 
 lity_criterion_D(parameters = NULL, ...)
+
+lity_criterion_ED(
+  parameters = NULL,
+  weights = NULL,
+  name = "ED-optimality",
+  ...
+)
 
 lity_criterion_A(parameters = NULL, weights = NULL, ...)
 

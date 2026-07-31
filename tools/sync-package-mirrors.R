@@ -202,6 +202,11 @@ for (package in packages) {
         c(
           "release", "create", tag, "--repo", paste0(owner, "/", package),
           "--title", shQuote(paste0(package, " ", versions[[package]])),
+          if (grepl("research-beta", manifest$release, fixed = TRUE)) {
+            "--prerelease"
+          } else {
+            character()
+          },
           "--notes",
           shQuote(paste0(
             "Research-beta package mirror generated from LibeR ecosystem ",

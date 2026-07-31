@@ -1,0 +1,1203 @@
+<!doctype html>
+<html lang='en'><head><meta charset='utf-8'>
+<title>LibeRtAD 0.7.12 reference manual</title>
+<style>
+@page { size: A4; margin: 17mm 16mm 18mm; }
+body { font-family: 'Segoe UI', Arial, sans-serif; color:#172033; line-height:1.42; max-width:980px; margin:0 auto; }
+h1 { color:#173f73; font-size:30px; margin-bottom:4px; }
+h2 { color:#173f73; border-bottom:2px solid #d9e4f2; padding-bottom:5px; break-before:page; }
+h3 { color:#315d89; margin-top:1.2em; }
+code, pre { font-family: Consolas, 'Courier New', monospace; }
+pre { background:#f5f7fa; border:1px solid #d8dee8; border-radius:4px; padding:10px; overflow-wrap:anywhere; white-space:pre-wrap; }
+table { border-collapse:collapse; width:100%; } td { vertical-align:top; border-bottom:1px solid #e5e9ef; padding:6px; }
+.cover { min-height:235mm; display:flex; flex-direction:column; justify-content:center; }
+.subtitle { color:#516175; font-size:18px; } .meta { margin-top:30px; color:#68778b; }
+.toc { columns:2; column-gap:32px; } .toc li { break-inside:avoid; margin:3px 0; }
+a { color:#175c9c; text-decoration:none; }
+</style></head><body>
+<section class='cover'>
+<h1>LibeRtAD reference manual</h1>
+<div class='subtitle'>C++ Automatic Differentiation Engine for LibeR</div>
+<div class='meta'>Version 0.7.12<br>Generated 2026-07-31<br>16 help topics</div>
+</section>
+<section><h2>Contents</h2><ul class='toc'>
+<li><a href='#ad_allocator_info'>ad_allocator_info</a></li>
+<li><a href='#ad_benchmark'>ad_benchmark</a></li>
+<li><a href='#ad_benchmark_cases'>ad_benchmark_cases</a></li>
+<li><a href='#ad_checkpoint_probe'>ad_checkpoint_probe</a></li>
+<li><a href='#ad_compile'>ad_compile</a></li>
+<li><a href='#ad_engine_info'>ad_engine_info</a></li>
+<li><a href='#ad_gauss_hermite'>ad_gauss_hermite</a></li>
+<li><a href='#ad_ir'>ad_ir</a></li>
+<li><a href='#ad_load_tape'>ad_load_tape</a></li>
+<li><a href='#ad_smolyak_gauss_hermite'>ad_smolyak_gauss_hermite</a></li>
+<li><a href='#ad_supported'>ad_supported</a></li>
+<li><a href='#ADModel'>ADModel</a></li>
+<li><a href='#libertad_gui'>libertad_gui</a></li>
+<li><a href='#libertad_workbench'>libertad_workbench</a></li>
+<li><a href='#libertadWorkbenchOutput'>libertadWorkbenchOutput</a></li>
+<li><a href='#renderLibertadWorkbench'>renderLibertadWorkbench</a></li>
+</ul></section>
+<h2 id='ad_allocator_info'>Inspect CppAD allocator state</h2><span id='topic+ad_allocator_info'></span>
+
+<h3>Description</h3>
+
+<p>Reports CppAD allocator bytes owned by the current execution thread. This
+is primarily a tape-lifetime diagnostic: 'inuse_bytes' should return close
+to its baseline after pointer-backed models are removed and garbage
+collection runs. Cached 'available_bytes' are reusable allocator blocks,
+not leaked live tapes, and may be released explicitly.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ad_allocator_info(release_available = FALSE)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ad_allocator_info_+3A_release_available">release_available</code></td>
+<td>
+<p>Release reusable blocks currently cached by CppAD
+for this thread before returning the report.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A named list with thread, parallel-state, live-allocation, cached,
+and released-byte telemetry.
+</p>
+
+
+<h3>Examples</h3>
+
+<pre><code class='language-R'>ad_allocator_info()
+</code></pre>
+
+<h2 id='ad_benchmark'>Benchmark the persistent C++ automatic-differentiation engine</h2><span id='topic+ad_benchmark'></span>
+
+<h3>Description</h3>
+
+<p>Separates recording from repeated tape evaluation and compares exact CppAD
+derivatives with central finite differences evaluated in R. The results are
+intended for local regression and hardware comparison rather than as a
+universal performance claim.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ad_benchmark(
+  case = c("rosenbrock", "pk", "jacobian"),
+  iterations = 1000L,
+  warmups = 50L,
+  optimize = TRUE,
+  finite_difference = TRUE
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ad_benchmark_+3A_case">case</code></td>
+<td>
+<p>Built-in workload returned by <code>ad_benchmark_cases()</code>.</p>
+</td></tr>
+<tr><td><code id="ad_benchmark_+3A_iterations">iterations</code></td>
+<td>
+<p>Number of requested measured value and derivative calls. The timer may increase this count to obtain stable resolution.</p>
+</td></tr>
+<tr><td><code id="ad_benchmark_+3A_warmups">warmups</code></td>
+<td>
+<p>Number of calls before timing.</p>
+</td></tr>
+<tr><td><code id="ad_benchmark_+3A_optimize">optimize</code></td>
+<td>
+<p>Whether CppAD tape optimisation is enabled.</p>
+</td></tr>
+<tr><td><code id="ad_benchmark_+3A_finite_difference">finite_difference</code></td>
+<td>
+<p>Include R central finite-difference comparators.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>An <code>ad_benchmark_result</code> containing timings, accuracy checks, engine
+metadata, and settings.
+</p>
+
+
+<h3>Examples</h3>
+
+<pre><code class='language-R'>ad_benchmark_cases()
+ad_benchmark("pk", iterations = 100, warmups = 5)
+</code></pre>
+
+<h2 id='ad_benchmark_cases'>List the built-in LibeRtAD benchmark cases</h2><span id='topic+ad_benchmark_cases'></span>
+
+<h3>Description</h3>
+
+<p>List the built-in LibeRtAD benchmark cases
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ad_benchmark_cases()
+</code></pre>
+
+
+<h3>Value</h3>
+
+<p>A data frame describing the available differentiable workloads.
+</p>
+
+<h2 id='ad_checkpoint_probe'>Benchmark nested-AD-safe CppAD checkpoint prototypes</h2><span id='topic+ad_checkpoint_probe'></span>
+
+<h3>Description</h3>
+
+<p>Compares repeated direct recordings with 'chkpoint_two' prototypes for an
+ADVAN1 interval and a 2-by-2 matrix state update. The checkpoint objects are
+explicitly configured for the nested AD route used by LibeRation curvature
+calculations. Results are diagnostic; production selection remains guarded
+by measured performance and tape size.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ad_checkpoint_probe(repetitions = 64L, evaluations = 1000L)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ad_checkpoint_probe_+3A_repetitions">repetitions</code></td>
+<td>
+<p>Number of repeated kernel uses on each outer tape.</p>
+</td></tr>
+<tr><td><code id="ad_checkpoint_probe_+3A_evaluations">evaluations</code></td>
+<td>
+<p>Number of zero-order evaluations used for timing.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A named list of operation counts, accuracy checks, and timings.
+</p>
+
+<h2 id='ad_compile'>Compile an R-like mathematical model</h2><span id='topic+ad_compile'></span>
+
+<h3>Description</h3>
+
+<p>Compile an R-like mathematical model
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ad_compile(
+  code,
+  inputs = character(),
+  outputs = NULL,
+  at = NULL,
+  wrt = names(at),
+  optimize = TRUE
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ad_compile_+3A_code">code</code></td>
+<td>
+<p>Character model code. The established LibeRation assignment,
+'THETA(i)', 'ETA(i)', 'SIGMA(i)', and 'ERR(i)' syntax is supported.</p>
+</td></tr>
+<tr><td><code id="ad_compile_+3A_inputs">inputs</code></td>
+<td>
+<p>Optional external input names. Undeclared symbols are appended
+as inputs in first-use order.</p>
+</td></tr>
+<tr><td><code id="ad_compile_+3A_outputs">outputs</code></td>
+<td>
+<p>Optional assignment names to expose. The default exposes all
+assignments, with the most recent value for reassigned names.</p>
+</td></tr>
+<tr><td><code id="ad_compile_+3A_at">at</code></td>
+<td>
+<p>Optional named recording point. When supplied, a persistent tape
+is recorded immediately.</p>
+</td></tr>
+<tr><td><code id="ad_compile_+3A_wrt">wrt</code></td>
+<td>
+<p>Inputs with respect to which derivatives are required.</p>
+</td></tr>
+<tr><td><code id="ad_compile_+3A_optimize">optimize</code></td>
+<td>
+<p>Whether CppAD should optimize the recorded tape.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>An 'ADModel' R6 object.
+</p>
+
+
+<h3>Examples</h3>
+
+<pre><code class='language-R'>model &lt;- ad_compile(
+  "CL = THETA(1) * exp(ETA(1))\nPENALTY = log(CL)^2",
+  at = c(THETA_1 = 2, ETA_1 = 0),
+  wrt = c("THETA_1", "ETA_1"),
+  outputs = "PENALTY"
+)
+model$value_gradient(c(THETA_1 = 2, ETA_1 = 0))
+model$hessian(c(THETA_1 = 2, ETA_1 = 0))
+</code></pre>
+
+<h2 id='ad_engine_info'>C++ engine and dependency information</h2><span id='topic+ad_engine_info'></span>
+
+<h3>Description</h3>
+
+<p>C++ engine and dependency information
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ad_engine_info()
+</code></pre>
+
+
+<h3>Value</h3>
+
+<p>A named list describing the compiled backend and dependency versions.
+</p>
+
+
+<h3>Examples</h3>
+
+<pre><code class='language-R'>ad_engine_info()
+</code></pre>
+
+<h2 id='ad_gauss_hermite'>Standard-normal tensor Gauss&ndash;Hermite quadrature grid</h2><span id='topic+ad_gauss_hermite'></span>
+
+<h3>Description</h3>
+
+<p>Constructs a tensor-product Gaussian quadrature rule for expectations under
+a multivariate standard-normal distribution. The one-dimensional rule uses
+the Golub&ndash;Welsch eigensystem in C++; tensor nodes and log weights are also
+assembled in C++ to avoid repeated R-side grid construction.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ad_gauss_hermite(order = 5L, dimension = 1L, max_points = 100000L)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ad_gauss_hermite_+3A_order">order</code></td>
+<td>
+<p>Number of nodes per dimension.</p>
+</td></tr>
+<tr><td><code id="ad_gauss_hermite_+3A_dimension">dimension</code></td>
+<td>
+<p>Dimension of the normal integral. Zero returns the single
+empty node with unit mass.</p>
+</td></tr>
+<tr><td><code id="ad_gauss_hermite_+3A_max_points">max_points</code></td>
+<td>
+<p>Maximum permitted tensor-grid size. This guard prevents an
+accidental exponential allocation as the dimension grows.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A list containing 'nodes', normalized 'weights', 'log_weights', and
+grid metadata.
+</p>
+
+<h2 id='ad_ir'>Compile mathematical model code to a serializable intermediate representation</h2><span id='topic+ad_ir'></span>
+
+<h3>Description</h3>
+
+<p>Compile mathematical model code to a serializable intermediate representation
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ad_ir(code, inputs = character(), outputs = NULL)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ad_ir_+3A_code">code</code></td>
+<td>
+<p>Character model code. The established LibeRation assignment,
+'THETA(i)', 'ETA(i)', 'SIGMA(i)', and 'ERR(i)' syntax is supported.</p>
+</td></tr>
+<tr><td><code id="ad_ir_+3A_inputs">inputs</code></td>
+<td>
+<p>Optional external input names. Undeclared symbols are appended
+as inputs in first-use order.</p>
+</td></tr>
+<tr><td><code id="ad_ir_+3A_outputs">outputs</code></td>
+<td>
+<p>Optional assignment names to expose. The default exposes all
+assignments, with the most recent value for reassigned names.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A serializable 'libertad_ir' object.
+</p>
+
+
+<h3>Examples</h3>
+
+<pre><code class='language-R'>ir &lt;- ad_ir(
+  "CL = THETA(1) * exp(ETA(1))\nY = log(CL)",
+  outputs = "Y"
+)
+ir
+</code></pre>
+
+<h2 id='ad_load_tape'>Load a cached LibeRtAD tape</h2><span id='topic+ad_load_tape'></span>
+
+<h3>Description</h3>
+
+<p>Reconstructs an [ADModel] directly from a saved CppAD graph while retaining
+and validating the model IR and exact bundled-CppAD provenance.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ad_load_tape(path)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ad_load_tape_+3A_path">path</code></td>
+<td>
+<p>An '.rds' file created by [ADModel]$save_tape().</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A ready-to-evaluate 'ADModel'.
+</p>
+
+<h2 id='ad_smolyak_gauss_hermite'>Standard-normal Smolyak Gauss&ndash;Hermite quadrature grid</h2><span id='topic+ad_smolyak_gauss_hermite'></span>
+
+<h3>Description</h3>
+
+<p>Constructs an isotropic Smolyak sparse grid for multivariate
+standard-normal expectations. Level 'i' uses the odd-order
+one-dimensional Gauss&ndash;Hermite rule with '2 * i - 1' nodes. Duplicate nodes
+are consolidated in C++ and negligible cancellation residues are removed.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ad_smolyak_gauss_hermite(level = 3L, dimension = 4L, max_points = 100000L)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ad_smolyak_gauss_hermite_+3A_level">level</code></td>
+<td>
+<p>Sparse-grid accuracy level. Level one is the single origin
+node; increasing the level adds higher-order interactions.</p>
+</td></tr>
+<tr><td><code id="ad_smolyak_gauss_hermite_+3A_dimension">dimension</code></td>
+<td>
+<p>Dimension of the normal integral. Zero returns the single
+empty node with unit mass.</p>
+</td></tr>
+<tr><td><code id="ad_smolyak_gauss_hermite_+3A_max_points">max_points</code></td>
+<td>
+<p>Maximum permitted number of retained sparse-grid nodes.</p>
+</td></tr>
+</table>
+
+
+<h3>Details</h3>
+
+<p>Smolyak combination weights are signed. 'weights' therefore contains the
+signed masses, while 'signs' and 'log_abs_weights' provide a numerically
+stable representation for likelihood integration.
+</p>
+
+
+<h3>Value</h3>
+
+<p>A list containing 'nodes', signed 'weights', 'signs',
+'log_abs_weights', and sparse-grid metadata.
+</p>
+
+<h2 id='ad_supported'>Report supported compiler constructs</h2><span id='topic+ad_supported'></span>
+
+<h3>Description</h3>
+
+<p>Report supported compiler constructs
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ad_supported()
+</code></pre>
+
+
+<h3>Value</h3>
+
+<p>A named list of accepted indexed inputs, operators, mathematical
+functions, conditionals, and deliberate language limitations.
+</p>
+
+
+<h3>Examples</h3>
+
+<pre><code class='language-R'>ad_supported()
+</code></pre>
+
+<h2 id='ADModel'>Pointer-backed compiled automatic-differentiation model</h2><span id='topic+ADModel'></span>
+
+<h3>Description</h3>
+
+<p>'ADModel' is deliberately light: the serializable IR is retained for worker
+reconstruction, while C++ owns the executable program and persistent tape.
+</p>
+
+
+<h3>Public fields</h3>
+
+<div class="r6-fields">
+
+<dl>
+<dt><code>ir</code></dt><dd><p>Serializable intermediate representation created by [ad_ir()].</p>
+</dd>
+<dt><code>program_ptr</code></dt><dd><p>External pointer to the compiled C++ expression program.</p>
+</dd>
+<dt><code>tape_ptr</code></dt><dd><p>External pointer to the persistent CppAD tape, or 'NULL'
+until [ADModel]$record() is called.</p>
+</dd>
+<dt><code>wrt</code></dt><dd><p>Character vector naming the active differentiation inputs.</p>
+</dd>
+<dt><code>outputs</code></dt><dd><p>Character vector naming the active model outputs.</p>
+</dd>
+<dt><code>dynamic</code></dt><dd><p>Character vector naming non-differentiated inputs retained
+as CppAD dynamic parameters.</p>
+</dd>
+<dt><code>dynamic_values</code></dt><dd><p>Current named values of the tape's dynamic parameters.</p>
+</dd>
+</dl>
+
+</div>
+
+
+<h3>Methods</h3>
+
+
+
+<h4>Public methods</h4>
+
+
+<ul>
+<li> <p><a href="#method-ADModel-initialize"><code>ADModel$new()</code></a>
+</p>
+</li>
+<li> <p><a href="#method-ADModel-record"><code>ADModel$record()</code></a>
+</p>
+</li>
+<li> <p><a href="#method-ADModel-set_dynamic"><code>ADModel$set_dynamic()</code></a>
+</p>
+</li>
+<li> <p><a href="#method-ADModel-value"><code>ADModel$value()</code></a>
+</p>
+</li>
+<li> <p><a href="#method-ADModel-jacobian"><code>ADModel$jacobian()</code></a>
+</p>
+</li>
+<li> <p><a href="#method-ADModel-gradient"><code>ADModel$gradient()</code></a>
+</p>
+</li>
+<li> <p><a href="#method-ADModel-hessian"><code>ADModel$hessian()</code></a>
+</p>
+</li>
+<li> <p><a href="#method-ADModel-value_gradient"><code>ADModel$value_gradient()</code></a>
+</p>
+</li>
+<li> <p><a href="#method-ADModel-tape_info"><code>ADModel$tape_info()</code></a>
+</p>
+</li>
+<li> <p><a href="#method-ADModel-tape_cache"><code>ADModel$tape_cache()</code></a>
+</p>
+</li>
+<li> <p><a href="#method-ADModel-save_tape"><code>ADModel$save_tape()</code></a>
+</p>
+</li>
+<li> <p><a href="#method-ADModel-print"><code>ADModel$print()</code></a>
+</p>
+</li>
+<li> <p><a href="#method-ADModel-clone"><code>ADModel$clone()</code></a>
+</p>
+</li></ul>
+
+
+<hr>
+<a id="method-ADModel-initialize"></a>
+
+
+
+<h4><code>ADModel$new()</code></h4>
+
+<p>Create a pointer-backed model from a validated intermediate representation.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>ADModel$new(ir)</pre>
+</div>
+
+
+
+<h5>Arguments</h5>
+
+<div class="arguments">
+
+<dl>
+<dt><code>ir</code></dt><dd><p>A 'libertad_ir' object created by [ad_ir()].</p>
+</dd>
+</dl>
+
+</div>
+
+
+
+<h5>Returns</h5>
+
+<p>A new 'ADModel' object.
+</p>
+
+
+<hr>
+<a id="method-ADModel-record"></a>
+
+
+
+<h4><code>ADModel$record()</code></h4>
+
+<p>Record a persistent CppAD tape at a named parameter point.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>ADModel$record(at, wrt = names(at), outputs = self$outputs, optimize = TRUE)</pre>
+</div>
+
+
+
+<h5>Arguments</h5>
+
+<div class="arguments">
+
+<dl>
+<dt><code>at</code></dt><dd><p>Named numeric values for every model input.</p>
+</dd>
+<dt><code>wrt</code></dt><dd><p>Input names with respect to which derivatives are required.</p>
+</dd>
+<dt><code>outputs</code></dt><dd><p>Output assignment names to place on the tape.</p>
+</dd>
+<dt><code>optimize</code></dt><dd><p>Whether to run CppAD tape optimization.</p>
+</dd>
+</dl>
+
+</div>
+
+
+
+<h5>Returns</h5>
+
+<p>The model, invisibly.
+</p>
+
+
+<hr>
+<a id="method-ADModel-set_dynamic"></a>
+
+
+
+<h4><code>ADModel$set_dynamic()</code></h4>
+
+<p>Update non-differentiated inputs without recording a new tape.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>ADModel$set_dynamic(values)</pre>
+</div>
+
+
+
+<h5>Arguments</h5>
+
+<div class="arguments">
+
+<dl>
+<dt><code>values</code></dt><dd><p>Named values for every dynamic parameter. An unnamed vector
+may be supplied in the order shown by '$dynamic'.</p>
+</dd>
+</dl>
+
+</div>
+
+
+
+<h5>Returns</h5>
+
+<p>The model, invisibly.
+</p>
+
+
+<hr>
+<a id="method-ADModel-value"></a>
+
+
+
+<h4><code>ADModel$value()</code></h4>
+
+<p>Evaluate model outputs with the compiled program or recorded tape.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>ADModel$value(at, taped = !is.null(self$tape_ptr))</pre>
+</div>
+
+
+
+<h5>Arguments</h5>
+
+<div class="arguments">
+
+<dl>
+<dt><code>at</code></dt><dd><p>Named input values. Taped evaluation requires the active 'wrt'
+inputs; untaped evaluation requires every IR input.</p>
+</dd>
+<dt><code>taped</code></dt><dd><p>Use the persistent tape when available.</p>
+</dd>
+</dl>
+
+</div>
+
+
+
+<h5>Returns</h5>
+
+<p>A named numeric vector of model outputs.
+</p>
+
+
+<hr>
+<a id="method-ADModel-jacobian"></a>
+
+
+
+<h4><code>ADModel$jacobian()</code></h4>
+
+<p>Evaluate the exact output-by-input Jacobian of the recorded tape.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>ADModel$jacobian(at)</pre>
+</div>
+
+
+
+<h5>Arguments</h5>
+
+<div class="arguments">
+
+<dl>
+<dt><code>at</code></dt><dd><p>Named values for the active differentiation inputs.</p>
+</dd>
+</dl>
+
+</div>
+
+
+
+<h5>Returns</h5>
+
+<p>A numeric matrix with one row per output and one column per input.
+</p>
+
+
+<hr>
+<a id="method-ADModel-gradient"></a>
+
+
+
+<h4><code>ADModel$gradient()</code></h4>
+
+<p>Evaluate the exact gradient of a single-output tape.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>ADModel$gradient(at)</pre>
+</div>
+
+
+
+<h5>Arguments</h5>
+
+<div class="arguments">
+
+<dl>
+<dt><code>at</code></dt><dd><p>Named values for the active differentiation inputs.</p>
+</dd>
+</dl>
+
+</div>
+
+
+
+<h5>Returns</h5>
+
+<p>A numeric gradient vector.
+</p>
+
+
+<hr>
+<a id="method-ADModel-hessian"></a>
+
+
+
+<h4><code>ADModel$hessian()</code></h4>
+
+<p>Evaluate the exact Hessian of a single-output tape.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>ADModel$hessian(at)</pre>
+</div>
+
+
+
+<h5>Arguments</h5>
+
+<div class="arguments">
+
+<dl>
+<dt><code>at</code></dt><dd><p>Named values for the active differentiation inputs.</p>
+</dd>
+</dl>
+
+</div>
+
+
+
+<h5>Returns</h5>
+
+<p>A square numeric Hessian matrix.
+</p>
+
+
+<hr>
+<a id="method-ADModel-value_gradient"></a>
+
+
+
+<h4><code>ADModel$value_gradient()</code></h4>
+
+<p>Evaluate a single-output value and its exact gradient together.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>ADModel$value_gradient(at)</pre>
+</div>
+
+
+
+<h5>Arguments</h5>
+
+<div class="arguments">
+
+<dl>
+<dt><code>at</code></dt><dd><p>Named values for the active differentiation inputs.</p>
+</dd>
+</dl>
+
+</div>
+
+
+
+<h5>Returns</h5>
+
+<p>A list containing 'value' and 'gradient'.
+</p>
+
+
+<hr>
+<a id="method-ADModel-tape_info"></a>
+
+
+
+<h4><code>ADModel$tape_info()</code></h4>
+
+<p>Return tape dimensions, operation counts, dynamic-parameter state, and
+comparison-change telemetry.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>ADModel$tape_info()</pre>
+</div>
+
+
+
+<h5>Returns</h5>
+
+<p>A named list describing the current persistent tape.
+</p>
+
+
+<hr>
+<a id="method-ADModel-tape_cache"></a>
+
+
+
+<h4><code>ADModel$tape_cache()</code></h4>
+
+<p>Create a portable cache of the optimized CppAD graph and its metadata.
+The serializable IR remains included as the auditable source of truth.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>ADModel$tape_cache()</pre>
+</div>
+
+
+
+<h5>Returns</h5>
+
+<p>A 'libertad_tape_cache' list suitable for 'saveRDS()'.
+</p>
+
+
+<hr>
+<a id="method-ADModel-save_tape"></a>
+
+
+
+<h4><code>ADModel$save_tape()</code></h4>
+
+<p>Save the optimized CppAD graph for fast worker reconstruction.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>ADModel$save_tape(path)</pre>
+</div>
+
+
+
+<h5>Arguments</h5>
+
+<div class="arguments">
+
+<dl>
+<dt><code>path</code></dt><dd><p>Destination '.rds' path.</p>
+</dd>
+</dl>
+
+</div>
+
+
+
+<h5>Returns</h5>
+
+<p>The normalized cache path, invisibly.
+</p>
+
+
+<hr>
+<a id="method-ADModel-print"></a>
+
+
+
+<h4><code>ADModel$print()</code></h4>
+
+<p>Print a concise summary of the compiled program and tape state.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>ADModel$print(...)</pre>
+</div>
+
+
+
+<h5>Arguments</h5>
+
+<div class="arguments">
+
+<dl>
+<dt><code>...</code></dt><dd><p>Unused.</p>
+</dd>
+</dl>
+
+</div>
+
+
+
+<h5>Returns</h5>
+
+<p>The model, invisibly.
+</p>
+
+
+<hr>
+<a id="method-ADModel-clone"></a>
+
+
+
+<h4><code>ADModel$clone()</code></h4>
+
+<p>The objects of this class are cloneable with this method.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>ADModel$clone(deep = FALSE)</pre>
+</div>
+
+
+
+<h5>Arguments</h5>
+
+<div class="arguments">
+
+<dl>
+<dt><code>deep</code></dt><dd><p>Whether to make a deep clone.</p>
+</dd>
+</dl>
+
+</div>
+
+
+
+<h2 id='libertad_gui'>Launch the LibeRtAD benchmark laboratory</h2><span id='topic+libertad_gui'></span>
+
+<h3>Description</h3>
+
+<p>Runs native tape microbenchmarks and, when the LibeR repository harness is
+available, launches the paired LibeRation/NONMEM workflow benchmark in a
+cancellable background process.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>libertad_gui(
+  benchmark_root = NULL,
+  host = "127.0.0.1",
+  port = NULL,
+  launch.browser = TRUE,
+  allow_remote = FALSE
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="libertad_gui_+3A_benchmark_root">benchmark_root</code></td>
+<td>
+<p>Optional LibeR repository root or benchmark script path.</p>
+</td></tr>
+<tr><td><code id="libertad_gui_+3A_host">host</code>, <code id="libertad_gui_+3A_port">port</code>, <code id="libertad_gui_+3A_launch.browser">launch.browser</code></td>
+<td>
+<p>Passed to <code>shiny::runApp()</code>.</p>
+</td></tr>
+<tr><td><code id="libertad_gui_+3A_allow_remote">allow_remote</code></td>
+<td>
+<p>Explicitly permit a non-loopback bind.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Invisibly, the Shiny app.</p>
+
+<h2 id='libertad_workbench'>LibeRtAD benchmark workbench widget</h2><span id='topic+libertad_workbench'></span>
+
+<h3>Description</h3>
+
+<p>Create the React/htmlwidgets LibeRtAD benchmark workbench.</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>libertad_workbench(
+  payload,
+  input_id = "libertad_workbench",
+  width = NULL,
+  height = "100vh",
+  elementId = NULL
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="libertad_workbench_+3A_payload">payload</code></td>
+<td>
+<p>Workbench payload generated by <code>libertad_gui()</code>.</p>
+</td></tr>
+<tr><td><code id="libertad_workbench_+3A_input_id">input_id</code></td>
+<td>
+<p>Shiny event prefix.</p>
+</td></tr>
+<tr><td><code id="libertad_workbench_+3A_width">width</code>, <code id="libertad_workbench_+3A_height">height</code></td>
+<td>
+<p>Widget dimensions.</p>
+</td></tr>
+<tr><td><code id="libertad_workbench_+3A_elementId">elementId</code></td>
+<td>
+<p>Optional widget element id.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>An htmlwidget for the LibeRtAD benchmark laboratory.</p>
+
+<h2 id='libertadWorkbenchOutput'>Shiny output for the LibeRtAD workbench</h2><span id='topic+libertadWorkbenchOutput'></span>
+
+<h3>Description</h3>
+
+<p>Shiny output for the LibeRtAD workbench
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>libertadWorkbenchOutput(outputId, width = "100%", height = "100vh")
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="libertadWorkbenchOutput_+3A_outputId">outputId</code></td>
+<td>
+<p>Output id.</p>
+</td></tr>
+<tr><td><code id="libertadWorkbenchOutput_+3A_width">width</code>, <code id="libertadWorkbenchOutput_+3A_height">height</code></td>
+<td>
+<p>CSS dimensions.</p>
+</td></tr>
+</table>
+
+<h2 id='renderLibertadWorkbench'>Render a LibeRtAD workbench</h2><span id='topic+renderLibertadWorkbench'></span>
+
+<h3>Description</h3>
+
+<p>Render a LibeRtAD workbench
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>renderLibertadWorkbench(expr, env = parent.frame(), quoted = FALSE)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="renderLibertadWorkbench_+3A_expr">expr</code></td>
+<td>
+<p>Widget expression.</p>
+</td></tr>
+<tr><td><code id="renderLibertadWorkbench_+3A_env">env</code></td>
+<td>
+<p>Evaluation environment.</p>
+</td></tr>
+<tr><td><code id="renderLibertadWorkbench_+3A_quoted">quoted</code></td>
+<td>
+<p>Whether expression is quoted.</p>
+</td></tr>
+</table>
+
+</body></html>

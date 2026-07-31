@@ -7,9 +7,40 @@
   file.path(base, "LibeR", "workspace")
 }
 
+.lity_model_route <- function(model) {
+  mode <- as.character(model$PRED_MODE %||% "pk")[[1L]]
+  advan <- as.integer(model$ADVAN %||% NA_integer_)
+  trans <- as.integer(model$TRANS %||% NA_integer_)
+  if (identical(mode, "pred") ||
+      identical(as.character(model$SOLVER %||% ""), "direct")) {
+    return(list(
+      mode = "pred",
+      label = "Direct $PRED",
+      description = "Row-wise direct prediction model; ADVAN/TRANS are not used for propagation."
+    ))
+  }
+  base <- paste0(
+    if (is.finite(advan)) paste0("ADVAN", advan) else "ADVAN unspecified",
+    if (is.finite(trans)) paste0(" / TRANS", trans) else ""
+  )
+  if (identical(mode, "pk_pred")) {
+    return(list(
+      mode = mode,
+      label = paste0(base, " + $PRED"),
+      description = "ADVAN propagation followed by a post-ADVAN $PRED layer."
+    ))
+  }
+  list(
+    mode = "pk", label = base,
+    description = "ADVAN/PREDPP-style structural model."
+  )
+}
+
 .lity_model_name <- function(model, fallback = "Pharmacometric model") {
   value <- attr(model, "name", exact = TRUE)
   if (is.null(value) || !nzchar(as.character(value)[[1L]])) {
+    route <- .lity_model_route(model)
+    if (identical(route$mode, "pred")) return("Direct $PRED model")
     advan <- as.integer(model$ADVAN %||% NA_integer_)
     trans <- as.integer(model$TRANS %||% NA_integer_)
     value <- if (is.finite(advan) && advan == 1L) {
@@ -37,6 +68,7 @@
   if (nrow(theta)) {
     rows <- c(rows, lapply(seq_len(nrow(theta)), function(i) list(
       type = "THETA", name = paste0("THETA(", i, ")"),
+      index = as.integer(i), row = as.integer(i), col = as.integer(i),
       value = as.numeric(theta$Value[[i]]),
       lower = as.numeric(theta$LOWER[[i]] %||% NA_real_),
       upper = as.numeric(theta$UPPER[[i]] %||% NA_real_),
@@ -49,6 +81,7 @@
       row <- as.integer(omega$ROW[[i]] %||% i)
       col <- as.integer(omega$COL[[i]] %||% row)
       list(type = "OMEGA", name = paste0("OMEGA(", row, ",", col, ")"),
+           index = as.integer(i), row = row, col = col,
            value = as.numeric(omega$Value[[i]]), lower = NA_real_,
            upper = NA_real_, fixed = isTRUE(omega$FIX[[i]]))
     }))
@@ -57,6 +90,7 @@
   if (nrow(sigma)) {
     rows <- c(rows, lapply(seq_len(nrow(sigma)), function(i) list(
       type = "SIGMA", name = paste0("SIGMA(", i, ")"),
+      index = as.integer(i), row = as.integer(i), col = as.integer(i),
       value = as.numeric(sigma$Value[[i]]), lower = NA_real_,
       upper = NA_real_, fixed = isTRUE(sigma$FIX[[i]])
     )))
@@ -147,6 +181,20 @@
     list(source = "Built-in", parameter_source = "template values")
   source <- as.character(provenance$source %||%
     if (!is.null(provenance$library_id)) "LibeRary" else "Built-in")[[1L]]
+  route <- .lity_model_route(model)
+  outcome_families <- vapply(
+    model$OUTCOMES %||% list(),
+    function(outcome) as.character(outcome$family %||% ""),
+    character(1)
+  )
+  generated_ctmc <- any(
+    outcome_families == "continuous_time_markov" &
+      vapply(
+        model$OUTCOMES %||% list(),
+        function(outcome) length(outcome$initial %||% numeric()) > 2L,
+        logical(1)
+      )
+  )
   list(
     name = .lity_model_name(model),
     source = source,
@@ -156,6 +204,9 @@
       if (!is.null(provenance$library_id)) "published values" else "template values")[[1L]],
     advan = as.integer(model$ADVAN %||% NA_integer_),
     trans = as.integer(model$TRANS %||% NA_integer_),
+    predMode = route$mode,
+    typeLabel = route$label,
+    typeDescription = route$description,
     family = .lity_model_family(model),
     doseCmt = as.integer(model$DOSECMP %||% 1L),
     observationCmt = as.integer(model$OBSCMP %||% 1L),
@@ -169,6 +220,16 @@
       des = as.character(model$DES %||% ""),
       error = as.character(model$ERROR %||% "")
     ),
+    editor = list(
+      name = .lity_model_name(model),
+      predMode = route$mode,
+      pk = as.character(model$PK_SOURCE %||% model$PRED %||% ""),
+      pred = as.character(model$PRED_SOURCE %||% ""),
+      des = as.character(model$DES %||% ""),
+      error = as.character(model$ERROR %||% ""),
+      errorEditable = !generated_ctmc,
+      parameters = .lity_parameter_rows(model)
+    ),
     hash = .lity_hash(model),
     provenance = provenance
   )
@@ -178,29 +239,34 @@
                                status = "", advan = NA_integer_,
                                trans = NA_integer_, family = "",
                                parameter_source = "", reviewed = TRUE,
-                               metadata = list()) {
+                               metadata = list(), pred_mode = "",
+                               type_label = "") {
   list(
     id = id, key = paste(source, id, sep = ":"),
     source = source, label = label, subtitle = subtitle, group = group,
     status = status, advan = as.integer(advan), trans = as.integer(trans),
     family = family, parameterSource = parameter_source,
+    predMode = pred_mode, typeLabel = type_label,
     reviewed = isTRUE(reviewed), metadata = metadata
   )
 }
 
 .lity_builtin_catalogue <- function() {
   example <- lity_example()$design$model
+  example_route <- .lity_model_route(example)
   records <- list(.lity_model_record(
     "teaching-oral-pk", "builtin", "One-compartment oral PK",
     "ADVAN2 / TRANS2 teaching model", "Teaching examples", "Built-in",
     example$ADVAN, example$TRANS, "Continuous PK", "template values",
-    metadata = list(kind = "teaching")
+    metadata = list(kind = "teaching"),
+    pred_mode = example_route$mode, type_label = example_route$label
   ))
   templates <- tryCatch(LibeRation::nm_structural_templates(), error = function(e) NULL)
   if (is.null(templates) || !nrow(templates)) return(records)
   for (i in seq_len(nrow(templates))) {
     template <- as.character(templates$template[[i]])
     model <- LibeRation::nm_model_template(template)
+    route <- .lity_model_route(model)
     label <- as.character(templates$model[[i]] %||% .lity_model_name(
       model, gsub("_", " ", template)
     ))
@@ -208,7 +274,8 @@
       template, "builtin", label,
       as.character(templates$notes[[i]] %||% ""), "LibeRation templates",
       "Built-in", model$ADVAN, model$TRANS, .lity_model_family(model),
-      "template values", metadata = list(kind = "template", template = template)
+      "template values", metadata = list(kind = "template", template = template),
+      pred_mode = route$mode, type_label = route$label
     )
   }
   records

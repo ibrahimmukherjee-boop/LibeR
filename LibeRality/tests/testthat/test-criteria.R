@@ -8,7 +8,8 @@ test_that("all scalar criterion families evaluate", {
   target <- list(metric = "trough", lower = 0, upper = 1000)
 
   criteria <- list(
-    D = lity_criterion_D(), A = lity_criterion_A(), E = lity_criterion_E(),
+    D = lity_criterion_D(), ED = lity_criterion_ED(),
+    A = lity_criterion_A(), E = lity_criterion_E(),
     Ds = lity_criterion_Ds(c("THETA1", "THETA2")),
     c = lity_criterion_c(contrast), L = lity_criterion_L(matrix(contrast, 1)),
     rse = lity_criterion_rse(), max_rse = lity_criterion_rse(summary = "max"),

@@ -69,3 +69,32 @@ test_that("singular information is rejected by determinant criteria", {
     -Inf
   )
 })
+
+test_that("ED-optimality maximises the expected determinant on a log scale", {
+  matrices <- list(
+    low = diag(c(2, 3)),
+    high = diag(c(4, 5))
+  )
+  information <- lapply(matrices, function(matrix) {
+    dimnames(matrix) <- list(c("P1", "P2"), c("P1", "P2"))
+    LibeRality:::.lity_information_for_matrix(
+      matrix, parameter_values = c(P1 = 1, P2 = 1)
+    )
+  })
+  design <- lity_example()$design
+  design$scenarios <- list(
+    low = lity_scenario("Low", probability = 0.25),
+    high = lity_scenario("High", probability = 0.75)
+  )
+  criterion <- lity_criterion_ED()
+  result <- LibeRality:::.lity_evaluate_criterion(
+    criterion, design, information
+  )
+
+  expect_identical(criterion$type, "ED")
+  expect_identical(criterion$name, "ED-optimality")
+  expect_equal(result$value, log(0.25 * 6 + 0.75 * 20), tolerance = 1e-12)
+  expect_equal(result$details$expected_determinant, 16.5, tolerance = 1e-12)
+  expect_identical(result$details$value_scale, "log_expected_determinant")
+  expect_equal(unname(result$by_scenario), log(c(6, 20)))
+})

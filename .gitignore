@@ -53,6 +53,7 @@ tools/pandoc-*.zip
 .release-verify/
 .release-buildlib/
 .validation-libraries/
+r-libraries/
 .architecture-lib/
 .consolidation-lib/
 .renv-cache/

@@ -1,0 +1,2711 @@
+<!doctype html>
+<html lang='en'><head><meta charset='utf-8'>
+<title>LibeRator 0.3.4 reference manual</title>
+<style>
+@page { size: A4; margin: 17mm 16mm 18mm; }
+body { font-family: 'Segoe UI', Arial, sans-serif; color:#172033; line-height:1.42; max-width:980px; margin:0 auto; }
+h1 { color:#173f73; font-size:30px; margin-bottom:4px; }
+h2 { color:#173f73; border-bottom:2px solid #d9e4f2; padding-bottom:5px; break-before:page; }
+h3 { color:#315d89; margin-top:1.2em; }
+code, pre { font-family: Consolas, 'Courier New', monospace; }
+pre { background:#f5f7fa; border:1px solid #d8dee8; border-radius:4px; padding:10px; overflow-wrap:anywhere; white-space:pre-wrap; }
+table { border-collapse:collapse; width:100%; } td { vertical-align:top; border-bottom:1px solid #e5e9ef; padding:6px; }
+.cover { min-height:235mm; display:flex; flex-direction:column; justify-content:center; }
+.subtitle { color:#516175; font-size:18px; } .meta { margin-top:30px; color:#68778b; }
+.toc { columns:2; column-gap:32px; } .toc li { break-inside:avoid; margin:3px 0; }
+a { color:#175c9c; text-decoration:none; }
+</style></head><body>
+<section class='cover'>
+<h1>LibeRator reference manual</h1>
+<div class='subtitle'>Adaptive Therapeutic Optimisation and Recommendation</div>
+<div class='meta'>Version 0.3.4<br>Generated 2026-07-31<br>51 help topics</div>
+</section>
+<section><h2>Contents</h2><ul class='toc'>
+<li><a href='#lator_assess'>lator_assess</a></li>
+<li><a href='#lator_covariate_at'>lator_covariate_at</a></li>
+<li><a href='#lator_endpoint'>lator_endpoint</a></li>
+<li><a href='#lator_endpoint_aed'>lator_endpoint_aed</a></li>
+<li><a href='#lator_endpoint_aminoglycoside'>lator_endpoint_aminoglycoside</a></li>
+<li><a href='#lator_endpoint_atg'>lator_endpoint_atg</a></li>
+<li><a href='#lator_endpoint_beta_lactam'>lator_endpoint_beta_lactam</a></li>
+<li><a href='#lator_endpoint_busulfan'>lator_endpoint_busulfan</a></li>
+<li><a href='#lator_endpoint_component'>lator_endpoint_component</a></li>
+<li><a href='#lator_endpoint_evaluate'>lator_endpoint_evaluate</a></li>
+<li><a href='#lator_endpoint_library'>lator_endpoint_library</a></li>
+<li><a href='#lator_endpoint_methotrexate'>lator_endpoint_methotrexate</a></li>
+<li><a href='#lator_endpoint_mycophenolate'>lator_endpoint_mycophenolate</a></li>
+<li><a href='#lator_endpoint_register'>lator_endpoint_register</a></li>
+<li><a href='#lator_endpoint_set'>lator_endpoint_set</a></li>
+<li><a href='#lator_endpoint_tacrolimus'>lator_endpoint_tacrolimus</a></li>
+<li><a href='#lator_endpoint_validate'>lator_endpoint_validate</a></li>
+<li><a href='#lator_endpoint_vancomycin'>lator_endpoint_vancomycin</a></li>
+<li><a href='#lator_endpoint_warfarin'>lator_endpoint_warfarin</a></li>
+<li><a href='#lator_example_aed'>lator_example_aed</a></li>
+<li><a href='#lator_example_dual_endpoint'>lator_example_dual_endpoint</a></li>
+<li><a href='#lator_gui'>lator_gui</a></li>
+<li><a href='#lator_job'>lator_job</a></li>
+<li><a href='#lator_model_candidates_from_liberary'>lator_model_candidates_from_liberary</a></li>
+<li><a href='#lator_model_from_liberary'>lator_model_from_liberary</a></li>
+<li><a href='#lator_model_register'>lator_model_register</a></li>
+<li><a href='#lator_model_select'>lator_model_select</a></li>
+<li><a href='#lator_model_select_from_liberary'>lator_model_select_from_liberary</a></li>
+<li><a href='#lator_model_selection_save'>lator_model_selection_save</a></li>
+<li><a href='#lator_patient_add_event'>lator_patient_add_event</a></li>
+<li><a href='#lator_patient_add_events'>lator_patient_add_events</a></li>
+<li><a href='#lator_patient_context'>lator_patient_context</a></li>
+<li><a href='#lator_patient_correct_event'>lator_patient_correct_event</a></li>
+<li><a href='#lator_patient_delete'>lator_patient_delete</a></li>
+<li><a href='#lator_patient_endpoint_get'>lator_patient_endpoint_get</a></li>
+<li><a href='#lator_patient_endpoint_set'>lator_patient_endpoint_set</a></li>
+<li><a href='#lator_patient_get'>lator_patient_get</a></li>
+<li><a href='#lator_patient_list'>lator_patient_list</a></li>
+<li><a href='#lator_patient_medication_add'>lator_patient_medication_add</a></li>
+<li><a href='#lator_patient_medications'>lator_patient_medications</a></li>
+<li><a href='#lator_patient_new'>lator_patient_new</a></li>
+<li><a href='#lator_patient_save'>lator_patient_save</a></li>
+<li><a href='#lator_regimen_candidates'>lator_regimen_candidates</a></li>
+<li><a href='#lator_regimen_optimise'>lator_regimen_optimise</a></li>
+<li><a href='#lator_regimen_predict'>lator_regimen_predict</a></li>
+<li><a href='#lator_worker_task'>lator_worker_task</a></li>
+<li><a href='#lator_workspace'>lator_workspace</a></li>
+<li><a href='#lator_workspace_audit'>lator_workspace_audit</a></li>
+<li><a href='#liberator_workbench'>liberator_workbench</a></li>
+<li><a href='#liberatorWorkbenchOutput'>liberatorWorkbenchOutput</a></li>
+<li><a href='#renderLiberatorWorkbench'>renderLiberatorWorkbench</a></li>
+</ul></section>
+<h2 id='lator_assess'>Longitudinal Bayesian patient assessment</h2><span id='topic+lator_assess'></span>
+
+<h3>Description</h3>
+
+<p>Each call creates an immutable assessment tied to hashes of its patient
+evidence, model, endpoint, covariate policy, and cutoff. 'dynamic' mode fits
+occasion-specific ETA states under a Gaussian random-walk prior while the
+compartment state remains continuous across boundaries.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_assess(
+  patient,
+  model,
+  endpoint,
+  analyte = endpoint$drug,
+  cutoff = Inf,
+  mode = c("static", "dynamic"),
+  state_times = NULL,
+  covariate_policies = list(),
+  process_scale = 0.1,
+  process_covariance = NULL,
+  profile_population_draws = 200L,
+  profile_interval_probs = c(0.025, 0.5, 0.975),
+  profile_observation_scope = c("automatic", "latest", "last_n", "all", "since"),
+  profile_observation_count = 2L,
+  profile_observation_since = NA_real_,
+  profile_episode_gap_hours = 1008,
+  workspace = NULL,
+  actor = "local-session",
+  ...
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_assess_+3A_patient">patient</code></td>
+<td>
+<p>Longitudinal patient record.</p>
+</td></tr>
+<tr><td><code id="lator_assess_+3A_model">model</code></td>
+<td>
+<p>LibeRation population model.</p>
+</td></tr>
+<tr><td><code id="lator_assess_+3A_endpoint">endpoint</code></td>
+<td>
+<p>Versioned therapeutic endpoint or multi-endpoint objective
+created with [lator_endpoint_set()].</p>
+</td></tr>
+<tr><td><code id="lator_assess_+3A_analyte">analyte</code></td>
+<td>
+<p>Event drug/analyte name; defaults to 'endpoint$drug'.</p>
+</td></tr>
+<tr><td><code id="lator_assess_+3A_cutoff">cutoff</code></td>
+<td>
+<p>Patient-timeline hour through which evidence is visible.</p>
+</td></tr>
+<tr><td><code id="lator_assess_+3A_mode">mode</code></td>
+<td>
+<p>'&quot;static&quot;' or '&quot;dynamic&quot;' latent patient parameters.</p>
+</td></tr>
+<tr><td><code id="lator_assess_+3A_state_times">state_times</code></td>
+<td>
+<p>Optional dynamic-state boundaries; otherwise explicit
+'state_boundary' events are used.</p>
+</td></tr>
+<tr><td><code id="lator_assess_+3A_covariate_policies">covariate_policies</code></td>
+<td>
+<p>Named per-covariate policy lists passed to
+[lator_covariate_at()].</p>
+</td></tr>
+<tr><td><code id="lator_assess_+3A_process_scale">process_scale</code></td>
+<td>
+<p>Random-walk innovation covariance as a multiple of OMEGA.</p>
+</td></tr>
+<tr><td><code id="lator_assess_+3A_process_covariance">process_covariance</code></td>
+<td>
+<p>Optional explicit innovation covariance.</p>
+</td></tr>
+<tr><td><code id="lator_assess_+3A_profile_population_draws">profile_population_draws</code></td>
+<td>
+<p>Number of deterministic low-discrepancy
+OMEGA draws used for the similar-patient population prediction interval.
+Set to zero to disable the interval.</p>
+</td></tr>
+<tr><td><code id="lator_assess_+3A_profile_interval_probs">profile_interval_probs</code></td>
+<td>
+<p>Three probabilities for the lower, median and
+upper similar-patient interval. Residual error is deliberately excluded.</p>
+</td></tr>
+<tr><td><code id="lator_assess_+3A_profile_observation_scope">profile_observation_scope</code></td>
+<td>
+<p>TDM observations shown over the
+individualised dosing-interval profile: '&quot;automatic&quot;' identifies the
+current monitoring episode, '&quot;latest&quot;' shows one point, '&quot;last_n&quot;' shows
+the requested number, '&quot;all&quot;' shows all history, and '&quot;since&quot;' uses an
+explicit patient-timeline hour. This changes display selection only; all
+evidence through 'cutoff' remains available to the fit.</p>
+</td></tr>
+<tr><td><code id="lator_assess_+3A_profile_observation_count">profile_observation_count</code></td>
+<td>
+<p>Number of observations for '&quot;last_n&quot;'.</p>
+</td></tr>
+<tr><td><code id="lator_assess_+3A_profile_observation_since">profile_observation_since</code></td>
+<td>
+<p>Patient-timeline hour for '&quot;since&quot;'.</p>
+</td></tr>
+<tr><td><code id="lator_assess_+3A_profile_episode_gap_hours">profile_episode_gap_hours</code></td>
+<td>
+<p>Gap used to separate monitoring episodes
+under the automatic policy. The default is six weeks.</p>
+</td></tr>
+<tr><td><code id="lator_assess_+3A_workspace">workspace</code></td>
+<td>
+<p>Optional workspace. When supplied, the immutable assessment
+is appended to and saves the patient record.</p>
+</td></tr>
+<tr><td><code id="lator_assess_+3A_actor">actor</code></td>
+<td>
+<p>Audit actor used when saving.</p>
+</td></tr>
+<tr><td><code id="lator_assess_+3A_...">...</code></td>
+<td>
+<p>Additional arguments to [LibeRation::nm_individual_fit()].</p>
+</td></tr>
+</table>
+
+<h2 id='lator_covariate_at'>Resolve a longitudinal covariate at specified times</h2><span id='topic+lator_covariate_at'></span>
+
+<h3>Description</h3>
+
+<p>Missing observations are never silently converted into population values.
+Carry-forward, interpolation, nearest-neighbour, and fallback behaviour are
+explicit policies and every returned value records its provenance and age.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_covariate_at(
+  patient,
+  name,
+  times,
+  method = c("locf", "linear", "nearest", "none"),
+  max_age = Inf,
+  max_gap = Inf,
+  fallback = NULL,
+  fallback_unit = "",
+  uncertainty_sd = NA_real_,
+  cutoff = Inf
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_covariate_at_+3A_patient">patient</code></td>
+<td>
+<p>A 'lator_patient'.</p>
+</td></tr>
+<tr><td><code id="lator_covariate_at_+3A_name">name</code></td>
+<td>
+<p>Covariate event name.</p>
+</td></tr>
+<tr><td><code id="lator_covariate_at_+3A_times">times</code></td>
+<td>
+<p>Numeric timeline hours.</p>
+</td></tr>
+<tr><td><code id="lator_covariate_at_+3A_method">method</code></td>
+<td>
+<p>One of '&quot;locf&quot;', '&quot;linear&quot;', '&quot;nearest&quot;', or '&quot;none&quot;'.</p>
+</td></tr>
+<tr><td><code id="lator_covariate_at_+3A_max_age">max_age</code></td>
+<td>
+<p>Maximum permitted age in hours for carried or nearest values.</p>
+</td></tr>
+<tr><td><code id="lator_covariate_at_+3A_max_gap">max_gap</code></td>
+<td>
+<p>Maximum interval in hours spanning a linear interpolation.</p>
+</td></tr>
+<tr><td><code id="lator_covariate_at_+3A_fallback">fallback</code></td>
+<td>
+<p>Optional explicit fallback value. It is labelled 'fallback',
+never as an observation.</p>
+</td></tr>
+<tr><td><code id="lator_covariate_at_+3A_fallback_unit">fallback_unit</code></td>
+<td>
+<p>Unit for 'fallback' if no observed unit is available.</p>
+</td></tr>
+<tr><td><code id="lator_covariate_at_+3A_uncertainty_sd">uncertainty_sd</code></td>
+<td>
+<p>Optional standard deviation attached to fallback
+values. Event-specific 'metadata$uncertainty_sd' takes precedence for
+observed values.</p>
+</td></tr>
+<tr><td><code id="lator_covariate_at_+3A_cutoff">cutoff</code></td>
+<td>
+<p>Ignore evidence recorded after this patient-timeline time.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A provenance-rich data frame with one row per requested time.
+</p>
+
+<h2 id='lator_endpoint'>Define a versioned therapeutic endpoint</h2><span id='topic+lator_endpoint'></span>
+
+<h3>Description</h3>
+
+<p>Endpoint definitions are evidence-bearing data, separate from estimation and
+optimisation code. 'draft' endpoints are suitable for exploration; a
+'qualified' status is an explicit governance assertion by the user, not a
+certification made by LibeRator.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_endpoint(
+  id,
+  name,
+  drug,
+  kind,
+  metric,
+  unit = "",
+  rules = list(),
+  source = "",
+  status = c("draft", "reviewed", "qualified"),
+  version = "1.0.0",
+  metadata = list()
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_endpoint_+3A_id">id</code></td>
+<td>
+<p>Stable endpoint identifier.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_+3A_name">name</code></td>
+<td>
+<p>Display name.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_+3A_drug">drug</code></td>
+<td>
+<p>Drug or intervention name.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_+3A_kind">kind</code></td>
+<td>
+<p>Endpoint kind.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_+3A_metric">metric</code></td>
+<td>
+<p>Metric evaluated against predicted trajectories.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_+3A_unit">unit</code></td>
+<td>
+<p>Endpoint unit.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_+3A_rules">rules</code></td>
+<td>
+<p>Named rule list interpreted by the endpoint evaluator.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_+3A_source">source</code></td>
+<td>
+<p>Citation or institutional-policy provenance.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_+3A_status">status</code></td>
+<td>
+<p>'&quot;draft&quot;', '&quot;reviewed&quot;', or '&quot;qualified&quot;'.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_+3A_version">version</code></td>
+<td>
+<p>Semantic version string.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_+3A_metadata">metadata</code></td>
+<td>
+<p>Additional non-executable metadata.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A serializable 'lator_endpoint'.
+</p>
+
+<h2 id='lator_endpoint_aed'>AED therapeutic-range endpoint</h2><span id='topic+lator_endpoint_aed'></span>
+
+<h3>Description</h3>
+
+<p>The optimisation target is the midpoint of the supplied range. No drug
+constructor requires an explicit range because targets depend on assay,
+matrix, indication, population, sampling time, and institutional policy.
+The GUI may prefill an editable, provenance-labelled drug reference range
+when one is available.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_endpoint_aed(
+  drug,
+  lower,
+  upper,
+  unit,
+  source,
+  status = c("draft", "reviewed", "qualified"),
+  metric = "last_interval_average"
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_endpoint_aed_+3A_drug">drug</code></td>
+<td>
+<p>Drug name.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_aed_+3A_lower">lower</code>, <code id="lator_endpoint_aed_+3A_upper">upper</code></td>
+<td>
+<p>Therapeutic-range bounds.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_aed_+3A_unit">unit</code></td>
+<td>
+<p>Concentration unit.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_aed_+3A_source">source</code></td>
+<td>
+<p>Evidence or policy provenance.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_aed_+3A_status">status</code></td>
+<td>
+<p>Governance status.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_aed_+3A_metric">metric</code></td>
+<td>
+<p>Prediction metric; by default average concentration over the
+last dose interval.</p>
+</td></tr>
+</table>
+
+<h2 id='lator_endpoint_aminoglycoside'>Aminoglycoside exposure endpoint</h2><span id='topic+lator_endpoint_aminoglycoside'></span>
+
+<h3>Description</h3>
+
+<p>Aminoglycoside exposure endpoint
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_endpoint_aminoglycoside(
+  drug,
+  efficacy_lower,
+  trough_upper,
+  source,
+  efficacy_upper = NULL,
+  efficacy_metric = c("Cmax/MIC", "AUC/MIC"),
+  mic_variable = "MIC",
+  unit = "ratio",
+  status = c("draft", "reviewed", "qualified")
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_endpoint_aminoglycoside_+3A_drug">drug</code></td>
+<td>
+<p>Drug name.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_aminoglycoside_+3A_efficacy_lower">efficacy_lower</code></td>
+<td>
+<p>Required lower Cmax/MIC or AUC/MIC ratio.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_aminoglycoside_+3A_trough_upper">trough_upper</code></td>
+<td>
+<p>Trough safety ceiling.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_aminoglycoside_+3A_source">source</code></td>
+<td>
+<p>Evidence or policy provenance.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_aminoglycoside_+3A_efficacy_upper">efficacy_upper</code></td>
+<td>
+<p>Optional upper efficacy-exposure bound.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_aminoglycoside_+3A_efficacy_metric">efficacy_metric</code></td>
+<td>
+<p>'&quot;Cmax/MIC&quot;' or '&quot;AUC/MIC&quot;'.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_aminoglycoside_+3A_mic_variable">mic_variable</code></td>
+<td>
+<p>Patient covariate containing MIC.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_aminoglycoside_+3A_unit">unit</code></td>
+<td>
+<p>Display unit for the efficacy ratio.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_aminoglycoside_+3A_status">status</code></td>
+<td>
+<p>Governance status.</p>
+</td></tr>
+</table>
+
+<h2 id='lator_endpoint_atg'>ATG pre-transplant target endpoint</h2><span id='topic+lator_endpoint_atg'></span>
+
+<h3>Description</h3>
+
+<p>ATG pre-transplant target endpoint
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_endpoint_atg(
+  drug,
+  targets,
+  unit,
+  source,
+  anchor = "transplantation",
+  status = c("draft", "reviewed", "qualified")
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_endpoint_atg_+3A_drug">drug</code></td>
+<td>
+<p>ATG product/name.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_atg_+3A_targets">targets</code></td>
+<td>
+<p>Data frame with 'window_start', 'window_end', 'lower', and
+'upper', expressed relative to the anchor in hours.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_atg_+3A_unit">unit</code></td>
+<td>
+<p>Concentration or exposure unit.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_atg_+3A_source">source</code></td>
+<td>
+<p>Evidence or policy provenance.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_atg_+3A_anchor">anchor</code></td>
+<td>
+<p>Patient procedure-event name used as time zero.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_atg_+3A_status">status</code></td>
+<td>
+<p>Governance status.</p>
+</td></tr>
+</table>
+
+<h2 id='lator_endpoint_beta_lactam'>Beta-lactam fraction-of-time-above-MIC endpoint</h2><span id='topic+lator_endpoint_beta_lactam'></span>
+
+<h3>Description</h3>
+
+<p>Beta-lactam fraction-of-time-above-MIC endpoint
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_endpoint_beta_lactam(
+  drug,
+  target_fraction = 0.4,
+  mic_variable = "MIC",
+  threshold_multiplier = 1,
+  free_fraction = 1,
+  source,
+  status = c("draft", "reviewed", "qualified")
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_endpoint_beta_lactam_+3A_drug">drug</code></td>
+<td>
+<p>Drug name.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_beta_lactam_+3A_target_fraction">target_fraction</code></td>
+<td>
+<p>Required fraction of an interval above threshold.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_beta_lactam_+3A_mic_variable">mic_variable</code></td>
+<td>
+<p>Covariate/event name containing MIC.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_beta_lactam_+3A_threshold_multiplier">threshold_multiplier</code></td>
+<td>
+<p>Threshold as a multiple of MIC.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_beta_lactam_+3A_free_fraction">free_fraction</code></td>
+<td>
+<p>Fraction unbound; use one if predictions are already free concentrations.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_beta_lactam_+3A_source">source</code></td>
+<td>
+<p>Evidence or policy provenance.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_beta_lactam_+3A_status">status</code></td>
+<td>
+<p>Governance status.</p>
+</td></tr>
+</table>
+
+<h2 id='lator_endpoint_busulfan'>Busulfan cumulative-AUC endpoint</h2><span id='topic+lator_endpoint_busulfan'></span>
+
+<h3>Description</h3>
+
+<p>Busulfan cumulative-AUC endpoint
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_endpoint_busulfan(
+  lower,
+  upper,
+  unit,
+  source,
+  doses = 1L,
+  drug = "busulfan",
+  status = c("draft", "reviewed", "qualified")
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_endpoint_busulfan_+3A_lower">lower</code>, <code id="lator_endpoint_busulfan_+3A_upper">upper</code></td>
+<td>
+<p>Cumulative AUC bounds.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_busulfan_+3A_unit">unit</code></td>
+<td>
+<p>AUC unit.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_busulfan_+3A_source">source</code></td>
+<td>
+<p>Evidence or policy provenance.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_busulfan_+3A_doses">doses</code></td>
+<td>
+<p>Number of equivalent dose intervals represented by the target.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_busulfan_+3A_drug">drug</code></td>
+<td>
+<p>Drug name.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_busulfan_+3A_status">status</code></td>
+<td>
+<p>Governance status.</p>
+</td></tr>
+</table>
+
+<h2 id='lator_endpoint_component'>Define one component of a multi-endpoint objective</h2><span id='topic+lator_endpoint_component'></span>
+
+<h3>Description</h3>
+
+<p>Define one component of a multi-endpoint objective
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_endpoint_component(
+  endpoint,
+  role = c("primary", "secondary", "safety"),
+  weight = 1,
+  hard_constraint = FALSE,
+  minimum_attainment = 0.9,
+  component_id = NULL
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_endpoint_component_+3A_endpoint">endpoint</code></td>
+<td>
+<p>A versioned [lator_endpoint()].</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_component_+3A_role">role</code></td>
+<td>
+<p>'&quot;primary&quot;', '&quot;secondary&quot;', or '&quot;safety&quot;'.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_component_+3A_weight">weight</code></td>
+<td>
+<p>Positive utility weight. Weights are normalized within the
+endpoint set, so only their relative values matter.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_component_+3A_hard_constraint">hard_constraint</code></td>
+<td>
+<p>Whether candidate regimens must satisfy a minimum
+posterior target-attainment probability for this component.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_component_+3A_minimum_attainment">minimum_attainment</code></td>
+<td>
+<p>Required probability when 'hard_constraint' is
+'TRUE'.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_component_+3A_component_id">component_id</code></td>
+<td>
+<p>Optional stable component identifier.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A serializable endpoint-component specification.
+</p>
+
+<h2 id='lator_endpoint_evaluate'>Evaluate predictions against a therapeutic endpoint</h2><span id='topic+lator_endpoint_evaluate'></span>
+
+<h3>Description</h3>
+
+<p>Evaluate predictions against a therapeutic endpoint
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_endpoint_evaluate(endpoint, predictions, patient = NULL, interval = NULL)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_endpoint_evaluate_+3A_endpoint">endpoint</code></td>
+<td>
+<p>Endpoint definition.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_evaluate_+3A_predictions">predictions</code></td>
+<td>
+<p>Prediction data frame. Optional 'SIM' identifies uncertainty replicates.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_evaluate_+3A_patient">patient</code></td>
+<td>
+<p>Patient timeline, required when an endpoint obtains MIC or an event anchor from it.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_evaluate_+3A_interval">interval</code></td>
+<td>
+<p>Optional two-element evaluation interval.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Per-replicate metrics and an aggregate target-attainment summary.
+</p>
+
+<h2 id='lator_endpoint_library'>List built-in templates and registered endpoint definitions</h2><span id='topic+lator_endpoint_library'></span>
+
+<h3>Description</h3>
+
+<p>List built-in templates and registered endpoint definitions
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_endpoint_library(workspace = NULL)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_endpoint_library_+3A_workspace">workspace</code></td>
+<td>
+<p>Optional unlocked workspace.</p>
+</td></tr>
+</table>
+
+<h2 id='lator_endpoint_methotrexate'>High-dose methotrexate timed-concentration endpoint</h2><span id='topic+lator_endpoint_methotrexate'></span>
+
+<h3>Description</h3>
+
+<p>High-dose methotrexate timed-concentration endpoint
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_endpoint_methotrexate(
+  targets,
+  unit,
+  source,
+  drug = "methotrexate",
+  default_tolerance = 1,
+  status = c("draft", "reviewed", "qualified")
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_endpoint_methotrexate_+3A_targets">targets</code></td>
+<td>
+<p>Data frame with 'hours_after_dose', 'upper', and optional
+'lower' and 'tolerance' columns.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_methotrexate_+3A_unit">unit</code></td>
+<td>
+<p>Concentration unit.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_methotrexate_+3A_source">source</code></td>
+<td>
+<p>Evidence or policy provenance.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_methotrexate_+3A_drug">drug</code></td>
+<td>
+<p>Drug name.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_methotrexate_+3A_default_tolerance">default_tolerance</code></td>
+<td>
+<p>Default nearest-prediction tolerance in hours.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_methotrexate_+3A_status">status</code></td>
+<td>
+<p>Governance status.</p>
+</td></tr>
+</table>
+
+<h2 id='lator_endpoint_mycophenolate'>Mycophenolic-acid AUC endpoint</h2><span id='topic+lator_endpoint_mycophenolate'></span>
+
+<h3>Description</h3>
+
+<p>Mycophenolic-acid AUC endpoint
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_endpoint_mycophenolate(
+  lower,
+  upper,
+  unit,
+  source,
+  drug = "mycophenolic acid",
+  status = c("draft", "reviewed", "qualified")
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_endpoint_mycophenolate_+3A_lower">lower</code>, <code id="lator_endpoint_mycophenolate_+3A_upper">upper</code></td>
+<td>
+<p>AUC bounds over the configured interval.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_mycophenolate_+3A_unit">unit</code></td>
+<td>
+<p>AUC unit.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_mycophenolate_+3A_source">source</code></td>
+<td>
+<p>Evidence or policy provenance.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_mycophenolate_+3A_drug">drug</code></td>
+<td>
+<p>Drug/analyte name.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_mycophenolate_+3A_status">status</code></td>
+<td>
+<p>Governance status.</p>
+</td></tr>
+</table>
+
+<h2 id='lator_endpoint_register'>Register an encrypted endpoint definition</h2><span id='topic+lator_endpoint_register'></span>
+
+<h3>Description</h3>
+
+<p>Registered endpoint versions are immutable. Re-registering the same
+'id@version' is rejected; modifications must use a new version.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_endpoint_register(workspace, endpoint, actor = "local-session")
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_endpoint_register_+3A_workspace">workspace</code></td>
+<td>
+<p>Unlocked workspace.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_register_+3A_endpoint">endpoint</code></td>
+<td>
+<p>Endpoint to register.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_register_+3A_actor">actor</code></td>
+<td>
+<p>Audit actor.</p>
+</td></tr>
+</table>
+
+<h2 id='lator_endpoint_set'>Combine therapeutic endpoints into a versioned clinical objective</h2><span id='topic+lator_endpoint_set'></span>
+
+<h3>Description</h3>
+
+<p>Candidate regimens are first screened against component-specific posterior
+chance constraints. Remaining candidates are ranked by expected normalized
+clinical utility and annotated with joint target attainment and Pareto
+status. The component weights and thresholds are explicit, versioned
+clinical inputs rather than hidden application defaults.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_endpoint_set(
+  id,
+  name,
+  drug,
+  components,
+  source,
+  status = c("draft", "reviewed", "qualified"),
+  version = "1.0.0",
+  metadata = list()
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_endpoint_set_+3A_id">id</code></td>
+<td>
+<p>Stable endpoint-set identifier.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_set_+3A_name">name</code></td>
+<td>
+<p>Display name.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_set_+3A_drug">drug</code></td>
+<td>
+<p>Medication shared by all components.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_set_+3A_components">components</code></td>
+<td>
+<p>A list created with [lator_endpoint_component()].</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_set_+3A_source">source</code></td>
+<td>
+<p>Clinical protocol, literature, or governance provenance.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_set_+3A_status">status</code></td>
+<td>
+<p>'&quot;draft&quot;', '&quot;reviewed&quot;', or '&quot;qualified&quot;'.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_set_+3A_version">version</code></td>
+<td>
+<p>Semantic version string.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_set_+3A_metadata">metadata</code></td>
+<td>
+<p>Additional non-executable metadata.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A versioned 'lator_endpoint' with kind '&quot;multi_endpoint&quot;'.
+</p>
+
+<h2 id='lator_endpoint_tacrolimus'>Tacrolimus trough endpoint</h2><span id='topic+lator_endpoint_tacrolimus'></span>
+
+<h3>Description</h3>
+
+<p>Tacrolimus trough endpoint
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_endpoint_tacrolimus(
+  lower,
+  upper,
+  unit,
+  source,
+  drug = "tacrolimus",
+  status = c("draft", "reviewed", "qualified"),
+  metadata = list()
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_endpoint_tacrolimus_+3A_lower">lower</code>, <code id="lator_endpoint_tacrolimus_+3A_upper">upper</code></td>
+<td>
+<p>Predose concentration bounds.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_tacrolimus_+3A_unit">unit</code></td>
+<td>
+<p>Concentration unit.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_tacrolimus_+3A_source">source</code></td>
+<td>
+<p>Evidence or policy provenance.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_tacrolimus_+3A_drug">drug</code></td>
+<td>
+<p>Drug name.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_tacrolimus_+3A_status">status</code></td>
+<td>
+<p>Governance status.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_tacrolimus_+3A_metadata">metadata</code></td>
+<td>
+<p>Organ, time-after-transplant, and risk-stratum metadata.</p>
+</td></tr>
+</table>
+
+<h2 id='lator_endpoint_validate'>Validate an endpoint definition</h2><span id='topic+lator_endpoint_validate'></span>
+
+<h3>Description</h3>
+
+<p>Validate an endpoint definition
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_endpoint_validate(endpoint)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_endpoint_validate_+3A_endpoint">endpoint</code></td>
+<td>
+<p>Endpoint object.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>The validated endpoint.
+</p>
+
+<h2 id='lator_endpoint_vancomycin'>Vancomycin AUC/MIC endpoint</h2><span id='topic+lator_endpoint_vancomycin'></span>
+
+<h3>Description</h3>
+
+<p>Target values are deliberately supplied by the caller so an institution can
+bind the definition to its approved indication, MIC method, and protocol.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_endpoint_vancomycin(
+  drug = "vancomycin",
+  lower,
+  upper,
+  source,
+  mic_variable = "MIC",
+  safety_auc_upper = NULL,
+  unit = "AUC24/MIC",
+  status = c("draft", "reviewed", "qualified")
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_endpoint_vancomycin_+3A_drug">drug</code></td>
+<td>
+<p>Drug name.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_vancomycin_+3A_lower">lower</code>, <code id="lator_endpoint_vancomycin_+3A_upper">upper</code></td>
+<td>
+<p>AUC/MIC target bounds.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_vancomycin_+3A_source">source</code></td>
+<td>
+<p>Guideline or institutional-policy provenance.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_vancomycin_+3A_mic_variable">mic_variable</code></td>
+<td>
+<p>Patient covariate containing MIC.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_vancomycin_+3A_safety_auc_upper">safety_auc_upper</code></td>
+<td>
+<p>Optional absolute AUC safety ceiling.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_vancomycin_+3A_unit">unit</code></td>
+<td>
+<p>Display unit.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_vancomycin_+3A_status">status</code></td>
+<td>
+<p>Governance status.</p>
+</td></tr>
+</table>
+
+<h2 id='lator_endpoint_warfarin'>Warfarin INR time-in-range endpoint</h2><span id='topic+lator_endpoint_warfarin'></span>
+
+<h3>Description</h3>
+
+<p>Warfarin INR time-in-range endpoint
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_endpoint_warfarin(
+  lower,
+  upper,
+  target_fraction,
+  source,
+  drug = "warfarin",
+  status = c("draft", "reviewed", "qualified")
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_endpoint_warfarin_+3A_lower">lower</code>, <code id="lator_endpoint_warfarin_+3A_upper">upper</code></td>
+<td>
+<p>INR bounds.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_warfarin_+3A_target_fraction">target_fraction</code></td>
+<td>
+<p>Required fraction of the forecast interval in range.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_warfarin_+3A_source">source</code></td>
+<td>
+<p>Evidence or institutional-policy provenance.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_warfarin_+3A_drug">drug</code></td>
+<td>
+<p>Intervention name.</p>
+</td></tr>
+<tr><td><code id="lator_endpoint_warfarin_+3A_status">status</code></td>
+<td>
+<p>Governance status.</p>
+</td></tr>
+</table>
+
+<h2 id='lator_example_aed'>Synthetic AED teaching case</h2><span id='topic+lator_example_aed'></span>
+
+<h3>Description</h3>
+
+<p>Creates a small, non-clinical longitudinal case containing an ADVAN1 model,
+intermittent weight measurements, repeat dosing, TDM observations, a latent
+state boundary, and an illustrative therapeutic-range endpoint. It is meant
+for software teaching and tests; its target range is not a real dosing rule.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_example_aed()
+</code></pre>
+
+
+<h3>Value</h3>
+
+<p>Named list with 'model', 'patient', and 'endpoint'.
+</p>
+
+
+<h3>Examples</h3>
+
+<pre><code class='language-R'>example &lt;- lator_example_aed()
+assessment &lt;- lator_assess(
+  example$patient, example$model, example$endpoint,
+  mode = "static", maxit = 20
+)
+assessment$eta_trajectory
+</code></pre>
+
+<h2 id='lator_example_dual_endpoint'>Synthetic dual-endpoint benefit-risk teaching case</h2><span id='topic+lator_example_dual_endpoint'></span>
+
+<h3>Description</h3>
+
+<p>Extends [lator_example_aed()] with a primary average-concentration endpoint
+and a separate trough-safety endpoint for the same synthetic medication.
+The safety component is a hard posterior chance constraint, while the two
+component utilities are combined with explicit 2:1 efficacy-to-safety
+weights. All values are deliberately synthetic and must not be interpreted
+as clinical targets.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_example_dual_endpoint()
+</code></pre>
+
+
+<h3>Value</h3>
+
+<p>Named list containing 'model', 'patient', the combined 'endpoint'
+(also available as 'objective'), the individual 'endpoints', and a
+candidate-regimen grid suitable for [lator_regimen_optimise()].
+</p>
+
+
+<h3>Examples</h3>
+
+<pre><code class='language-R'>example &lt;- lator_example_dual_endpoint()
+example$objective
+vapply(example$endpoints, `[[`, character(1), "name")
+</code></pre>
+
+<h2 id='lator_gui'>Launch the LibeRator longitudinal dosing workbench</h2><span id='topic+lator_gui'></span>
+
+<h3>Description</h3>
+
+<p>By default the server binds only to loopback. Exposing it to another host is
+deliberately blocked unless 'allow_remote = TRUE'; production deployment
+additionally requires institutional authentication, TLS, authorization,
+backup, monitoring, validation, and clinical governance. The current
+Research label denotes validation status, not a separate product edition.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_gui(
+  workspace = NULL,
+  path = NULL,
+  passphrase = NULL,
+  key = NULL,
+  models = NULL,
+  endpoints = NULL,
+  library_root = NULL,
+  host = "127.0.0.1",
+  port = NULL,
+  launch.browser = TRUE,
+  allow_remote = FALSE,
+  session_workspace = FALSE,
+  teaching_example = FALSE
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_gui_+3A_workspace">workspace</code></td>
+<td>
+<p>Optional unlocked workspace.</p>
+</td></tr>
+<tr><td><code id="lator_gui_+3A_path">path</code></td>
+<td>
+<p>Workspace path when 'workspace' is not supplied.</p>
+</td></tr>
+<tr><td><code id="lator_gui_+3A_passphrase">passphrase</code></td>
+<td>
+<p>Optional passphrase. If omitted, an unlock screen is shown.</p>
+</td></tr>
+<tr><td><code id="lator_gui_+3A_key">key</code></td>
+<td>
+<p>Optional managed 32-byte key.</p>
+</td></tr>
+<tr><td><code id="lator_gui_+3A_models">models</code></td>
+<td>
+<p>Session models in addition to encrypted registrations.</p>
+</td></tr>
+<tr><td><code id="lator_gui_+3A_endpoints">endpoints</code></td>
+<td>
+<p>Session endpoints in addition to encrypted registrations.</p>
+</td></tr>
+<tr><td><code id="lator_gui_+3A_library_root">library_root</code></td>
+<td>
+<p>Optional LibeRary catalogue root used by automatic
+qualified-model selection.</p>
+</td></tr>
+<tr><td><code id="lator_gui_+3A_host">host</code>, <code id="lator_gui_+3A_port">port</code>, <code id="lator_gui_+3A_launch.browser">launch.browser</code></td>
+<td>
+<p>Passed to [shiny::runApp()].</p>
+</td></tr>
+<tr><td><code id="lator_gui_+3A_allow_remote">allow_remote</code></td>
+<td>
+<p>Explicitly permit a non-loopback bind for governed test deployments.</p>
+</td></tr>
+<tr><td><code id="lator_gui_+3A_session_workspace">session_workspace</code></td>
+<td>
+<p>Create a separate ephemeral encrypted workspace for
+every browser session. This is intended for hosted research demonstrations
+and prevents application users from sharing a workspace directory.</p>
+</td></tr>
+<tr><td><code id="lator_gui_+3A_teaching_example">teaching_example</code></td>
+<td>
+<p>Seed an otherwise empty workspace with the synthetic
+AED teaching patient, model, individual efficacy and safety endpoints, and
+their combined dual-endpoint objective. Intended for demonstrations; all
+targets are explicitly non-clinical.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Invisibly, the Shiny app.
+</p>
+
+<h2 id='lator_job'>Create a deidentified LibeRties individualisation or regimen job</h2><span id='topic+lator_job'></span>
+
+<h3>Description</h3>
+
+<p>The caller supplies model-ready event data rather than a LibeRator patient
+record. Workspace keys, patient catalogues, audit records, and direct
+identifiers are therefore never included in a queue payload.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_job(
+  type = c("individualise", "regimen"),
+  model,
+  data,
+  arguments = list(),
+  label = NULL
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_job_+3A_type">type</code></td>
+<td>
+<p>'&quot;individualise&quot;' or '&quot;regimen&quot;'.</p>
+</td></tr>
+<tr><td><code id="lator_job_+3A_model">model</code></td>
+<td>
+<p>Serializable LibeRation model.</p>
+</td></tr>
+<tr><td><code id="lator_job_+3A_data">data</code></td>
+<td>
+<p>Deidentified model-ready data. Regimen jobs require a
+'CANDIDATE' column.</p>
+</td></tr>
+<tr><td><code id="lator_job_+3A_arguments">arguments</code></td>
+<td>
+<p>Named worker arguments.</p>
+</td></tr>
+<tr><td><code id="lator_job_+3A_label">label</code></td>
+<td>
+<p>Job label.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A LibeRties job ready for a local or remote queue.
+</p>
+
+<h2 id='lator_model_candidates_from_liberary'>Read clinically scoped LibeRary model candidates</h2><span id='topic+lator_model_candidates_from_liberary'></span>
+
+<h3>Description</h3>
+
+<p>Read clinically scoped LibeRary model candidates
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_model_candidates_from_liberary(
+  root = NULL,
+  status = c("qualified", "candidate")
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_model_candidates_from_liberary_+3A_root">root</code></td>
+<td>
+<p>Optional LibeRary catalogue root.</p>
+</td></tr>
+<tr><td><code id="lator_model_candidates_from_liberary_+3A_status">status</code></td>
+<td>
+<p>Qualification statuses to retrieve.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Candidate records suitable for [lator_model_select()].
+</p>
+
+<h2 id='lator_model_from_liberary'>Import a LibeRary catalogue model</h2><span id='topic+lator_model_from_liberary'></span>
+
+<h3>Description</h3>
+
+<p>Unvalidated catalogue entries are rejected by default. Enabling them is an
+explicit research override retained in model provenance.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_model_from_liberary(
+  library_id,
+  root = NULL,
+  allow_unvalidated = FALSE,
+  qualification_id = NULL
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_model_from_liberary_+3A_library_id">library_id</code></td>
+<td>
+<p>LibeRary catalogue id.</p>
+</td></tr>
+<tr><td><code id="lator_model_from_liberary_+3A_root">root</code></td>
+<td>
+<p>LibeRary catalogue root.</p>
+</td></tr>
+<tr><td><code id="lator_model_from_liberary_+3A_allow_unvalidated">allow_unvalidated</code></td>
+<td>
+<p>Permit an entry whose status is not 'validated'.</p>
+</td></tr>
+<tr><td><code id="lator_model_from_liberary_+3A_qualification_id">qualification_id</code></td>
+<td>
+<p>Optional current clinical-use qualification id to
+bind into model provenance.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A compiled, serializable LibeRation 'nm_model' with catalogue provenance.
+</p>
+
+<h2 id='lator_model_register'>Register an encrypted LibeRation model for individualisation</h2><span id='topic+lator_model_register'></span>
+
+<h3>Description</h3>
+
+<p>Register an encrypted LibeRation model for individualisation
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_model_register(
+  workspace,
+  model,
+  id = NULL,
+  name = NULL,
+  qualification = list(status = "research"),
+  endpoint_ids = character(),
+  provenance = list(),
+  actor = "local-session"
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_model_register_+3A_workspace">workspace</code></td>
+<td>
+<p>Unlocked workspace.</p>
+</td></tr>
+<tr><td><code id="lator_model_register_+3A_model">model</code></td>
+<td>
+<p>A LibeRation 'nm_model'.</p>
+</td></tr>
+<tr><td><code id="lator_model_register_+3A_id">id</code></td>
+<td>
+<p>Stable local model id.</p>
+</td></tr>
+<tr><td><code id="lator_model_register_+3A_name">name</code></td>
+<td>
+<p>Display name.</p>
+</td></tr>
+<tr><td><code id="lator_model_register_+3A_qualification">qualification</code></td>
+<td>
+<p>Named governance and validation metadata.</p>
+</td></tr>
+<tr><td><code id="lator_model_register_+3A_endpoint_ids">endpoint_ids</code></td>
+<td>
+<p>Compatible endpoint identifiers.</p>
+</td></tr>
+<tr><td><code id="lator_model_register_+3A_provenance">provenance</code></td>
+<td>
+<p>Evidence and import provenance.</p>
+</td></tr>
+<tr><td><code id="lator_model_register_+3A_actor">actor</code></td>
+<td>
+<p>Audit actor.</p>
+</td></tr>
+</table>
+
+<h2 id='lator_model_select'>Select the most suitable qualified population model</h2><span id='topic+lator_model_select'></span>
+
+<h3>Description</h3>
+
+<p>Selection is deterministic. Hard applicability gates are evaluated before a
+transparent suitability score. The function deliberately returns a no-match
+or ambiguity result rather than silently choosing an unsupported model.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_model_select(
+  patient,
+  endpoint,
+  candidates,
+  cutoff = Inf,
+  context_overrides = list(),
+  minimum_score = 0.65,
+  minimum_margin = 0.05,
+  allowed_status = "qualified",
+  predictive_scores = NULL
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_model_select_+3A_patient">patient</code></td>
+<td>
+<p>Patient timeline.</p>
+</td></tr>
+<tr><td><code id="lator_model_select_+3A_endpoint">endpoint</code></td>
+<td>
+<p>Therapeutic endpoint.</p>
+</td></tr>
+<tr><td><code id="lator_model_select_+3A_candidates">candidates</code></td>
+<td>
+<p>Candidate qualification records.</p>
+</td></tr>
+<tr><td><code id="lator_model_select_+3A_cutoff">cutoff</code></td>
+<td>
+<p>Latest patient time visible to the decision.</p>
+</td></tr>
+<tr><td><code id="lator_model_select_+3A_context_overrides">context_overrides</code></td>
+<td>
+<p>Explicit context not represented on the timeline.</p>
+</td></tr>
+<tr><td><code id="lator_model_select_+3A_minimum_score">minimum_score</code></td>
+<td>
+<p>Minimum score for automatic selection.</p>
+</td></tr>
+<tr><td><code id="lator_model_select_+3A_minimum_margin">minimum_margin</code></td>
+<td>
+<p>Required lead over the second candidate.</p>
+</td></tr>
+<tr><td><code id="lator_model_select_+3A_allowed_status">allowed_status</code></td>
+<td>
+<p>Qualification statuses eligible for selection.</p>
+</td></tr>
+<tr><td><code id="lator_model_select_+3A_predictive_scores">predictive_scores</code></td>
+<td>
+<p>Optional named scores in '[0,1]', derived from
+sequential patient-specific predictive assessment.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>An immutable 'lator_model_selection'.
+</p>
+
+<h2 id='lator_model_select_from_liberary'>Select a model from scoped LibeRary qualifications</h2><span id='topic+lator_model_select_from_liberary'></span>
+
+<h3>Description</h3>
+
+<p>Select a model from scoped LibeRary qualifications
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_model_select_from_liberary(
+  patient,
+  endpoint,
+  root = NULL,
+  cutoff = Inf,
+  context_overrides = list(),
+  minimum_score = 0.65,
+  minimum_margin = 0.05,
+  allowed_status = "qualified",
+  predictive_scores = NULL
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_model_select_from_liberary_+3A_patient">patient</code></td>
+<td>
+<p>Patient timeline.</p>
+</td></tr>
+<tr><td><code id="lator_model_select_from_liberary_+3A_endpoint">endpoint</code></td>
+<td>
+<p>Therapeutic endpoint.</p>
+</td></tr>
+<tr><td><code id="lator_model_select_from_liberary_+3A_root">root</code></td>
+<td>
+<p>Optional LibeRary catalogue root.</p>
+</td></tr>
+<tr><td><code id="lator_model_select_from_liberary_+3A_cutoff">cutoff</code></td>
+<td>
+<p>Latest patient time visible to the decision.</p>
+</td></tr>
+<tr><td><code id="lator_model_select_from_liberary_+3A_context_overrides">context_overrides</code></td>
+<td>
+<p>Explicit context not represented on the timeline.</p>
+</td></tr>
+<tr><td><code id="lator_model_select_from_liberary_+3A_minimum_score">minimum_score</code></td>
+<td>
+<p>Minimum score for automatic selection.</p>
+</td></tr>
+<tr><td><code id="lator_model_select_from_liberary_+3A_minimum_margin">minimum_margin</code></td>
+<td>
+<p>Required lead over the second candidate.</p>
+</td></tr>
+<tr><td><code id="lator_model_select_from_liberary_+3A_allowed_status">allowed_status</code></td>
+<td>
+<p>Qualification statuses eligible for selection.</p>
+</td></tr>
+<tr><td><code id="lator_model_select_from_liberary_+3A_predictive_scores">predictive_scores</code></td>
+<td>
+<p>Optional named scores in '[0,1]', derived from
+sequential patient-specific predictive assessment.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>An immutable 'lator_model_selection'.
+</p>
+
+<h2 id='lator_model_selection_save'>Persist an immutable model-selection decision</h2><span id='topic+lator_model_selection_save'></span>
+
+<h3>Description</h3>
+
+<p>Persist an immutable model-selection decision
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_model_selection_save(
+  workspace,
+  patient,
+  selection,
+  actor = "local-session"
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_model_selection_save_+3A_workspace">workspace</code></td>
+<td>
+<p>Unlocked workspace.</p>
+</td></tr>
+<tr><td><code id="lator_model_selection_save_+3A_patient">patient</code></td>
+<td>
+<p>Patient record at the revision used by the selection.</p>
+</td></tr>
+<tr><td><code id="lator_model_selection_save_+3A_selection">selection</code></td>
+<td>
+<p>Model-selection result.</p>
+</td></tr>
+<tr><td><code id="lator_model_selection_save_+3A_actor">actor</code></td>
+<td>
+<p>Audit actor.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Saved patient record with incremented revision.
+</p>
+
+<h2 id='lator_patient_add_event'>Add an immutable event to a patient timeline</h2><span id='topic+lator_patient_add_event'></span>
+
+<h3>Description</h3>
+
+<p>Corrections are represented by a new event whose 'supersedes' field points
+to the earlier event. Existing evidence is never silently overwritten.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_patient_add_event(
+  patient,
+  type,
+  time,
+  name = "",
+  value = NA,
+  unit = "",
+  source = "manual",
+  missing_reason = "",
+  occasion = NA_integer_,
+  supersedes = "",
+  metadata = list()
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_patient_add_event_+3A_patient">patient</code></td>
+<td>
+<p>Patient record.</p>
+</td></tr>
+<tr><td><code id="lator_patient_add_event_+3A_type">type</code></td>
+<td>
+<p>Event type.</p>
+</td></tr>
+<tr><td><code id="lator_patient_add_event_+3A_time">time</code></td>
+<td>
+<p>Numeric hours on the patient's study timeline, or a POSIX time.</p>
+</td></tr>
+<tr><td><code id="lator_patient_add_event_+3A_name">name</code></td>
+<td>
+<p>Clinical/model variable name.</p>
+</td></tr>
+<tr><td><code id="lator_patient_add_event_+3A_value">value</code></td>
+<td>
+<p>Scalar value.</p>
+</td></tr>
+<tr><td><code id="lator_patient_add_event_+3A_unit">unit</code></td>
+<td>
+<p>Unit string.</p>
+</td></tr>
+<tr><td><code id="lator_patient_add_event_+3A_source">source</code></td>
+<td>
+<p>Provenance label.</p>
+</td></tr>
+<tr><td><code id="lator_patient_add_event_+3A_missing_reason">missing_reason</code></td>
+<td>
+<p>Reason a scheduled value is unavailable.</p>
+</td></tr>
+<tr><td><code id="lator_patient_add_event_+3A_occasion">occasion</code></td>
+<td>
+<p>Optional dynamic-parameter epoch.</p>
+</td></tr>
+<tr><td><code id="lator_patient_add_event_+3A_supersedes">supersedes</code></td>
+<td>
+<p>Earlier event id corrected by this event.</p>
+</td></tr>
+<tr><td><code id="lator_patient_add_event_+3A_metadata">metadata</code></td>
+<td>
+<p>Additional typed event fields such as route, duration, CMT,
+LLOQ, assay, pathogen, MIC method, or adherence certainty.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Updated patient record.
+</p>
+
+<h2 id='lator_patient_add_events'>Add several event records</h2><span id='topic+lator_patient_add_events'></span>
+
+<h3>Description</h3>
+
+<p>Add several event records
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_patient_add_events(patient, events)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_patient_add_events_+3A_patient">patient</code></td>
+<td>
+<p>Patient record.</p>
+</td></tr>
+<tr><td><code id="lator_patient_add_events_+3A_events">events</code></td>
+<td>
+<p>Data frame or list of named event argument lists.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Updated patient record.
+</p>
+
+<h2 id='lator_patient_context'>Build the model-selection context available at a dosing decision</h2><span id='topic+lator_patient_context'></span>
+
+<h3>Description</h3>
+
+<p>Only evidence at or before 'cutoff' is used. Each longitudinal covariate
+retains its source time and age so model qualifications can reject stale or
+unsupported substitutions.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_patient_context(patient, endpoint, cutoff = Inf, overrides = list())
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_patient_context_+3A_patient">patient</code></td>
+<td>
+<p>LibeRator patient timeline.</p>
+</td></tr>
+<tr><td><code id="lator_patient_context_+3A_endpoint">endpoint</code></td>
+<td>
+<p>Selected therapeutic endpoint.</p>
+</td></tr>
+<tr><td><code id="lator_patient_context_+3A_cutoff">cutoff</code></td>
+<td>
+<p>Latest patient-timeline hour visible to the decision.</p>
+</td></tr>
+<tr><td><code id="lator_patient_context_+3A_overrides">overrides</code></td>
+<td>
+<p>Explicit non-identifying context overrides.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A serializable 'lator_patient_context'.
+</p>
+
+<h2 id='lator_patient_correct_event'>Correct or withdraw immutable patient evidence</h2><span id='topic+lator_patient_correct_event'></span>
+
+<h3>Description</h3>
+
+<p>The original event is retained. A replacement event is appended with a
+'supersedes' link, correction reason, actor, original-event hash, and stable
+correction-chain root. Marking an event as entered in error appends a typed
+correction tombstone, so the original is excluded from modelling without
+inventing replacement clinical evidence.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_patient_correct_event(
+  patient,
+  event_id,
+  reason,
+  replacement = list(),
+  entered_in_error = FALSE,
+  actor = "local-clinician"
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_patient_correct_event_+3A_patient">patient</code></td>
+<td>
+<p>Patient record.</p>
+</td></tr>
+<tr><td><code id="lator_patient_correct_event_+3A_event_id">event_id</code></td>
+<td>
+<p>Active event to correct.</p>
+</td></tr>
+<tr><td><code id="lator_patient_correct_event_+3A_reason">reason</code></td>
+<td>
+<p>Required reason for the correction.</p>
+</td></tr>
+<tr><td><code id="lator_patient_correct_event_+3A_replacement">replacement</code></td>
+<td>
+<p>Named list of replacement event fields. Unspecified
+fields retain their value from the active event. Supported fields are
+'type', 'time', 'name', 'value', 'unit', 'source', 'missing_reason',
+'occasion', and 'metadata'.</p>
+</td></tr>
+<tr><td><code id="lator_patient_correct_event_+3A_entered_in_error">entered_in_error</code></td>
+<td>
+<p>If 'TRUE', withdraw the event without replacing it
+with usable evidence.</p>
+</td></tr>
+<tr><td><code id="lator_patient_correct_event_+3A_actor">actor</code></td>
+<td>
+<p>Clinician or system actor responsible for the correction.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Updated patient record containing both the original and correction.
+</p>
+
+<h2 id='lator_patient_delete'>Permanently delete an encrypted patient record</h2><span id='topic+lator_patient_delete'></span>
+
+<h3>Description</h3>
+
+<p>The encrypted record and catalogue entry are removed. A minimal deletion
+event remains in the encrypted audit chain so the destructive action can be
+accounted for.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_patient_delete(
+  workspace,
+  patient_id,
+  confirmation,
+  actor = "local-session"
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_patient_delete_+3A_workspace">workspace</code></td>
+<td>
+<p>Unlocked workspace.</p>
+</td></tr>
+<tr><td><code id="lator_patient_delete_+3A_patient_id">patient_id</code></td>
+<td>
+<p>Patient pseudonym.</p>
+</td></tr>
+<tr><td><code id="lator_patient_delete_+3A_confirmation">confirmation</code></td>
+<td>
+<p>Must be exactly '&quot;YES&quot;'.</p>
+</td></tr>
+<tr><td><code id="lator_patient_delete_+3A_actor">actor</code></td>
+<td>
+<p>Audit actor.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Invisibly 'TRUE'.
+</p>
+
+<h2 id='lator_patient_endpoint_get'>Retrieve a medication-specific endpoint preference</h2><span id='topic+lator_patient_endpoint_get'></span>
+
+<h3>Description</h3>
+
+<p>Retrieve a medication-specific endpoint preference
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_patient_endpoint_get(patient, drug)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_patient_endpoint_get_+3A_patient">patient</code></td>
+<td>
+<p>Patient record.</p>
+</td></tr>
+<tr><td><code id="lator_patient_endpoint_get_+3A_drug">drug</code></td>
+<td>
+<p>Medication name.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A therapy-profile list, or 'NULL'.
+</p>
+
+<h2 id='lator_patient_endpoint_set'>Record a medication-specific endpoint preference</h2><span id='topic+lator_patient_endpoint_set'></span>
+
+<h3>Description</h3>
+
+<p>Record a medication-specific endpoint preference
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_patient_endpoint_set(
+  patient,
+  drug,
+  endpoint_key,
+  endpoint,
+  therapeutic_class = ""
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_patient_endpoint_set_+3A_patient">patient</code></td>
+<td>
+<p>Patient record.</p>
+</td></tr>
+<tr><td><code id="lator_patient_endpoint_set_+3A_drug">drug</code></td>
+<td>
+<p>Medication name represented by dose evidence.</p>
+</td></tr>
+<tr><td><code id="lator_patient_endpoint_set_+3A_endpoint_key">endpoint_key</code></td>
+<td>
+<p>Stable patient-assignment key. GUI assignments use a
+patient-specific key derived from the endpoint identity and version.</p>
+</td></tr>
+<tr><td><code id="lator_patient_endpoint_set_+3A_endpoint">endpoint</code></td>
+<td>
+<p>Endpoint definition.</p>
+</td></tr>
+<tr><td><code id="lator_patient_endpoint_set_+3A_therapeutic_class">therapeutic_class</code></td>
+<td>
+<p>Optional medication-class label.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Updated patient record. Persist it with [lator_patient_save()].
+</p>
+
+<h2 id='lator_patient_get'>Load a patient</h2><span id='topic+lator_patient_get'></span>
+
+<h3>Description</h3>
+
+<p>Load a patient
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_patient_get(workspace, patient_id)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_patient_get_+3A_workspace">workspace</code></td>
+<td>
+<p>Unlocked workspace.</p>
+</td></tr>
+<tr><td><code id="lator_patient_get_+3A_patient_id">patient_id</code></td>
+<td>
+<p>Pseudonym.</p>
+</td></tr>
+</table>
+
+<h2 id='lator_patient_list'>List pseudonymous patient records</h2><span id='topic+lator_patient_list'></span>
+
+<h3>Description</h3>
+
+<p>List pseudonymous patient records
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_patient_list(workspace)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_patient_list_+3A_workspace">workspace</code></td>
+<td>
+<p>Unlocked workspace.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Patient catalogue data frame.
+</p>
+
+<h2 id='lator_patient_medication_add'>Add a medication to a patient treatment profile</h2><span id='topic+lator_patient_medication_add'></span>
+
+<h3>Description</h3>
+
+<p>A medication can be represented before its first dose record is available.
+Dose and TDM evidence remain separate immutable timeline events.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_patient_medication_add(
+  patient,
+  drug,
+  therapeutic_class = "",
+  monitoring_analytes = character()
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_patient_medication_add_+3A_patient">patient</code></td>
+<td>
+<p>Patient record.</p>
+</td></tr>
+<tr><td><code id="lator_patient_medication_add_+3A_drug">drug</code></td>
+<td>
+<p>Medication name.</p>
+</td></tr>
+<tr><td><code id="lator_patient_medication_add_+3A_therapeutic_class">therapeutic_class</code></td>
+<td>
+<p>Optional medication-class label used for endpoint
+family suggestions.</p>
+</td></tr>
+<tr><td><code id="lator_patient_medication_add_+3A_monitoring_analytes">monitoring_analytes</code></td>
+<td>
+<p>Optional drug metabolites or related analytes
+that may be selected when recording TDM evidence.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Updated patient record. Persist it with [lator_patient_save()].
+</p>
+
+<h2 id='lator_patient_medications'>List medications represented on a patient timeline</h2><span id='topic+lator_patient_medications'></span>
+
+<h3>Description</h3>
+
+<p>The list combines explicit treatment profiles with active dose evidence and
+retains any endpoint preference already recorded for each medication. A
+dose-discontinuation workflow can later supersede or qualify this evidence;
+absence of a recent dose is not silently interpreted as discontinuation.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_patient_medications(patient, cutoff = Inf)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_patient_medications_+3A_patient">patient</code></td>
+<td>
+<p>Patient record.</p>
+</td></tr>
+<tr><td><code id="lator_patient_medications_+3A_cutoff">cutoff</code></td>
+<td>
+<p>Latest patient-timeline time to inspect.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A data frame with one row per recorded medication.
+</p>
+
+<h2 id='lator_patient_new'>Create a pseudonymous longitudinal patient record</h2><span id='topic+lator_patient_new'></span>
+
+<h3>Description</h3>
+
+<p>Direct identifiers such as name, address, date of birth, hospital number,
+email, or telephone number are intentionally absent. Linkage to an
+identifiable clinical record belongs in the controlling institution's
+separately governed system.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_patient_new(patient_id, study_id = "", label = "", metadata = list())
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_patient_new_+3A_patient_id">patient_id</code></td>
+<td>
+<p>Pseudonym assigned outside LibeRator.</p>
+</td></tr>
+<tr><td><code id="lator_patient_new_+3A_study_id">study_id</code></td>
+<td>
+<p>Optional research-study identifier.</p>
+</td></tr>
+<tr><td><code id="lator_patient_new_+3A_label">label</code></td>
+<td>
+<p>Non-identifying display label.</p>
+</td></tr>
+<tr><td><code id="lator_patient_new_+3A_metadata">metadata</code></td>
+<td>
+<p>Non-identifying study metadata.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A 'lator_patient'.
+</p>
+
+<h2 id='lator_patient_save'>Persist a patient with optimistic revision checking</h2><span id='topic+lator_patient_save'></span>
+
+<h3>Description</h3>
+
+<p>Persist a patient with optimistic revision checking
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_patient_save(
+  workspace,
+  patient,
+  expected_revision = patient$revision,
+  actor = "local-session"
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_patient_save_+3A_workspace">workspace</code></td>
+<td>
+<p>Unlocked workspace.</p>
+</td></tr>
+<tr><td><code id="lator_patient_save_+3A_patient">patient</code></td>
+<td>
+<p>Patient record.</p>
+</td></tr>
+<tr><td><code id="lator_patient_save_+3A_expected_revision">expected_revision</code></td>
+<td>
+<p>Expected stored revision; defaults to the record's
+current revision. Prevents two sessions overwriting one another.</p>
+</td></tr>
+<tr><td><code id="lator_patient_save_+3A_actor">actor</code></td>
+<td>
+<p>Audit actor.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Saved patient with incremented revision.
+</p>
+
+<h2 id='lator_regimen_candidates'>Construct a clinically feasible regimen grid</h2><span id='topic+lator_regimen_candidates'></span>
+
+<h3>Description</h3>
+
+<p>Construct a clinically feasible regimen grid
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_regimen_candidates(
+  amounts,
+  intervals,
+  routes = "oral",
+  infusion_durations = 0,
+  loading_doses = NA_real_,
+  horizon = 168
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_regimen_candidates_+3A_amounts">amounts</code></td>
+<td>
+<p>Dose amounts.</p>
+</td></tr>
+<tr><td><code id="lator_regimen_candidates_+3A_intervals">intervals</code></td>
+<td>
+<p>Dose intervals in hours.</p>
+</td></tr>
+<tr><td><code id="lator_regimen_candidates_+3A_routes">routes</code></td>
+<td>
+<p>Route labels.</p>
+</td></tr>
+<tr><td><code id="lator_regimen_candidates_+3A_infusion_durations">infusion_durations</code></td>
+<td>
+<p>Infusion durations in hours; zero is an
+instantaneous input to the model's dose compartment.</p>
+</td></tr>
+<tr><td><code id="lator_regimen_candidates_+3A_loading_doses">loading_doses</code></td>
+<td>
+<p>Optional loading amounts; 'NA' means no separate load.</p>
+</td></tr>
+<tr><td><code id="lator_regimen_candidates_+3A_horizon">horizon</code></td>
+<td>
+<p>Evaluation horizon in hours.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Candidate-regimen data frame.
+</p>
+
+<h2 id='lator_regimen_optimise'>Compare candidate regimens under posterior uncertainty</h2><span id='topic+lator_regimen_optimise'></span>
+
+<h3>Description</h3>
+
+<p>The complete dosing history is replayed for every posterior draw so that
+accumulated compartment amounts are retained. Parameter uncertainty is
+evaluated in one batched C++ simulation call per candidate.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_regimen_optimise(
+  assessment,
+  patient,
+  candidates,
+  endpoint = assessment$endpoint,
+  nsim = 200L,
+  grid_step = 0.25,
+  start_time = NULL,
+  residual = FALSE,
+  max_daily_dose = Inf,
+  max_single_dose = Inf,
+  dose_burden_weight = 0,
+  seed = NULL,
+  n_cores = 1L
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_regimen_optimise_+3A_assessment">assessment</code></td>
+<td>
+<p>A completed 'lator_assessment'.</p>
+</td></tr>
+<tr><td><code id="lator_regimen_optimise_+3A_patient">patient</code></td>
+<td>
+<p>The corresponding patient timeline.</p>
+</td></tr>
+<tr><td><code id="lator_regimen_optimise_+3A_candidates">candidates</code></td>
+<td>
+<p>Candidate data frame from [lator_regimen_candidates()].</p>
+</td></tr>
+<tr><td><code id="lator_regimen_optimise_+3A_endpoint">endpoint</code></td>
+<td>
+<p>Endpoint or versioned multi-endpoint objective to optimise;
+defaults to the assessment endpoint. Multi-endpoint components are
+evaluated on shared posterior draws.</p>
+</td></tr>
+<tr><td><code id="lator_regimen_optimise_+3A_nsim">nsim</code></td>
+<td>
+<p>Number of posterior draws.</p>
+</td></tr>
+<tr><td><code id="lator_regimen_optimise_+3A_grid_step">grid_step</code></td>
+<td>
+<p>Prediction-grid spacing in hours.</p>
+</td></tr>
+<tr><td><code id="lator_regimen_optimise_+3A_start_time">start_time</code></td>
+<td>
+<p>First candidate dose time; defaults just after the latest
+historical event visible to the assessment.</p>
+</td></tr>
+<tr><td><code id="lator_regimen_optimise_+3A_residual">residual</code></td>
+<td>
+<p>Include residual observation variability in attainment probabilities.</p>
+</td></tr>
+<tr><td><code id="lator_regimen_optimise_+3A_max_daily_dose">max_daily_dose</code></td>
+<td>
+<p>Optional hard feasibility constraint.</p>
+</td></tr>
+<tr><td><code id="lator_regimen_optimise_+3A_max_single_dose">max_single_dose</code></td>
+<td>
+<p>Optional hard feasibility constraint.</p>
+</td></tr>
+<tr><td><code id="lator_regimen_optimise_+3A_dose_burden_weight">dose_burden_weight</code></td>
+<td>
+<p>Small optional tie-breaker applied to daily dose.</p>
+</td></tr>
+<tr><td><code id="lator_regimen_optimise_+3A_seed">seed</code></td>
+<td>
+<p>Reproducible seed.</p>
+</td></tr>
+<tr><td><code id="lator_regimen_optimise_+3A_n_cores">n_cores</code></td>
+<td>
+<p>Simulation cores used within LibeRation.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A ranked result with summaries and per-candidate trajectories.
+Multi-endpoint results also include component and joint attainment,
+normalized expected utility, hard-constraint status, and Pareto status.
+</p>
+
+<h2 id='lator_regimen_predict'>Create an explicit future prediction for a selected regimen</h2><span id='topic+lator_regimen_predict'></span>
+
+<h3>Description</h3>
+
+<p>Regimen comparison already simulates every feasible candidate under posterior
+uncertainty. This function promotes one candidate trajectory into a separate,
+auditable forecast artifact without repeating the expensive simulation or
+treating the highest-ranked row as an automatic dosing decision.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_regimen_predict(
+  comparison,
+  candidate_id,
+  probs = c(0.05, 0.5, 0.95)
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_regimen_predict_+3A_comparison">comparison</code></td>
+<td>
+<p>Result from <code>lator_regimen_optimise()</code>.</p>
+</td></tr>
+<tr><td><code id="lator_regimen_predict_+3A_candidate_id">candidate_id</code></td>
+<td>
+<p>Candidate deliberately selected by the user.</p>
+</td></tr>
+<tr><td><code id="lator_regimen_predict_+3A_probs">probs</code></td>
+<td>
+<p>Three ordered posterior probabilities used for the lower interval,
+median, and upper interval. The interval reflects uncertainty in the
+individual's ETA posterior; it excludes residual measurement variability and
+is not a confidence interval for a population mean.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A <code>lator_future_prediction</code> containing pointwise posterior prediction
+intervals, their uncertainty definition, the selected regimen, linked
+assessment and endpoint evaluation, and native-unit numerical posterior
+outcomes for every endpoint component.
+</p>
+
+<h2 id='lator_worker_task'>Execute a typed LibeRator worker task</h2><span id='topic+lator_worker_task'></span>
+
+<h3>Description</h3>
+
+<p>This is the narrow entry point called by LibeRties workers. It accepts no
+workspace object or encryption key.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_worker_task(type, model, data, arguments = list())
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_worker_task_+3A_type">type</code></td>
+<td>
+<p>Worker task.</p>
+</td></tr>
+<tr><td><code id="lator_worker_task_+3A_model">model</code></td>
+<td>
+<p>Serializable model.</p>
+</td></tr>
+<tr><td><code id="lator_worker_task_+3A_data">data</code></td>
+<td>
+<p>Model-ready data.</p>
+</td></tr>
+<tr><td><code id="lator_worker_task_+3A_arguments">arguments</code></td>
+<td>
+<p>Named controls.</p>
+</td></tr>
+</table>
+
+<h2 id='lator_workspace'>Open an encrypted LibeRator workspace</h2><span id='topic+lator_workspace'></span>
+
+<h3>Description</h3>
+
+<p>Patient records, the patient catalogue, endpoints, model registrations and
+the audit chain are encrypted and authenticated with libsodium. The key is
+derived with Argon2 and is never written to the workspace. Direct patient
+identifiers are deliberately outside the schema; use a pseudonym generated
+by the controlling study or institution.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_workspace(path = NULL, passphrase = NULL, key = NULL, create = TRUE)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_workspace_+3A_path">path</code></td>
+<td>
+<p>Workspace directory. The default is
+'Documents/LibeR-data/liberator-workspace' on Windows and
+'~/LibeR-data/liberator-workspace' elsewhere. Existing legacy workspaces
+under 'LibeR/liberator-workspace' remain discoverable. Set
+'LIBERATOR_HOME' to override the default.</p>
+</td></tr>
+<tr><td><code id="lator_workspace_+3A_passphrase">passphrase</code></td>
+<td>
+<p>Session passphrase of at least 12 characters.</p>
+</td></tr>
+<tr><td><code id="lator_workspace_+3A_key">key</code></td>
+<td>
+<p>Optional 32-byte raw key for managed deployments.</p>
+</td></tr>
+<tr><td><code id="lator_workspace_+3A_create">create</code></td>
+<td>
+<p>Create a missing workspace.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A key-bearing 'lator_workspace'. Do not serialize or transmit it.
+</p>
+
+<h2 id='lator_workspace_audit'>Read and verify the encrypted workspace audit chain</h2><span id='topic+lator_workspace_audit'></span>
+
+<h3>Description</h3>
+
+<p>Read and verify the encrypted workspace audit chain
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>lator_workspace_audit(workspace)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="lator_workspace_audit_+3A_workspace">workspace</code></td>
+<td>
+<p>Unlocked workspace.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>Audit events with a 'valid' attribute.
+</p>
+
+<h2 id='liberator_workbench'>LibeRator React workbench widget</h2><span id='topic+liberator_workbench'></span>
+
+<h3>Description</h3>
+
+<p>LibeRator React workbench widget
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>liberator_workbench(
+  payload,
+  input_id = "liberator_workbench",
+  width = NULL,
+  height = "100vh",
+  elementId = NULL
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="liberator_workbench_+3A_payload">payload</code></td>
+<td>
+<p>Workbench payload generated by the Shiny application.</p>
+</td></tr>
+<tr><td><code id="liberator_workbench_+3A_input_id">input_id</code></td>
+<td>
+<p>Shiny event prefix.</p>
+</td></tr>
+<tr><td><code id="liberator_workbench_+3A_width">width</code>, <code id="liberator_workbench_+3A_height">height</code></td>
+<td>
+<p>Widget dimensions.</p>
+</td></tr>
+<tr><td><code id="liberator_workbench_+3A_elementId">elementId</code></td>
+<td>
+<p>Optional widget element id.</p>
+</td></tr>
+</table>
+
+<h2 id='liberatorWorkbenchOutput'>Shiny output for the LibeRator workbench</h2><span id='topic+liberatorWorkbenchOutput'></span>
+
+<h3>Description</h3>
+
+<p>Shiny output for the LibeRator workbench
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>liberatorWorkbenchOutput(outputId, width = "100%", height = "100vh")
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="liberatorWorkbenchOutput_+3A_outputId">outputId</code></td>
+<td>
+<p>Output id.</p>
+</td></tr>
+<tr><td><code id="liberatorWorkbenchOutput_+3A_width">width</code>, <code id="liberatorWorkbenchOutput_+3A_height">height</code></td>
+<td>
+<p>CSS dimensions.</p>
+</td></tr>
+</table>
+
+<h2 id='renderLiberatorWorkbench'>Render a LibeRator workbench</h2><span id='topic+renderLiberatorWorkbench'></span>
+
+<h3>Description</h3>
+
+<p>Render a LibeRator workbench
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>renderLiberatorWorkbench(expr, env = parent.frame(), quoted = FALSE)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="renderLiberatorWorkbench_+3A_expr">expr</code></td>
+<td>
+<p>Widget expression.</p>
+</td></tr>
+<tr><td><code id="renderLiberatorWorkbench_+3A_env">env</code></td>
+<td>
+<p>Evaluation environment.</p>
+</td></tr>
+<tr><td><code id="renderLiberatorWorkbench_+3A_quoted">quoted</code></td>
+<td>
+<p>Whether expression is quoted.</p>
+</td></tr>
+</table>
+
+</body></html>

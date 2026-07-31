@@ -17,3 +17,7 @@ Each run writes comparisons, a machine-readable summary, and exact package,
 source, input, seed, tolerance, R, and platform provenance under `results/`.
 The scenario is software validation for research use; it is not a clinical
 dosing recommendation.
+
+`AED-MODEL-INDIVIDUAL-FIT-AUDIT-20260730.md` records a bounded integration
+audit of all 19 AEDapt-derived LibeRary models, including the distinction
+between time-resolved models and a published steady-state-mean-only model.

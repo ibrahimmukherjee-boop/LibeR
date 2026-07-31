@@ -4,35 +4,62 @@
                               icon = NULL, queue = FALSE,
                               task = list(running = FALSE, id = "", label = "",
                                           cancellable = FALSE),
-                              model_catalogue = list(records = list(), messages = list())) {
+                              model_catalogue = list(records = list(), messages = list()),
+                              revision = 0L, hosted = FALSE,
+                              design_history = list(
+                                records = list(), currentSeries = "",
+                                currentVersion = "", dirty = TRUE
+                              )) {
   arms <- lapply(names(design$arms), function(id) {
     arm <- design$arms[[id]]; observed <- arm$events$EVID == 0 & arm$events$MDV == 0
+    doses <- arm$events[arm$events$EVID != 0, , drop = FALSE]
     list(id = id, name = arm$name, size = arm$size, allocation = arm$allocation,
          population = arm$population, samples = sum(observed),
          samplingTimes = as.numeric(arm$events$TIME[observed]),
-         doses = .lity_rows(arm$events[arm$events$EVID != 0,
-           intersect(c("TIME", "AMT", "RATE", "II", "ADDL", "SS", "CMT"), names(arm$events)), drop = FALSE]),
-         sampleVolume = arm$sample_volume)
+         doses = .lity_rows(doses[
+           intersect(c("TIME", "AMT", "RATE", "II", "ADDL", "SS", "CMT"), names(arm$events))]),
+         sampleVolume = arm$sample_volume,
+         route = arm$metadata$route %||% "extravascular",
+         doseCmt = if (nrow(doses)) doses$CMT[[1L]] else 1L,
+         observationCmt = if (any(observed)) arm$events$CMT[observed][[1L]] else 1L,
+         dvid = if (any(observed)) arm$events$DVID[observed][[1L]] else 1L,
+         ii = if (nrow(doses)) doses$II[[1L]] else 0,
+         addl = if (nrow(doses)) doses$ADDL[[1L]] else 0L,
+         ss = if (nrow(doses)) doses$SS[[1L]] else 0L,
+         costs = arm$costs)
   })
   endpoints <- lapply(names(design$endpoints), function(id) {
     endpoint <- design$endpoints[[id]]
     list(id = id, name = endpoint$name, type = endpoint$type, dvid = endpoint$dvid,
          link = endpoint$link, distribution = endpoint$distribution,
-         target = endpoint$target)
+         scale = endpoint$scale, thresholds = endpoint$thresholds,
+         dispersion = endpoint$dispersion, target = endpoint$target)
   })
   scenarios <- lapply(names(design$scenarios), function(id) {
     scenario <- design$scenarios[[id]]
     list(id = id, name = scenario$name, probability = scenario$probability,
          dropout = scenario$dropout, adherence = scenario$adherence,
-         missedSample = scenario$missed_sample)
+         missedSample = scenario$missed_sample, theta = scenario$theta,
+         omega = scenario$omega, sigma = scenario$sigma,
+         covariates = scenario$covariates)
   })
   variables <- lapply(names(design$variables), function(id) {
     variable <- design$variables[[id]]
     list(id = id, name = variable$name, target = variable$target, arm = variable$arm,
          type = variable$type, lower = variable$lower, upper = variable$upper,
-         current = .lity_variable_current(design, variable))
+         current = .lity_variable_current(design, variable), index = variable$index,
+         values = variable$values, covariate = variable$covariate)
   })
   constraints <- if (is.null(evaluation)) tryCatch(lity_constraint_check(design), error = function(e) data.frame()) else evaluation$constraints
+  constraint_definitions <- lapply(names(design$constraints), function(id) {
+    item <- design$constraints[[id]]
+    list(
+      id = id, name = item$name, type = item$type, limit = item$limit,
+      arm = item$arm, endpoint = item$endpoint, parameters = item$parameters,
+      lower = item$lower, upper = item$upper,
+      scripted = identical(item$type, "custom")
+    )
+  })
   precision <- criteria <- information <- list()
   if (!is.null(evaluation)) {
     criteria <- .lity_rows(evaluation$criteria)
@@ -57,9 +84,11 @@
     summary = .lity_rows(simulation$summary),
     estimates = .lity_rows(simulation$operating_characteristics$estimates %||% data.frame())
   )
+  route <- .lity_model_route(design$model)
   list(
     design = list(id = design$id, name = design$name, description = design$description,
                   advan = design$model$ADVAN, trans = design$model$TRANS,
+                  modelType = route$label, predMode = route$mode,
                   subjects = sum(vapply(design$arms, `[[`, numeric(1), "size")),
                   cost = .lity_design_cost(design), burden = .lity_design_burden(design),
                   alternatives = length(design$alternative_models)),
@@ -70,9 +99,17 @@
       catalogue = model_catalogue, preview = NULL, selectedKey = "",
       busy = FALSE, applied = FALSE
     ),
+    designTemplates = .lity_rows(lity_design_templates()),
+    designHistory = design_history,
     arms = arms, endpoints = endpoints, scenarios = scenarios, variables = variables,
+    endpointOptions = lapply(.lity_endpoint_options(), function(item) list(
+      links = as.character(item$links),
+      distributions = as.character(item$distributions)
+    )),
+    constraintDefinitions = constraint_definitions,
     constraints = .lity_rows(constraints), criterion = list(
-      name = criterion$name, type = criterion$type, direction = criterion$direction
+      name = criterion$name, type = criterion$type, direction = criterion$direction,
+      guidance = .lity_criterion_guidance()[[criterion$type]]
     ), evaluation = if (is.null(evaluation)) NULL else list(
       id = evaluation$id, elapsed = evaluation$elapsed_seconds, criteria = criteria,
       precision = precision, information = information
@@ -85,7 +122,19 @@
     simulation = simulation_payload, status = status, icon = icon, task = task,
     queueAvailable = isTRUE(queue), packageVersion = tryCatch(
       as.character(utils::packageVersion("LibeRality")), error = function(e) "0.1.2"
-    ), criterionTypes = .lity_criterion_types, researchOnly = TRUE
+    ), criterionTypes = .lity_criterion_types,
+    criterionGuidance = unname(.lity_criterion_guidance()),
+    workflow = list(
+      revision = as.integer(revision),
+      modelReady = inherits(design$model, "nm_model"),
+      designReady = length(design$arms) > 0L && length(design$endpoints) > 0L,
+      objectivesReady = inherits(criterion, "lity_criterion"),
+      evaluated = !is.null(evaluation),
+      optimised = !is.null(optimisation),
+      simulated = !is.null(simulation),
+      violatedConstraints = if (nrow(constraints)) sum(!constraints$feasible) else 0L
+    ),
+    hosted = isTRUE(hosted), researchOnly = TRUE
   )
 }
 

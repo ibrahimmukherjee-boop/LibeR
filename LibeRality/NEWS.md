@@ -1,3 +1,69 @@
+# LibeRality 0.2.10
+
+- Consolidates the workflow progress row and content tabs into one navigation
+  row. Model, trial-design, objective, evaluation, optimisation, and simulation
+  tabs now carry their numbered or completed stage indicator directly.
+- Uses `#B87333` for the dark-theme active-tab underline and completed workflow
+  circles; completed stages retain white checkmarks for clear status contrast.
+
+# LibeRality 0.2.9
+
+- Uses the same warm mineral-slate header in light and dark themes, with
+  explicit high-contrast header text. Primary study-design controls now use
+  the selected-arm copper as their button surface and the sidebar surface as
+  their text colour.
+- Extends the design wizard with regulatory-informed starting layouts for
+  standard 2×2 bioequivalence, full-replicate RSABE, food-effect, fixed-sequence
+  DDI, TQT, concentration-QTc, renal-impairment, and hepatic-impairment studies.
+  Each template states its framework and compound/protocol-specific limitations
+  and remains an editable design—not a claim of regulatory adequacy.
+- Adds persistent, immutable design histories under the shared LibeR
+  workspace. The GUI groups current and previous designs with sequential
+  versions, exposes unsaved-change state, and requires the user to save or
+  explicitly discard edits before switching.
+- Keeps portable RDS import/export separate from the workspace-backed design
+  history, and exports `lity_design_history()`, `lity_design_version_save()`,
+  and `lity_design_version_load()` for scripted reproducibility.
+
+# LibeRality 0.2.8
+
+- Aligns the application header with the selected-arm accent surface and uses
+  the warmer copper active-tab colour for primary study-design actions.
+- Labels direct `$PRED` models by their actual execution route rather than
+  exposing the inert ADVAN1/TRANS1 compatibility fields retained by the shared
+  model schema.
+- Adds classical ED-optimality, maximizing the expected determinant over
+  weighted parameter scenarios using a stable `log E[det(F)]` calculation,
+  with full criterion guidance in the GUI.
+- Adds a guided trial-design wizard with editable templates for rich
+  single-dose PK, staggered sparse population PK, repeated-dose steady state,
+  parallel dose-ranging, infusion, paediatric sparse, and exposure-response
+  studies. Templates produce the ordinary serializable `lity_design` object.
+- Adds an editable model workspace for `$PK`, direct/post-ADVAN `$PRED`, `$DES`,
+  `$ERROR`, THETA values and bounds, OMEGA, and SIGMA. Rebuilding and
+  validation are delegated to LibeRation's shared `nm_model_update()` API.
+- Replaces free-text endpoint link and distribution fields with
+  outcome-specific selections and validates the same choices in the R API.
+
+# LibeRality 0.2.7
+
+- Redesigns the workbench around a visible Model → Trial design → Objectives →
+  Evaluate → Optimise → Simulate workflow, with contextual actions and
+  automatic navigation to newly completed results.
+- Adds complete GUI editors for design identity, arms, endpoints, uncertainty
+  scenarios, optimisable variables, and typed constraints, including
+  confirmation for destructive changes and stale-result invalidation.
+- Groups all 29 supported design criteria by purpose, shows a one-line
+  explanation in the selector, and adds a `?` dialog covering the statistical
+  construction, prerequisites, strengths, limitations, and use cases of every
+  criterion.
+- Replaces the amber workbench with the Mineral Slate and Copper palette,
+  including accessible light/dark surfaces, a restrained copper action colour,
+  slate headers, and responsive workflow controls.
+- Adds explicit simulation seeds, clearer optimiser names and run summaries,
+  deployment-aware file-path warnings, and richer design/reproducibility
+  inspection.
+
 # LibeRality 0.2.6
 
 - Adds a unified model browser for built-in LibeRation templates, existing
