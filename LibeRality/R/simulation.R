@@ -63,7 +63,7 @@
     is.finite(dataset$TIME) & is.finite(dataset$DV)
   if (!any(observed)) return(data.frame())
   data <- dataset[observed, , drop = FALSE]
-  endpoint_names <- setNames(
+  endpoint_names <- stats::setNames(
     vapply(endpoints, `[[`, character(1), "name"),
     as.character(vapply(endpoints, `[[`, numeric(1), "dvid"))
   )
