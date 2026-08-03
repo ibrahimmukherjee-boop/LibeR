@@ -25,6 +25,9 @@ until [ADModel]$record() is called.}
 as CppAD dynamic parameters.}
 
     \item{\code{dynamic_values}}{Current named values of the tape's dynamic parameters.}
+
+    \item{\code{recording_values}}{Complete named input values used for the current
+tape's semantic cache probe.}
   }
   \if{html}{\out{</div>}}
 }

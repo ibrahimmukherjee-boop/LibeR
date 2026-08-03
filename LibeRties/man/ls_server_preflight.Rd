@@ -10,7 +10,8 @@ ls_server_preflight(
   behind_tls_proxy = FALSE,
   policy = ls_security_policy(production = !.ls_loopback(host)),
   strict = FALSE,
-  isolation_probe = NULL
+  isolation_probe = NULL,
+  executor = NULL
 )
 }
 \arguments{
@@ -29,6 +30,9 @@ HTTPS before traffic reaches LibeRties.}
 list with logical `active`, `provider`, and `evidence`. When omitted,
 LibeRties checks Linux container/cgroup evidence. This should be connected
 to the actual service manager or sandbox on other platforms.}
+
+\item{executor}{Optional executor specification. A systemd executor performs
+binary, PID-1, cgroup-v2, service-account, and live transient-unit checks.}
 }
 \value{
 A `liberties_security_preflight` report.

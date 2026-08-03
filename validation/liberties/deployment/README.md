@@ -5,6 +5,29 @@ the package tests for tenant separation, typed-wire rejection, durable restart
 recovery, quotas, log redaction, rate limiting, and production preflight. They
 do not certify a deployment or prove that hostile code is contained.
 
+## Systemd versus trusted-local callr performance
+
+`benchmark-executors.R` submits identical encrypted jobs through the durable
+queue using the trusted-local `callr` subprocess and the production systemd
+executor. It records fresh-process end-to-end time, queue/start latency, worker
+wall time, result retrieval, resource telemetry, and LibeRation's internal core
+fit time when available. Executor order alternates within every pair and an
+unrecorded warm-up is used to reduce page-cache bias.
+
+Run it inside the configured Linux/systemd environment:
+
+```sh
+export R_LIBS_USER=/home/liberties/R/library
+export LIBERTIES_SYSTEMD_STORAGE_CREDENTIAL=/srv/liberties-secrets/storage-key
+export LIBERTIES_EXECUTOR_BENCHMARK_OUTPUT=/tmp/liberties-executor-benchmark
+Rscript validation/liberties/deployment/benchmark-executors.R
+```
+
+Set `LIBERTIES_EXECUTOR_BENCHMARK_PROFILE=quick` for a shorter smoke benchmark.
+The full profile is intended for reporting. It creates a fresh R process for
+every measurement but does not flush the operating-system page cache, matching
+normal server operation after startup.
+
 ## Read-only k6 load test
 
 Set the service URL and, optionally, a short-lived validation token:
@@ -60,3 +83,21 @@ server, runs the read-only k6 contract, and performs the ZAP baseline. It uses
 synthetic data, a disposable token, and an isolated temporary server root.
 Deployment-specific load, restart, container-isolation, TLS, and penetration
 tests must still be run in the intended Linux deployment environment.
+
+## Native systemd worker smoke test
+
+On the intended Linux/WSL systemd host, point to the same protected storage-key
+file used by the API and run a real two-core simulation inside the production
+executor:
+
+```text
+LIBERTIES_SYSTEMD_STORAGE_CREDENTIAL=/srv/liberties-secrets/storage-key \
+Rscript validation/liberties/deployment/run-systemd-smoke.R
+```
+
+Set `LIBERTIES_SYSTEMD_EVIDENCE` to retain the JSON evidence outside the
+temporary queue. The test performs strict live preflight, starts a transient
+systemd user service, exercises PSOCK parallelism with `n_cores=2`, retrieves
+and validates its result, and checks that the unit/profile/core/task provenance
+was durably recorded. It intentionally fails on Windows and macOS rather than
+pretending to validate a non-systemd substitute.

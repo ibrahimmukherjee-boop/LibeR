@@ -14,6 +14,8 @@ namespace from the bearer token; callers cannot nominate another tenant.
     \item{\code{root}}{Normalized persistent server storage directory.}
 
     \item{\code{max_workers_per_user}}{Host-level simultaneous-worker ceiling per tenant.}
+
+    \item{\code{executor}}{Worker execution backend shared by all tenant queues.}
   }
   \if{html}{\out{</div>}}
 }
@@ -39,7 +41,11 @@ namespace from the bearer token; callers cannot nominate another tenant.
   Create or reopen the transport-independent server core.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
-    \preformatted{LibeRServer$new(root = .ls_default_root(), max_workers_per_user = 2L)}
+    \preformatted{LibeRServer$new(
+  root = .ls_default_root(),
+  max_workers_per_user = 2L,
+  executor = NULL
+)}
     \if{html}{\out{</div>}}
   }
   \subsection{Arguments}{
@@ -47,6 +53,7 @@ namespace from the bearer token; callers cannot nominate another tenant.
     \describe{
       \item{\code{root}}{Persistent server storage directory.}
       \item{\code{max_workers_per_user}}{Host-level simultaneous-worker ceiling per tenant.}
+      \item{\code{executor}}{Optional [ls_systemd_executor()] specification.}
     }
     \if{html}{\out{</div>}}
   }
@@ -85,7 +92,7 @@ namespace from the bearer token; callers cannot nominate another tenant.
   Submit a job to the authenticated user's isolated queue.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
-    \preformatted{LibeRServer$submit(token, job, start = TRUE)}
+    \preformatted{LibeRServer$submit(token, job, start = TRUE, idempotency_key = NULL)}
     \if{html}{\out{</div>}}
   }
   \subsection{Arguments}{
@@ -94,6 +101,7 @@ namespace from the bearer token; callers cannot nominate another tenant.
       \item{\code{token}}{Bearer token issued by [ls_user_create()].}
       \item{\code{job}}{A job created by [ls_job()].}
       \item{\code{start}}{Start available work immediately.}
+      \item{\code{idempotency_key}}{Optional authenticated-user-scoped retry key.}
     }
     \if{html}{\out{</div>}}
   }

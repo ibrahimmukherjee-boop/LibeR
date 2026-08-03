@@ -2,6 +2,14 @@
 
 - Publishes the final shared asynchronous task-state runtime under a new
   immutable package version after the 0.7.10 release tag.
+- Makes independent visual falsification the default second lane, leaving the
+  former parallel one-shot extraction available only as an explicit option.
+- Enforces that every synthesized claim is bound to the evidence ledger and
+  quarantines failed bindings before publication; bounded extra gap rounds are
+  configurable for investigations that are not ready.
+- Replaces fixed acquisition sleeps with bounded readiness checks and a durable
+  manual-inbox request/resume workflow exposed by
+  `ingest_manual_inbox_requests()`.
 
 # LibeRary 0.7.10
 

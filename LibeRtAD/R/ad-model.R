@@ -41,6 +41,9 @@ ADModel <- R6::R6Class(
     dynamic = NULL,
     #' @field dynamic_values Current named values of the tape's dynamic parameters.
     dynamic_values = NULL,
+    #' @field recording_values Complete named input values used for the current
+    #'   tape's semantic cache probe.
+    recording_values = NULL,
 
     #' @description
     #' Create a pointer-backed model from a validated intermediate representation.
@@ -78,6 +81,7 @@ ADModel <- R6::R6Class(
       self$wrt <- wrt
       self$dynamic <- setdiff(self$ir$input_names, wrt)
       self$dynamic_values <- at[self$dynamic]
+      self$recording_values <- at
       self$outputs <- outputs
       invisible(self)
     },
@@ -173,16 +177,48 @@ ADModel <- R6::R6Class(
     #' @return A `libertad_tape_cache` list suitable for `saveRDS()`.
     tape_cache = function() {
       private$require_tape()
+      at <- self$recording_values
+      if (is.null(at) || !identical(names(at), self$ir$input_names)) {
+        .ad_stop("The tape has no complete recording point; record it again before caching.")
+      }
+      at[self$dynamic] <- self$dynamic_values
+      original_dynamic <- self$dynamic_values
+      if (length(original_dynamic)) {
+        on.exit(self$set_dynamic(original_dynamic), add = TRUE)
+      }
+      factors <- 0.5 + seq_along(at) / max(1L, length(at))
+      candidates <- lapply(c(0, 1e-4, 1e-2, -1e-4), function(step) {
+        candidate <- at + step * pmax(1, abs(at)) * factors
+        names(candidate) <- names(at)
+        candidate
+      })
+      semantic_probes <- Filter(Negate(is.null), lapply(candidates, function(candidate) {
+        tryCatch({
+          direct <- self$value(candidate, taped = FALSE)
+          taped <- self$value(candidate, taped = TRUE)
+          if (any(!is.finite(c(direct, taped))) || !isTRUE(all.equal(
+            unname(direct), unname(taped),
+            tolerance = 1e-12, check.attributes = FALSE
+          ))) return(NULL)
+          jacobian <- self$jacobian(candidate[self$wrt])
+          if (any(!is.finite(jacobian))) jacobian <- NULL
+          list(at = candidate, value = direct, jacobian = jacobian)
+        }, error = function(error) NULL)
+      }))
+      if (!length(semantic_probes)) {
+        .ad_stop("The recorded graph is not semantically consistent with its source IR.")
+      }
       structure(list(
-        version = 1L,
+        version = 2L,
         cppad_version = ad_engine_info()$cppad_version,
         cppad_source_commit = ad_engine_info()$cppad_source_commit,
         ir = self$ir,
         graph_json = .libertad_tape_graph_json(self$tape_ptr),
         domain = self$wrt,
         dynamic = self$dynamic,
-        dynamic_values = self$dynamic_values,
-        range = self$outputs
+        dynamic_values = original_dynamic,
+        range = self$outputs,
+        semantic_probes = semantic_probes
       ), class = "libertad_tape_cache")
     },
 
@@ -241,9 +277,12 @@ ADModel <- R6::R6Class(
 #' @return A ready-to-evaluate `ADModel`.
 #' @export
 ad_load_tape <- function(path) {
-  cache <- readRDS(path)
+  .ad_load_tape_cache(readRDS(path))
+}
+
+.ad_load_tape_cache <- function(cache) {
   if (!inherits(cache, "libertad_tape_cache") ||
-      !identical(cache$version, 1L)) {
+      !identical(cache$version, 2L)) {
     .ad_stop("`path` is not a supported LibeRtAD tape cache.")
   }
   engine <- ad_engine_info()
@@ -251,15 +290,74 @@ ad_load_tape <- function(path) {
       !identical(cache$cppad_source_commit, engine$cppad_source_commit)) {
     .ad_stop("The tape cache was created by a different bundled CppAD build.")
   }
+  if (!inherits(cache$ir, "libertad_ir") ||
+      !identical(cache$ir$version, 1L)) {
+    .ad_stop("The tape cache does not contain a supported source IR.")
+  }
+  domain <- as.character(cache$domain)
+  dynamic <- as.character(cache$dynamic)
+  range <- as.character(cache$range)
+  inputs <- as.character(cache$ir$input_names)
+  if (anyDuplicated(c(domain, dynamic)) || length(intersect(domain, dynamic)) ||
+      !setequal(c(domain, dynamic), inputs) ||
+      !identical(dynamic, setdiff(inputs, domain))) {
+    .ad_stop("The tape cache domain/dynamic contract is inconsistent with its source IR.")
+  }
+  if (!length(domain) || !length(range) || anyDuplicated(range) ||
+      any(!range %in% cache$ir$output_names)) {
+    .ad_stop("The tape cache range contract is inconsistent with its source IR.")
+  }
+  probes <- cache$semantic_probes
+  if (!is.list(probes) || !length(probes) ||
+      any(!vapply(probes, function(probe) {
+        is.list(probe) && !is.null(probe$at) && !is.null(probe$value)
+      }, logical(1)))) {
+    .ad_stop("The tape cache has no semantic IR-to-graph probes.")
+  }
+  probe_at <- .ad_named_values(probes[[1L]]$at, inputs, "cache semantic-probe inputs")
+  if (any(!is.finite(probe_at)) ||
+      !isTRUE(all.equal(
+        unname(probe_at[dynamic]), unname(as.numeric(cache$dynamic_values)),
+        tolerance = 0, check.attributes = FALSE
+      ))) {
+    .ad_stop("The tape cache semantic probe does not match its dynamic parameters.")
+  }
   model <- ADModel$new(cache$ir)
   model$tape_ptr <- .libertad_tape_from_graph_json(
-    model$program_ptr, cache$graph_json, cache$domain, cache$dynamic,
-    cache$dynamic_values, cache$range
+    model$program_ptr, cache$graph_json, domain, dynamic,
+    cache$dynamic_values, range
   )
-  model$wrt <- cache$domain
-  model$dynamic <- cache$dynamic
+  model$wrt <- domain
+  model$dynamic <- dynamic
   model$dynamic_values <- cache$dynamic_values
-  model$outputs <- cache$range
+  model$outputs <- range
+  model$recording_values <- probe_at
+  consistent <- all(vapply(probes, function(probe) {
+    tryCatch({
+      current <- .ad_named_values(probe$at, inputs, "cache semantic-probe inputs")
+      direct <- model$value(current, taped = FALSE)
+      taped <- model$value(current, taped = TRUE)
+      valid <- all(is.finite(c(direct, taped))) && isTRUE(all.equal(
+        unname(direct), unname(taped), tolerance = 1e-12,
+        check.attributes = FALSE
+      )) && isTRUE(all.equal(
+        unname(direct), unname(probe$value), tolerance = 1e-12,
+        check.attributes = FALSE
+      ))
+      if (valid && !is.null(probe$jacobian)) {
+        jacobian <- model$jacobian(current[domain])
+        valid <- all(is.finite(jacobian)) && isTRUE(all.equal(
+          unname(jacobian), unname(probe$jacobian), tolerance = 1e-11,
+          check.attributes = FALSE
+        ))
+      }
+      valid
+    }, error = function(error) FALSE)
+  }, logical(1)))
+  if (!consistent) {
+    .ad_stop("The cached CppAD graph is not semantically consistent with its source IR.")
+  }
+  if (length(dynamic)) model$set_dynamic(cache$dynamic_values)
   model
 }
 
@@ -305,8 +403,9 @@ ad_supported <- function() {
     operators = c("+", "-", "*", "/", "^"),
     math = c("exp", "log", "sqrt", "sin", "cos", "tan", "tanh", "abs", "expm1", "log1p"),
     conditionals = "ifelse() with <, <=, >, >=, ==, or !=",
+    matrix_frontend = "ad_matrix_ir() lowers fixed-shape guarded matrix operations to the scalar IR",
     limitations = c(
-      "scalar expressions only in the first IR version",
+      "the base expression language is scalar; fixed-shape matrices use ad_matrix_ir()",
       "runtime if/for/while constructs are rejected",
       "unknown function calls are rejected rather than evaluated in R"
     )

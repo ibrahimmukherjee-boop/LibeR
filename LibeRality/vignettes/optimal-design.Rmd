@@ -52,7 +52,12 @@ the observation covariance. Prediction derivatives come from LibeRation's
 CppAD-backed engine. OMEGA derivatives are analytic; residual covariance
 derivatives retain the declared error model. Binary, ordinal, count, recurrent,
 and event-time designs use distribution-aware counting-process or working-
-moment information.
+moment information. Exponential and fixed-shape Weibull event-time endpoints
+use interval cumulative-hazard increments. In the Weibull case, the model
+response is the positive coefficient `lambda` in
+`H(t) = lambda * t^shape`; `dispersion` supplies the fixed shape. These
+non-continuous paths are internally verified working approximations and do not
+yet have the external PopED/PFIM validation of the continuous FO path.
 
 ## Evaluate competing objectives
 
@@ -95,8 +100,10 @@ lity_report(result, "optimal-design-report.html")
 The empirical simulation can include dropout, non-adherence, missed samples,
 random effects, residual error, and scenario sampling. Set `fit = TRUE` to
 re-estimate each trial with a chosen LibeRation algorithm; this is substantially
-more expensive but provides empirical bias, RMSE, convergence, and coverage
-checks against theoretical precision.
+more expensive but provides empirical bias, RMSE, and convergence summaries
+against theoretical precision. Interval coverage is not currently calculated
+because a common uncertainty interval is not available across all supported
+LibeRation estimators.
 
 ## Ecosystem hand-off
 

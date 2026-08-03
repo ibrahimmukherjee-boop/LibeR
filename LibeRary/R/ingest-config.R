@@ -135,6 +135,10 @@ ingest_validate_config <- function(cfg) {
   cfg$deliberative$enabled <- isTRUE(cfg$deliberative$enabled)
   cfg$deliberative$cache_stages <- isTRUE(cfg$deliberative$cache_stages)
   cfg$deliberative$visual_verification <- isTRUE(cfg$deliberative$visual_verification)
+  cfg$deliberative$vision_lane <- match.arg(
+    as.character(cfg$deliberative$vision_lane %||% "falsification")[[1L]],
+    c("falsification", "parallel_extraction")
+  )
   cfg$deliberative$max_document_chars <- max(50000L,
     as.integer(cfg$deliberative$max_document_chars %||% 500000L))
   cfg$deliberative$chunk_chars <- max(1500L, min(12000L,
@@ -146,7 +150,7 @@ ingest_validate_config <- function(cfg) {
   cfg$deliberative$max_chunks_per_stage <- max(2L, min(20L,
     as.integer(cfg$deliberative$max_chunks_per_stage %||% 8L)))
   cfg$deliberative$max_gap_rounds <- max(0L, min(3L,
-    as.integer(cfg$deliberative$max_gap_rounds %||% 1L)))
+    as.integer(cfg$deliberative$max_gap_rounds %||% 2L)))
   cfg$deliberative$ledger_context_chars <- max(8000L,
     as.integer(cfg$deliberative$ledger_context_chars %||% 24000L))
   cfg$deliberative$visual_context_chars <- max(8000L,

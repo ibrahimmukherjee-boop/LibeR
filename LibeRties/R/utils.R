@@ -29,8 +29,14 @@
 }
 
 .ls_ensure_dir <- function(path) {
-  if (!dir.exists(path) && !dir.create(path, recursive = TRUE, showWarnings = FALSE)) {
-    .ls_stop("Unable to create directory: ", path)
+  if (!dir.exists(path)) {
+    created <- dir.create(path, recursive = TRUE, showWarnings = FALSE)
+    # Another submitter may have created the shared parent between the initial
+    # existence check and dir.create(). Treat that as success, but still fail
+    # closed when the path is absent (or is a non-directory filesystem entry).
+    if (!isTRUE(created) && !dir.exists(path)) {
+      .ls_stop("Unable to create directory: ", path)
+    }
   }
   normalized <- normalizePath(path, winslash = "/", mustWork = TRUE)
   if (.Platform$OS.type != "windows") Sys.chmod(normalized, mode = "0700")
@@ -83,6 +89,15 @@
   invisible(TRUE)
 }
 
+.ls_pid_exists <- function(pid) {
+  pid <- suppressWarnings(as.integer(pid %||% NA_integer_))
+  if (length(pid) != 1L || is.na(pid) || pid <= 0L) return(FALSE)
+  isTRUE(tryCatch(
+    ps::ps_is_running(ps::ps_handle(pid)),
+    error = function(error) FALSE
+  ))
+}
+
 .ls_job_dir <- function(root, user, id) {
   user <- .ls_safe_component(user, "user id")
   id <- .ls_safe_component(id, "job id")
@@ -97,9 +112,48 @@
   path
 }
 
+.ls_idempotency_key <- function(value) {
+  if (is.null(value) || !length(value) || !nzchar(as.character(value[[1L]]))) {
+    return(NULL)
+  }
+  value <- enc2utf8(as.character(value))
+  if (length(value) != 1L || is.na(value) || !nzchar(value) ||
+      nchar(value, type = "bytes") > 200L || grepl("[[:cntrl:]]", value)) {
+    .ls_stop("`idempotency_key` must be one non-empty value of at most 200 bytes without control characters.")
+  }
+  value
+}
+
+.ls_object_sha256 <- function(object) {
+  unname(paste0(openssl::sha256(serialize(object, NULL, version = 3L))))
+}
+
+.ls_submission_lock <- function(root, user) {
+  user <- .ls_safe_component(user, "user id")
+  file.path(.ls_ensure_dir(file.path(root, "users", user)), ".submission.lock")
+}
+
+.ls_idempotency_path <- function(root, user, key) {
+  user <- .ls_safe_component(user, "user id")
+  key <- .ls_idempotency_key(key)
+  if (is.null(key)) return(NULL)
+  digest <- unname(paste0(openssl::sha256(charToRaw(key))))
+  directory <- .ls_ensure_dir(file.path(root, "users", user, "idempotency"))
+  file.path(directory, paste0(digest, ".rds"))
+}
+
 .ls_storage_key <- function(required = FALSE) {
   encoded <- Sys.getenv("LIBERTIES_STORAGE_KEY", unset = "")
   if (!nzchar(encoded)) encoded <- getOption("LibeRties.storage_key", "")
+  if (!nzchar(encoded)) {
+    credential <- .ls_systemd_credential_path()
+    if (nzchar(credential)) {
+      encoded <- tryCatch(
+        readLines(credential, n = 1L, warn = FALSE, encoding = "UTF-8"),
+        error = function(error) ""
+      )
+    }
+  }
   encoded <- trimws(as.character(encoded %||% ""))
   if (!nzchar(encoded)) {
     if (isTRUE(required)) .ls_stop("LIBERTIES_STORAGE_KEY is required for encrypted storage.")
@@ -124,6 +178,12 @@
 
 .ls_storage_unwrap <- function(object) {
   if (!is.list(object) || !identical(object$schema %||% "", "liberties.encrypted-rds")) {
+    if (!is.null(.ls_storage_key())) {
+      .ls_stop(
+        "Refusing a plaintext LibeRties record while encrypted storage is active. ",
+        "Migrate legacy records with the storage key temporarily unset, then rewrite them."
+      )
+    }
     return(object)
   }
   if (!identical(as.integer(object$version), 1L) || !is.raw(object$payload)) {
@@ -134,6 +194,19 @@
     unserialize(sodium::data_decrypt(object$payload, key)),
     error = function(error) .ls_stop("Unable to authenticate or decrypt LibeRties storage.")
   )
+}
+
+.ls_pid_matches <- function(pid, pid_started, tolerance = 1) {
+  pid <- suppressWarnings(as.integer(pid %||% NA_integer_))
+  expected <- suppressWarnings(as.numeric(pid_started %||% NA_real_))
+  if (is.na(pid) || pid <= 0L || !is.finite(expected)) return(FALSE)
+  alive <- .ls_pid_exists(pid)
+  if (!alive) return(FALSE)
+  actual <- tryCatch(
+    as.numeric(ps::ps_create_time(ps::ps_handle(pid))),
+    error = function(error) NA_real_
+  )
+  is.finite(actual) && abs(actual - expected) < tolerance
 }
 
 .ls_atomic_save_rds <- function(object, path) {
@@ -147,13 +220,13 @@
   )
 }
 
-.ls_read_rds <- function(path, attempts = 4L) {
+.ls_read_rds <- function(path, attempts = 4L, warn_recovery = TRUE) {
   .liber_shared_durable_read(
     path,
     reader = function(candidate) {
       .ls_storage_unwrap(suppressWarnings(readRDS(candidate)))
     },
-    attempts = attempts, delay = 0.01,
+    attempts = attempts, delay = 0.01, warn_recovery = warn_recovery,
     error = function(message) .ls_stop(message)
   )
 }
@@ -198,13 +271,18 @@
   readLines(path, warn = FALSE, encoding = "UTF-8")
 }
 
-.ls_read_meta <- function(job_dir) .ls_read_rds(.ls_meta_path(job_dir))
+.ls_read_meta <- function(job_dir) {
+  .ls_read_rds(
+    .ls_meta_path(job_dir),
+    warn_recovery = !dir.exists(file.path(job_dir, ".metadata.lock"))
+  )
+}
 .ls_write_meta <- function(job_dir, metadata) {
   metadata$updated <- .ls_now()
   .ls_atomic_save_rds(metadata, .ls_meta_path(job_dir))
 }
 
-.ls_with_job_lock <- function(job_dir, operation, timeout = 5, stale_after = 30) {
+.ls_with_job_lock <- function(job_dir, operation, timeout = 5, stale_after = 1) {
   lock <- file.path(job_dir, ".metadata.lock")
   .liber_shared_with_lock(
     lock, operation, timeout = timeout, stale_after = stale_after,

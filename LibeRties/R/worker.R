@@ -1,4 +1,6 @@
 .ls_run_job <- function(job_dir) {
+  claim <- file.path(job_dir, ".claimed")
+  on.exit(unlink(claim, recursive = TRUE, force = TRUE), add = TRUE)
   metadata <- .ls_read_meta(job_dir)
   if (identical(metadata$status, "cancelled")) return(invisible(NULL))
   payload <- .ls_payload_path(job_dir)
@@ -15,6 +17,7 @@
     error = ""
   ), allowed_status = "queued")
   if (!identical(.ls_read_meta(job_dir)$status, "running")) return(invisible(NULL))
+  unlink(claim, recursive = TRUE, force = TRUE)
   result <- tryCatch({
     job <- .ls_read_rds(payload)
     if (!inherits(job, "liber_job") || !identical(job$schema, "liber.job") ||

@@ -40,6 +40,12 @@
 #' @param method Model-discrimination distance: KL, T, or weighted general
 #'   model discrimination.
 #' @param kind Hypothesis criterion: power, superiority, or non-inferiority.
+#' @details `bayesian` and `robust` use the same weighted-expectation
+#'   computation. Their separate names record the interpretation of the
+#'   scenarios: prior parameter draws for `bayesian`, and declared model or
+#'   operational scenarios for `robust`. Use `minimax` or `maximin` when
+#'   protection against the worst scenario is intended instead of average
+#'   performance.
 #' @export
 lity_criterion <- function(type = .lity_criterion_types, name = NULL,
                            parameters = NULL, weights = NULL, contrast = NULL,

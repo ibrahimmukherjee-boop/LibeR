@@ -13,7 +13,11 @@ Description: Compiles a restricted R-like mathematical model language to a
     caches reconstruct tapes with exact source-provenance checks. A small R6
     wrapper owns external pointers while numerical evaluation, gradients,
     dense or sparse Jacobians, Hessians, and guarded tensor and Smolyak sparse
-    Gauss-Hermite quadrature grids execute in C++.
+    Gauss-Hermite quadrature grids execute in C++. A public fixed-shape matrix
+    intermediate representation provides guarded multiplication, solves,
+    Cholesky and log-determinant operations, matrix exponentials, quadratic
+    forms, rank updates, and covariance construction on the same native tape
+    engine.
     Includes reproducible automatic-differentiation benchmarks and a local
     React workbench that can also launch the paired LibeRation and NONMEM
     validation harness from a LibeR source checkout.
@@ -21,21 +25,21 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 Depends: R (>= 4.1.0)
 Imports:
-    callr,
-    htmltools,
-    htmlwidgets,
-    processx,
     R6,
-    Rcpp,
-    reactR,
-    shiny
+    Rcpp
 LinkingTo:
     Rcpp
 Suggests:
+    callr,
+    htmltools,
+    htmlwidgets,
     knitr,
     LibeRties (>= 0.7.5),
     pkgload,
+    processx,
+    reactR,
     rmarkdown,
+    shiny,
     shinytest2,
     testthat (>= 3.0.0)
 VignetteBuilder: knitr

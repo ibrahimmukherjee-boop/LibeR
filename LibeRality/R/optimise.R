@@ -140,6 +140,74 @@
        message = if (improved) "Coordinate-exchange iteration limit reached" else "Coordinate exchange converged")
 }
 
+.lity_allocation_sensitivity <- function(information, per_subject, criterion,
+                                         tolerance = 1e-10) {
+  supported <- c("D", "Ds", "A", "E", "c", "prediction_variance", "L")
+  if (!criterion$type %in% supported) {
+    .lity_stop(
+      "Allocation equivalence-theorem updates are not implemented for `",
+      criterion$type, "`. Use a general optimiser; supported smooth allocation ",
+      "criteria are ", paste(supported, collapse = ", "), "."
+    )
+  }
+  matrix <- information$matrix
+  covariance <- information$covariance
+  parameter_names <- rownames(matrix)
+  subset <- .lity_match_parameters(criterion$parameters, parameter_names)
+  quadratic_trace <- function(weight) {
+    middle <- covariance %*% weight %*% covariance
+    vapply(per_subject, function(item) sum(middle * t(item)), numeric(1))
+  }
+  score <- if (criterion$type == "D") {
+    vapply(per_subject, function(item) sum(diag(covariance %*% item)), numeric(1))
+  } else if (criterion$type == "A") {
+    weights <- rep(as.numeric(criterion$weights %||% 1), length.out = length(subset))
+    weight <- matrix(0, nrow(matrix), ncol(matrix))
+    diag(weight)[subset] <- weights
+    quadratic_trace(weight)
+  } else if (criterion$type %in% c("c", "prediction_variance")) {
+    contrast <- .lity_contrast(criterion, information)
+    direction <- drop(covariance %*% contrast)
+    vapply(per_subject, function(item) drop(crossprod(direction, item %*% direction)), numeric(1))
+  } else if (criterion$type == "L") {
+    L <- criterion$matrix
+    if (ncol(L) != nrow(matrix)) .lity_stop("L-criterion matrix has the wrong number of columns.")
+    weights <- rep(as.numeric(criterion$weights %||% 1), length.out = nrow(L))
+    quadratic_trace(crossprod(L, weights * L))
+  } else if (criterion$type == "Ds") {
+    selected_covariance <- covariance[subset, subset, drop = FALSE]
+    selected_inverse <- .lity_safe_inverse(selected_covariance)
+    vapply(per_subject, function(item) {
+      change <- covariance %*% item %*% covariance
+      sum(diag(selected_inverse %*% change[subset, subset, drop = FALSE]))
+    }, numeric(1))
+  } else {
+    selected_covariance <- covariance[subset, subset, drop = FALSE]
+    effective <- .lity_safe_inverse(selected_covariance)
+    decomposition <- eigen((effective + t(effective)) / 2, symmetric = TRUE)
+    values <- rev(decomposition$values)
+    vectors <- decomposition$vectors[, rev(seq_len(ncol(decomposition$vectors))), drop = FALSE]
+    scale <- max(abs(values), 1)
+    if (length(values) > 1L && abs(values[[2L]] - values[[1L]]) <= tolerance * scale) {
+      .lity_stop(
+        "E-optimal allocation is non-smooth because the minimum information ",
+        "eigenvalue is repeated. Use a general derivative-free optimiser."
+      )
+    }
+    eigenvector <- vectors[, 1L, drop = FALSE]
+    vapply(per_subject, function(item) {
+      change <- covariance %*% item %*% covariance
+      effective_change <- effective %*%
+        change[subset, subset, drop = FALSE] %*% effective
+      drop(crossprod(eigenvector, effective_change %*% eigenvector))
+    }, numeric(1))
+  }
+  if (any(!is.finite(score)) || max(score) <= 0) {
+    .lity_stop("Criterion-specific allocation sensitivities are not finite and positive.")
+  }
+  score
+}
+
 .lity_allocation_optimise <- function(design, criterion, method, control, progress, cancel) {
   total <- sum(vapply(design$arms, `[[`, numeric(1), "size"))
   if (total < 1L) .lity_stop("Allocation optimisation requires at least one subject.")
@@ -155,7 +223,6 @@
       candidate$arms[[i]]$size <- sizes[[i]]; candidate$arms[[i]]$allocation <- weight[[i]]
     }
     info <- lity_information(candidate)
-    inverse <- .lity_safe_inverse(info$matrix)
     per_subject <- lapply(seq_along(candidate$arms), function(i) {
       contribution <- info$arm_contributions[[i]]
       if (sizes[[i]] > 0) contribution / sizes[[i]] else {
@@ -164,7 +231,7 @@
         lity_information(one)$matrix
       }
     })
-    directional <- vapply(per_subject, function(matrix) sum(diag(inverse %*% matrix)), numeric(1))
+    directional <- .lity_allocation_sensitivity(info, per_subject, criterion)
     old <- weight
     if (method == "multiplicative") weight <- .lity_normalize_weights(weight * pmax(directional, 1e-12))
     else {

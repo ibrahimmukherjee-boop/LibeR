@@ -1,0 +1,2 @@
+# One Perl-compatible regular expression per line. Keep this file empty unless
+# a platform/toolchain NOTE has been investigated, documented, and accepted.

@@ -79,6 +79,60 @@
   covariance
 }
 
+.lity_residual_variance_derivatives <- function(model, prediction, sigma, dvid = 1L) {
+  error <- model$LIK_CONFIG$error %||% model$ERROR_TYPE %||% "none"
+  if (error == "auto") error <- model$ERROR_TYPE
+  n <- length(prediction)
+  d_sigma <- matrix(0, n, length(sigma))
+  d_mu <- numeric(n)
+  if (error == "none" || !length(sigma)) {
+    return(list(mu = d_mu, sigma = d_sigma))
+  }
+  sigma_derivative <- function(value) {
+    if (identical(model$LIK_CONFIG$sigma_parameterization, "variance")) 1 else 2 * value
+  }
+  per_response <- if (error %in% c("combined", "power")) 2L else 1L
+  dvid <- pmax(1L, as.integer(dvid))
+  for (i in seq_along(prediction)) {
+    offset <- (dvid[[i]] - 1L) * per_response + 1L
+    if (offset + per_response - 1L > length(sigma)) offset <- 1L
+    first <- .lity_sigma_variance(sigma[[offset]], model)
+    first_derivative <- sigma_derivative(sigma[[offset]])
+    mu <- prediction[[i]]
+    if (error %in% c("additive", "exponential")) {
+      d_sigma[i, offset] <- first_derivative
+    } else if (error == "proportional") {
+      d_mu[[i]] <- 2 * first * mu
+      d_sigma[i, offset] <- first_derivative * mu^2
+    } else if (error == "combined") {
+      d_mu[[i]] <- 2 * first * mu
+      d_sigma[i, offset] <- first_derivative * mu^2
+      d_sigma[i, offset + 1L] <- sigma_derivative(sigma[[offset + 1L]])
+    } else if (error == "power") {
+      magnitude <- max(abs(mu), 1e-12)
+      exponent <- sigma[[offset + 1L]]
+      variance <- first * magnitude^(2 * exponent)
+      d_mu[[i]] <- if (abs(mu) > 1e-12) {
+        variance * 2 * exponent / mu
+      } else 0
+      d_sigma[i, offset] <- first_derivative * magnitude^(2 * exponent)
+      d_sigma[i, offset + 1L] <- variance * 2 * log(magnitude)
+    } else {
+      d_sigma[i, offset] <- first_derivative
+    }
+  }
+  list(mu = d_mu, sigma = d_sigma)
+}
+
+.lity_residual_covariance_direction <- function(model, covariance, variance,
+                                                variance_direction, data) {
+  if (!identical(model$LIK_CONFIG$sigma_corr, "ar1") || length(variance) <= 1L) {
+    return(diag(variance_direction, length(variance_direction)))
+  }
+  relative <- variance_direction / pmax(variance, 1e-16)
+  covariance * 0.5 * outer(relative, relative, `+`)
+}
+
 .lity_link <- function(value, link, inverse = TRUE) {
   if (!inverse) return(switch(link,
     logit = log(value / (1 - value)), probit = stats::qnorm(value),
@@ -103,45 +157,87 @@
   )
 }
 
+.lity_interval_widths <- function(time) {
+  time <- as.numeric(time)
+  if (!length(time)) return(numeric())
+  ordering <- order(time)
+  sorted <- time[ordering]
+  positive <- diff(sorted)
+  positive <- positive[is.finite(positive) & positive > 0]
+  terminal <- if (length(positive)) stats::median(positive) else 1
+  delta <- numeric(length(time))
+  delta[ordering] <- c(diff(sorted), terminal)
+  pmax(delta, 1e-8)
+}
+
+.lity_tte_interval_exposure <- function(time, endpoint) {
+  time <- as.numeric(time)
+  delta <- .lity_interval_widths(time)
+  if (!identical(endpoint$distribution, "weibull")) return(delta)
+  if (any(!is.finite(time)) || any(time < 0)) {
+    .lity_stop("Weibull time-to-event design times must be finite and non-negative.")
+  }
+  shape <- .lity_number(
+    endpoint$dispersion, "Weibull shape", lower = .Machine$double.eps
+  )
+  # H(t) = lambda * t^shape, so each counting-process interval contributes
+  # Delta H = lambda * ((t + delta)^shape - t^shape). This reduces exactly
+  # to the exponential hazard-times-width convention when shape equals one.
+  pmax((time + delta)^shape - time^shape, 1e-12)
+}
+
 .lity_response_moments <- function(mu, H, G, endpoint, time) {
-  if (endpoint$type == "continuous") return(list(mean = mu, H = H, G = G, variance = NULL))
+  if (endpoint$type == "continuous") {
+    return(list(mean = mu, H = H, G = G, variance = NULL,
+                variance_derivative = NULL))
+  }
   if (endpoint$type == "ordinal") {
     thresholds <- endpoint$thresholds
     category_moments <- function(eta) {
-      cumulative <- if (endpoint$link == "probit") stats::pnorm(thresholds - eta) else stats::plogis(thresholds - eta)
+      shifted <- thresholds - eta
+      cumulative <- if (endpoint$link == "probit") stats::pnorm(shifted) else stats::plogis(shifted)
+      density <- if (endpoint$link == "probit") stats::dnorm(shifted) else cumulative * (1 - cumulative)
       probability <- diff(c(0, cumulative, 1))
+      probability_derivative <- diff(c(0, -density, 0))
       categories <- seq_along(probability) - 1
-      c(mean = sum(categories * probability), variance = sum((categories - sum(categories * probability))^2 * probability))
+      mean <- sum(categories * probability)
+      mean_derivative <- sum(categories * probability_derivative)
+      variance <- sum(categories^2 * probability) - mean^2
+      variance_derivative <- sum(categories^2 * probability_derivative) -
+        2 * mean * mean_derivative
+      c(mean = mean, variance = variance, mean_derivative = mean_derivative,
+        variance_derivative = variance_derivative)
     }
-    moments <- t(vapply(mu, category_moments, numeric(2)))
-    step <- pmax(1e-6, abs(mu) * 1e-6)
-    derivative <- vapply(seq_along(mu), function(i) {
-      (category_moments(mu[[i]] + step[[i]])[[1L]] - category_moments(mu[[i]] - step[[i]])[[1L]]) / (2 * step[[i]])
-    }, numeric(1))
+    moments <- t(vapply(mu, category_moments, numeric(4)))
+    derivative <- moments[, "mean_derivative"]
     return(list(mean = moments[, "mean"], H = derivative * H, G = derivative * G,
-                variance = pmax(moments[, "variance"], 1e-10)))
+                variance = pmax(moments[, "variance"], 1e-10),
+                variance_derivative = moments[, "variance_derivative"]))
   }
   response <- if (endpoint$scale == "response") mu else .lity_link(mu, endpoint$link)
   derivative <- .lity_link_derivative(mu, endpoint$link, endpoint$scale)
   if (endpoint$type == "binary") {
     response <- pmin(1 - 1e-9, pmax(1e-9, response)); variance <- response * (1 - response)
+    variance_derivative <- derivative * (1 - 2 * response)
   } else if (endpoint$type == "count") {
     response <- pmax(response, 1e-9)
     variance <- if (endpoint$distribution %in% c("negative_binomial", "negbin")) {
       response + response^2 / (endpoint$dispersion %||% 1)
     } else response
+    variance_derivative <- if (endpoint$distribution %in% c("negative_binomial", "negbin")) {
+      derivative * (1 + 2 * response / (endpoint$dispersion %||% 1))
+    } else derivative
   } else {
     hazard <- pmax(response, 1e-12)
-    ordering <- order(time)
-    delta <- numeric(length(time))
-    sorted <- time[ordering]
-    delta[ordering] <- c(diff(sorted), if (length(sorted) > 1L) stats::median(diff(sorted)) else 1)
-    delta <- pmax(delta, 1e-8)
-    response <- hazard * delta
-    derivative <- derivative * delta
+    exposure <- .lity_tte_interval_exposure(time, endpoint)
+    response <- hazard * exposure
+    derivative <- derivative * exposure
     variance <- response
+    variance_derivative <- derivative
   }
-  list(mean = response, H = derivative * H, G = derivative * G, variance = pmax(variance, 1e-12))
+  list(mean = response, H = derivative * H, G = derivative * G,
+       variance = pmax(variance, 1e-12),
+       variance_derivative = variance_derivative)
 }
 
 .lity_numerical_matrix_derivative <- function(fn, value, index, relative_step = 1e-5) {
@@ -198,6 +294,16 @@
       .lity_residual_covariance(temporary, mu_original, sigma, prediction$data)
     } else .lity_residual_covariance(model, mu_original, sigma, prediction$data)
   } else residual <- diag(moments$variance, length(moments$variance))
+  residual_variance <- diag(residual)
+  residual_derivatives <- if (endpoint$type == "continuous") {
+    residual_model <- if (exponential) {
+      temporary <- model; temporary$LIK_CONFIG$error <- "additive"; temporary
+    } else model
+    .lity_residual_variance_derivatives(
+      residual_model, mu_original, sigma,
+      prediction$data$DVID %||% rep(1L, length(mu_original))
+    )
+  } else NULL
   V <- if (ncol(G)) G %*% omega_matrix %*% t(G) + residual else residual
   k <- nrow(parameter_spec)
   Dmu <- matrix(0, nrow(H), k)
@@ -207,25 +313,17 @@
   for (position in theta_rows) {
     theta_index <- parameter_spec$index[[position]]
     direction <- H_original[, theta_index]
-    step <- max(1e-7, abs(theta[[theta_index]]) * 1e-5)
-    plus_mu <- mu_original + direction * step
-    minus_mu <- mu_original - direction * step
     if (endpoint$type == "continuous") {
-      plus_r <- if (exponential) {
-        temporary <- model; temporary$LIK_CONFIG$error <- "additive"
-        .lity_residual_covariance(temporary, plus_mu, sigma, prediction$data)
-      } else .lity_residual_covariance(model, plus_mu, sigma, prediction$data)
-      minus_r <- if (exponential) {
-        temporary <- model; temporary$LIK_CONFIG$error <- "additive"
-        .lity_residual_covariance(temporary, minus_mu, sigma, prediction$data)
-      } else .lity_residual_covariance(model, minus_mu, sigma, prediction$data)
-      dV[[position]] <- (plus_r - minus_r) / (2 * step)
+      variance_direction <- residual_derivatives$mu * direction
+      dV[[position]] <- .lity_residual_covariance_direction(
+        if (exponential) temporary else model, residual, residual_variance,
+        variance_direction, prediction$data
+      )
     } else {
-      plus <- .lity_response_moments(if (exponential) log(pmax(plus_mu, 1e-12)) else plus_mu,
-                                     H, G, endpoint, time)$variance
-      minus <- .lity_response_moments(if (exponential) log(pmax(minus_mu, 1e-12)) else minus_mu,
-                                      H, G, endpoint, time)$variance
-      dV[[position]] <- diag((plus - minus) / (2 * step), length(plus))
+      dV[[position]] <- diag(
+        moments$variance_derivative * direction,
+        length(moments$variance_derivative)
+      )
     }
   }
   omega_rows <- which(parameter_spec$type == "omega")
@@ -240,12 +338,10 @@
   if (endpoint$type == "continuous" && length(sigma_rows)) {
     for (position in sigma_rows) {
       sigma_index <- parameter_spec$index[[position]]
-      dV[[position]] <- .lity_numerical_matrix_derivative(function(candidate) {
-        if (exponential) {
-          temporary <- model; temporary$LIK_CONFIG$error <- "additive"
-          .lity_residual_covariance(temporary, mu_original, candidate, prediction$data)
-        } else .lity_residual_covariance(model, mu_original, candidate, prediction$data)
-      }, sigma, sigma_index)
+      dV[[position]] <- .lity_residual_covariance_direction(
+        if (exponential) temporary else model, residual, residual_variance,
+        residual_derivatives$sigma[, sigma_index], prediction$data
+      )
     }
   }
   # PopED and PFIM use the conventional block-diagonal population-FO FIM:
@@ -278,6 +374,9 @@
 #' mean/covariance cross-information and exact LibeRation prediction
 #' sensitivities. Non-continuous outcomes use distribution-aware working
 #' moments, allowing shared random effects and variance-component information.
+#' Exponential and fixed-shape Weibull time-to-event endpoints use
+#' counting-process interval increments. For Weibull endpoints the model
+#' response is the coefficient in `H(t) = lambda * t^shape`.
 #'
 #' @param design LibeRality design.
 #' @param scenario Scenario name, index, or object.
@@ -366,7 +465,7 @@ lity_information <- function(design, scenario = 1L, model = NULL, tolerance = 1e
       } else "full Gaussian expected information",
       approximation = approximation,
       prediction_derivatives = "exact CppAD",
-      covariance_derivatives = "analytic OMEGA; exact residual form with centred parameter derivatives",
+      covariance_derivatives = "analytic OMEGA, supported residual models, and non-continuous working moments",
       noncontinuous = "distribution-aware working-moment information",
       endpoint_blocks = "block diagonal conditional on shared parameter vector",
       propagation_kernels = sort(unique(kernels)), operation_count = operation_count,

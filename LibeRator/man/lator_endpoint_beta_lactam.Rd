@@ -11,7 +11,8 @@ lator_endpoint_beta_lactam(
   threshold_multiplier = 1,
   free_fraction = 1,
   source,
-  status = c("draft", "reviewed", "qualified")
+  status = c("draft", "reviewed", "qualified"),
+  metadata = list()
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ lator_endpoint_beta_lactam(
 \item{source}{Evidence or policy provenance.}
 
 \item{status}{Governance status.}
+
+\item{metadata}{Additional metadata.}
 }
 \description{
 Beta-lactam fraction-of-time-above-MIC endpoint

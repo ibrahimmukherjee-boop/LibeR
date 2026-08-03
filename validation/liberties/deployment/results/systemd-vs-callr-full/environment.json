@@ -1,0 +1,26 @@
+{
+  "schema": "liberties.executor-benchmark",
+  "version": 1,
+  "checked": "2026-08-03T09:58:27.798Z",
+  "profile": "full",
+  "system": {
+    "sysname": "Linux",
+    "release": "6.6.87.2-microsoft-standard-WSL2+",
+    "machine": "x86_64",
+    "logical_cores": 16,
+    "r_version": "R version 4.1.2 (2021-11-01)"
+  },
+  "packages": {
+    "LibeRties": "0.7.7",
+    "LibeRation": "0.9.8",
+    "LibeRtAD": "0.7.13"
+  },
+  "design": {
+    "fresh_process_per_observation": true,
+    "page_cache_warmup": true,
+    "alternating_executor_order": true,
+    "encrypted_storage_both_executors": true,
+    "poll_interval_seconds": 0.02,
+    "systemd_preflight_ready": true
+  }
+}

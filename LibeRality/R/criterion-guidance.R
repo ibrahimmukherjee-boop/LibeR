@@ -137,13 +137,13 @@
       "Multiple scenarios and a utility-oriented base criterion."
     ),
     model_average = item(
-      "model_average", "Model-averaged criterion", "Uncertainty and robustness",
-      "Optimises expected performance across competing structural models.",
-      "Evaluates the base criterion under each candidate model and combines results using model probabilities or supplied weights.",
-      "Reduces commitment to one uncertain model structure.",
-      "Requires credible competing models and weights; a poor model set cannot protect against unrepresented misspecification.",
-      "Structural-model uncertainty during learning or confirmatory design.",
-      "Alternative models with defensible weights."
+      "model_average", "Scenario-averaged information criterion", "Uncertainty and robustness",
+      "Optimises a weighted average information matrix across declared parameter and operational scenarios.",
+      "Combines scenario-specific FIMs using supplied scenario weights, then evaluates the selected base criterion on that average matrix.",
+      "Reduces commitment to one local parameter or operating scenario while retaining one structural model.",
+      "It is not structural-model averaging; averaging FIMs can also hide a poorly performing individual scenario.",
+      "Parameter, covariate, adherence, or operating-scenario uncertainty within one model structure.",
+      "One structural model with defensible scenarios and weights."
     ),
     precision_probability = item(
       "precision_probability", "Probability of adequate precision", "Prediction and decision",

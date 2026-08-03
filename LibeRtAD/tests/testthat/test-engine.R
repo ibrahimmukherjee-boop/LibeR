@@ -109,9 +109,41 @@ test_that("Jacobian evaluation selects multi-direction and subgraph kernels", {
     at = setNames(rep(2, 32), input_names), wrt = input_names
   )
   jacobian <- sparse$jacobian(setNames(rep(3, 32), input_names))
+  expected <- matrix(0, nrow = 128, ncol = 32)
+  expected[cbind(seq_len(128), (seq_len(128) - 1L) %% 32L + 1L)] <- 6
   expect_identical(sparse$tape_info()$derivative_strategy, "subgraph-reverse")
   expect_equal(sparse$tape_info()$jacobian_nonzeros, 128)
   expect_equal(sum(jacobian != 0), 128)
+  expect_equal(unname(jacobian), expected, tolerance = 1e-12)
+})
+
+test_that("nonsmooth operations expose their recorded branch convention", {
+  absolute <- ad_compile(
+    "Y = abs(X)", inputs = "X", outputs = "Y",
+    at = c(X = 1), wrt = "X"
+  )
+  expect_equal(unname(absolute$gradient(c(X = 2))), 1)
+  expect_equal(unname(absolute$gradient(c(X = -2))), -1)
+  expect_equal(unname(absolute$gradient(c(X = 0))), 0)
+  expect_equal(unname(absolute$hessian(c(X = 0))), matrix(0, 1, 1))
+
+  branch <- ad_compile(
+    "Y = ifelse(X < 0, X^2, X^3)", inputs = "X", outputs = "Y",
+    at = c(X = -1), wrt = "X"
+  )
+  expect_equal(unname(branch$hessian(c(X = -2))), matrix(2, 1, 1))
+  expect_equal(unname(branch$hessian(c(X = 2))), matrix(12, 1, 1))
+  # At the comparison boundary the false branch is selected by the declared
+  # strict inequality; this is a branch derivative, not a smoothness claim.
+  expect_equal(unname(branch$gradient(c(X = 0))), 0)
+  expect_equal(unname(branch$hessian(c(X = 0))), matrix(0, 1, 1))
+
+  minimum <- ad_compile(
+    "Y = min(X, Z)", inputs = c("X", "Z"), outputs = "Y",
+    at = c(X = 1, Z = 2), wrt = c("X", "Z")
+  )
+  expect_equal(unname(minimum$gradient(c(X = 1, Z = 2))), c(1, 0))
+  expect_equal(unname(minimum$gradient(c(X = 2, Z = 1))), c(0, 1))
 })
 
 test_that("Hessian evaluation selects and reuses the measured sparse pattern", {
@@ -160,6 +192,30 @@ test_that("optimized CppAD graph caches reconstruct without retaping", {
                tolerance = 1e-11, ignore_attr = TRUE)
 })
 
+test_that("graph caches enforce their IR semantics and input contract", {
+  square <- ad_compile(
+    "Y = X^2 + P", inputs = c("X", "P"), outputs = "Y",
+    at = c(X = 2, P = 1), wrt = "X"
+  )
+  cube <- ad_compile(
+    "Y = X^3 + P", inputs = c("X", "P"), outputs = "Y",
+    at = c(X = 2, P = 1), wrt = "X"
+  )
+  path <- tempfile(fileext = ".rds")
+  on.exit(unlink(path), add = TRUE)
+
+  cache <- square$tape_cache()
+  expect_identical(cache$version, 2L)
+  cache$graph_json <- cube$tape_cache()$graph_json
+  saveRDS(cache, path)
+  expect_error(ad_load_tape(path), "not semantically consistent")
+
+  cache <- square$tape_cache()
+  cache$domain <- c("X", "P")
+  saveRDS(cache, path)
+  expect_error(ad_load_tape(path), "domain/dynamic contract")
+})
+
 test_that("checkpoint prototypes are exact and nested-AD safe", {
   probe <- ad_checkpoint_probe(repetitions = 8L, evaluations = 5L)
   for (case in probe[c("advan1", "matrix2")]) {
@@ -170,6 +226,10 @@ test_that("checkpoint prototypes are exact and nested-AD safe", {
     expect_true(is.finite(case$direct_microseconds))
     expect_gt(case$checkpoint_operations, 0)
   }
+})
+
+test_that("failed recordings do not poison the next tape on the thread", {
+  expect_true(LibeRtAD:::.libertad_recording_recovery_probe())
 })
 
 test_that("engine reports the bundled CppAD provenance", {

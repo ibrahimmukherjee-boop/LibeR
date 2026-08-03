@@ -11,6 +11,8 @@ lity_simulate_trials(
   fit = FALSE,
   method = "FOCEI",
   seed = 7301L,
+  covariance = FALSE,
+  covariance_type = "sandwich",
   n_cores = 1L,
   retain_data = TRUE,
   progress = NULL
@@ -28,6 +30,11 @@ lity_simulate_trials(
 \item{method}{Estimation method when `fit = TRUE`.}
 
 \item{seed}{Reproducible seed.}
+
+\item{covariance}{Whether fitted trials should run a covariance step so that
+empirical confidence-interval coverage can be calculated.}
+
+\item{covariance_type}{Covariance estimator passed to [LibeRation::nm_est()].}
 
 \item{n_cores}{Simulation cores passed to LibeRation.}
 

@@ -156,9 +156,16 @@ ls_api <- function(server = ls_server(), policy = ls_security_policy()) {
   }, serializer = serializer)
   api <- plumber::pr_post(api, "/v1/jobs", function(req) {
     token <- .ls_bearer_token(req)
-    auth <- server$authenticate(token)
+    auth <- server$authenticate(token, "jobs:write")
     job <- ls_job_decode(req$postBody %||% "", auth$limits$max_payload_mb * 1024^2)
-    list(id = server$submit(token, job), status = "queued")
+    key <- .ls_request_header(req, "Idempotency-Key")
+    id <- server$submit(
+      token, job, idempotency_key = if (nzchar(key)) key else NULL
+    )
+    list(
+      id = unname(as.character(id)), status = "queued",
+      idempotent_replay = isTRUE(attr(id, "idempotent_replay", exact = TRUE))
+    )
   }, serializer = serializer)
   api <- plumber::pr_get(api, "/v1/jobs", function(req) {
     token <- .ls_bearer_token(req)
@@ -203,23 +210,38 @@ ls_api <- function(server = ls_server(), policy = ls_security_policy()) {
 #' @param policy Optional security policy.
 #' @param isolation_probe Deployment-integrated isolation verifier passed to
 #'   [ls_server_preflight()].
+#' @param executor Worker executor. Production defaults to
+#'   [ls_systemd_executor()]; trusted loopback development defaults to the
+#'   subprocess backend.
 #' @export
 ls_run_api <- function(root = .ls_default_root(), host = "127.0.0.1", port = 8000L,
                        max_workers_per_user = 2L, quiet = FALSE,
                        production = !.ls_loopback(host), behind_tls_proxy = FALSE,
                        policy = ls_security_policy(production = production),
-                       isolation_probe = NULL) {
+                       isolation_probe = NULL,
+                       executor = if (isTRUE(production)) ls_systemd_executor() else NULL) {
+  executor <- .ls_executor(executor)
+  if (isTRUE(production) && !identical(executor$type, "systemd")) {
+    .ls_stop(
+      "Production ls_run_api() requires the native Linux systemd executor."
+    )
+  }
   ls_server_preflight(
     root, host, behind_tls_proxy, policy, strict = isTRUE(production),
-    isolation_probe = isolation_probe
+    isolation_probe = isolation_probe, executor = executor
   )
-  api <- ls_api(ls_server(root, max_workers_per_user), policy = policy)
+  api <- ls_api(ls_server(
+    root, max_workers_per_user, executor = executor
+  ), policy = policy)
   api$run(host = host, port = as.integer(port), swagger = FALSE, quiet = quiet)
 }
 
-.ls_remote_call <- function(remote, method, path, body = NULL) {
+.ls_remote_call <- function(remote, method, path, body = NULL, headers = list()) {
   request <- httr2::request(paste0(remote$url, path))
   request <- httr2::req_headers(request, Authorization = paste("Bearer", remote$token))
+  if (length(headers)) {
+    request <- do.call(httr2::req_headers, c(list(.req = request), headers))
+  }
   request <- httr2::req_timeout(request, remote$timeout)
   request <- httr2::req_method(request, method)
   if (!is.null(body)) request <- httr2::req_body_json(request, body, auto_unbox = TRUE)
@@ -273,9 +295,16 @@ LibeRRemote <- R6::R6Class(
     #' @description
     #' Submit a typed, non-executable job payload.
     #' @param job A job created by [ls_job()].
+    #' @param idempotency_key Optional retry key scoped to the authenticated
+    #'   remote user.
     #' @return The durable remote job identifier.
-    submit = function(job) {
-      response <- .ls_remote_call(self, "POST", "/v1/jobs", ls_job_to_wire(job))
+    submit = function(job, idempotency_key = NULL) {
+      key <- .ls_idempotency_key(idempotency_key)
+      headers <- if (is.null(key)) list() else
+        stats::setNames(list(key), "Idempotency-Key")
+      response <- .ls_remote_call(
+        self, "POST", "/v1/jobs", ls_job_to_wire(job), headers = headers
+      )
       as.character(response$id)
     },
 

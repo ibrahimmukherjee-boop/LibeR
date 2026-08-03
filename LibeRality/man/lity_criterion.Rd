@@ -190,3 +190,11 @@ model discrimination.}
 \description{
 Define an optimal-design criterion
 }
+\details{
+`bayesian` and `robust` use the same weighted-expectation
+  computation. Their separate names record the interpretation of the
+  scenarios: prior parameter draws for `bayesian`, and declared model or
+  operational scenarios for `robust`. Use `minimax` or `maximin` when
+  protection against the worst scenario is intended instead of average
+  performance.
+}

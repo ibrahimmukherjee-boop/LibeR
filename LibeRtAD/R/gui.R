@@ -74,6 +74,7 @@
 #' @export
 libertad_gui <- function(benchmark_root = NULL, host = "127.0.0.1", port = NULL,
                          launch.browser = TRUE, allow_remote = FALSE) {
+  .ad_require_gui()
   if (!host %in% c("127.0.0.1", "localhost", "::1") && !isTRUE(allow_remote)) {
     .ad_stop("Non-loopback hosting is disabled unless `allow_remote = TRUE`.")
   }

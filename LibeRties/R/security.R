@@ -55,8 +55,16 @@
     matched <- grep(pattern, cgroup, value = TRUE, ignore.case = TRUE)
     if (marker || length(matched)) {
       return(list(
-        active = TRUE, provider = "linux-container-or-cgroup",
-        evidence = c(if (marker) "container marker present", utils::head(matched, 3L))
+        active = FALSE, provider = "unattested-linux-container",
+        evidence = c(
+          if (marker) "container marker present" else character(),
+          utils::head(matched, 3L),
+          paste(
+            "Container/cgroup markers are descriptive, not proof of a",
+            "separate identity, filesystem boundary, network policy, and hard limits.",
+            "Supply a deployment-integrated isolation_probe for production."
+          )
+        )
       ))
     }
   }
@@ -66,11 +74,15 @@
   )
 }
 
-.ls_isolation_result <- function(probe = NULL) {
+.ls_isolation_result <- function(probe = NULL, executor = NULL) {
   result <- tryCatch(
-    if (is.null(probe)) .ls_default_isolation_probe() else {
+    if (!is.null(probe)) {
       if (!is.function(probe)) .ls_stop("`isolation_probe` must be a function or NULL.")
       probe()
+    } else if (!is.null(executor) && identical(executor$type, "systemd")) {
+      .ls_systemd_preflight(executor)
+    } else {
+      .ls_default_isolation_probe()
     },
     error = function(error) list(
       active = FALSE, provider = "probe-error", evidence = conditionMessage(error)
@@ -83,7 +95,8 @@
   list(
     active = isTRUE(result$active),
     provider = as.character(result$provider %||% "unspecified")[[1L]],
-    evidence = as.character(result$evidence %||% character())
+    evidence = as.character(result$evidence %||% character()),
+    issues = as.character(result$issues %||% character())
   )
 }
 
@@ -160,12 +173,14 @@ ls_generate_storage_key <- function() .ls_random_hex(32L)
 #'   list with logical `active`, `provider`, and `evidence`. When omitted,
 #'   LibeRties checks Linux container/cgroup evidence. This should be connected
 #'   to the actual service manager or sandbox on other platforms.
+#' @param executor Optional executor specification. A systemd executor performs
+#'   binary, PID-1, cgroup-v2, service-account, and live transient-unit checks.
 #' @return A `liberties_security_preflight` report.
 #' @export
 ls_server_preflight <- function(
     root = .ls_default_root(), host = "127.0.0.1", behind_tls_proxy = FALSE,
     policy = ls_security_policy(production = !.ls_loopback(host)), strict = FALSE,
-    isolation_probe = NULL) {
+    isolation_probe = NULL, executor = NULL) {
   if (!inherits(policy, "liberties_security_policy")) {
     .ls_stop("`policy` must be created by ls_security_policy().")
   }
@@ -178,13 +193,27 @@ ls_server_preflight <- function(
   if (policy$require_storage_encryption && !encrypted) {
     issues <- c(issues, "Production storage encryption requires LIBERTIES_STORAGE_KEY.")
   }
-  isolation <- .ls_isolation_result(isolation_probe)
+  executor <- .ls_executor(executor)
+  isolation <- .ls_isolation_result(isolation_probe, executor)
   isolation_label <- trimws(Sys.getenv("LIBERTIES_OS_ISOLATION", unset = ""))
   if (policy$require_os_isolation && !isTRUE(isolation$active)) {
-    issues <- c(issues, paste(
-      "Production execution requires verifiable external OS isolation.",
+    detail <- if (length(isolation$issues)) {
+      paste(isolation$issues, collapse = " ")
+    } else paste(
       "A label in LIBERTIES_OS_ISOLATION is descriptive only; connect",
-      "`isolation_probe` to the actual container, cgroup, service account, or sandbox."
+      "`isolation_probe` to the actual sandbox."
+    )
+    issues <- c(issues, paste(
+      "Production execution requires verifiable OS isolation.", detail
+    ))
+  }
+  if (policy$require_storage_encryption &&
+      identical(executor$type, "systemd") &&
+      !nzchar(executor$storage_credential %||% "")) {
+    issues <- c(issues, paste(
+      "Systemd workers require the storage key through LoadCredential.",
+      "Configure `storage_credential` or start LibeRties with a",
+      "liberties-storage-key systemd credential."
     ))
   }
   users <- .ls_registry_load(root)
@@ -204,6 +233,7 @@ ls_server_preflight <- function(
     ready = !length(issues), production = policy$production, root = root,
     host = as.character(host), tls_proxy = isTRUE(behind_tls_proxy),
     storage_encrypted = encrypted,
+    executor = executor$type,
     os_isolation = isolation$provider,
     os_isolation_active = isolation$active,
     os_isolation_evidence = isolation$evidence,

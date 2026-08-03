@@ -19,6 +19,26 @@
 
 namespace {
 
+// CppAD keeps the active recorder in thread-local state.  If any operation
+// between Independent() and Dependent() throws, that recorder must be aborted
+// before another tape can be created on the same thread.  Keeping this in a
+// small scope guard makes every recording path exception-safe, including
+// failures raised by expression evaluation or checkpoint construction.
+template <class Base>
+class RecordingGuard {
+ public:
+  RecordingGuard() : active_(true) {}
+  RecordingGuard(const RecordingGuard&) = delete;
+  RecordingGuard& operator=(const RecordingGuard&) = delete;
+  ~RecordingGuard() {
+    if (active_) CppAD::AD<Base>::abort_recording();
+  }
+  void release() noexcept { active_ = false; }
+
+ private:
+  bool active_;
+};
+
 using libertad::Program;
 using libertad::ProgramHandle;
 using libertad::TapeHandle;
@@ -226,6 +246,7 @@ SEXP libertad_tape_create(
     dynamic[i] = dynamic_values[i];
   }
   CppAD::Independent(independent, dynamic);
+  RecordingGuard<double> recording;
 
   std::vector<AD> full_inputs(program.input_names.size());
   for (std::size_t i = 0; i < domain.size(); ++i) {
@@ -237,6 +258,7 @@ SEXP libertad_tape_create(
   std::vector<AD> dependent = program.eval_outputs(full_inputs, selected);
   CppAD::ADFun<double> fun;
   fun.Dependent(independent, dependent);
+  recording.release();
   if (optimize) fun.optimize();
 
   Rcpp::XPtr<TapeHandle> pointer(
@@ -402,17 +424,23 @@ CppAD::ADFun<double> checkpoint_advan1_inner() {
   input[1] = 0.1;
   input[2] = 1.0;
   CppAD::Independent(input);
+  RecordingGuard<double> recording;
   output[0] = input[0] * CppAD::exp(-input[1] * input[2]);
-  return CppAD::ADFun<double>(input, output);
+  CppAD::ADFun<double> fun(input, output);
+  recording.release();
+  return fun;
 }
 
 CppAD::ADFun<double> checkpoint_matrix_inner() {
   ADVector input(6), output(2);
   for (std::size_t i = 0; i < input.size(); ++i) input[i] = 0.1 * (i + 1.0);
   CppAD::Independent(input);
+  RecordingGuard<double> recording;
   output[0] = input[0] * input[4] + input[1] * input[5];
   output[1] = input[2] * input[4] + input[3] * input[5];
-  return CppAD::ADFun<double>(input, output);
+  CppAD::ADFun<double> fun(input, output);
+  recording.release();
+  return fun;
 }
 
 CppAD::ADFun<double> repeated_advan1(
@@ -422,6 +450,7 @@ CppAD::ADFun<double> repeated_advan1(
   input[1] = 0.1;
   input[2] = 1.0;
   CppAD::Independent(input);
+  RecordingGuard<double> recording;
   CppAD::AD<double> state = input[0];
   for (int iteration = 0; iteration < repetitions; ++iteration) {
     if (checkpoint == nullptr) {
@@ -437,6 +466,7 @@ CppAD::ADFun<double> repeated_advan1(
   }
   output[0] = state;
   CppAD::ADFun<double> fun(input, output);
+  recording.release();
   fun.optimize();
   return fun;
 }
@@ -446,6 +476,7 @@ CppAD::ADFun<double> repeated_matrix(
   ADVector input(6), output(2);
   for (std::size_t i = 0; i < input.size(); ++i) input[i] = 0.1 * (i + 1.0);
   CppAD::Independent(input);
+  RecordingGuard<double> recording;
   CppAD::AD<double> first = input[4];
   CppAD::AD<double> second = input[5];
   for (int iteration = 0; iteration < repetitions; ++iteration) {
@@ -465,6 +496,7 @@ CppAD::ADFun<double> repeated_matrix(
   }
   output[0] = first; output[1] = second;
   CppAD::ADFun<double> fun(input, output);
+  recording.release();
   fun.optimize();
   return fun;
 }
@@ -823,6 +855,29 @@ Rcpp::List libertad_checkpoint_probe(int repetitions = 64,
   );
 }
 
+// [[Rcpp::export(name = ".libertad_recording_recovery_probe")]]
+bool libertad_recording_recovery_probe() {
+  try {
+    ADVector failing(1);
+    failing[0] = 1.0;
+    CppAD::Independent(failing);
+    RecordingGuard<double> recording;
+    throw std::runtime_error("intentional recording failure");
+  } catch (const std::runtime_error&) {
+    // The guard must have reset CppAD's thread-local recorder here.
+  }
+
+  ADVector input(1), output(1);
+  input[0] = 2.0;
+  CppAD::Independent(input);
+  RecordingGuard<double> recording;
+  output[0] = input[0] * input[0];
+  CppAD::ADFun<double> fun(input, output);
+  recording.release();
+  const std::vector<double> value = fun.Forward(0, std::vector<double>{3.0});
+  return value.size() == 1U && std::abs(value[0] - 9.0) < 1e-12;
+}
+
 // [[Rcpp::export(name = ".libertad_engine_info")]]
 Rcpp::List libertad_engine_info() {
   return Rcpp::List::create(
@@ -834,7 +889,8 @@ Rcpp::List libertad_engine_info() {
     Rcpp::Named("scalar") = "double",
     Rcpp::Named("persistent_tape") = true,
     Rcpp::Named("cpp_standard") = 17,
-    Rcpp::Named("thread_state") = "one independent tape per ADModel"
+    Rcpp::Named("thread_state") =
+      "single-threaded evaluation per tape; use independent tape instances per worker"
   );
 }
 

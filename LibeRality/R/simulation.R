@@ -26,7 +26,14 @@
       }, integer(1))
     } else {
       hazard <- pmax(response, 1e-12)
-      data$DV[rows] <- stats::rpois(sum(rows), hazard)
+      ids <- data$ID[rows]
+      times <- data$TIME[rows]
+      delta <- numeric(length(times))
+      for (id in unique(ids)) {
+        selected <- which(ids == id)
+        delta[selected] <- .lity_tte_interval_exposure(times[selected], endpoint)
+      }
+      data$DV[rows] <- stats::rpois(sum(rows), hazard * delta)
     }
   }
   data
@@ -205,6 +212,9 @@
 #' @param scenarios Scenario sampling probabilities; defaults to the design.
 #' @param fit Whether to re-estimate each simulated trial with LibeRation.
 #' @param method Estimation method when `fit = TRUE`.
+#' @param covariance Whether fitted trials should run a covariance step so that
+#'   empirical confidence-interval coverage can be calculated.
+#' @param covariance_type Covariance estimator passed to [LibeRation::nm_est()].
 #' @param seed Reproducible seed.
 #' @param n_cores Simulation cores passed to LibeRation.
 #' @param retain_data Retain simulated datasets.
@@ -213,6 +223,8 @@
 #' @export
 lity_simulate_trials <- function(design, n = 100L, scenarios = design$scenarios,
                                  fit = FALSE, method = "FOCEI", seed = 7301L,
+                                 covariance = FALSE,
+                                 covariance_type = "sandwich",
                                  n_cores = 1L, retain_data = TRUE, progress = NULL) {
   started <- proc.time()[[3L]]; n <- as.integer(n); .lity_seed(seed)
   if (length(n) != 1L || is.na(n) || n < 1L) .lity_stop("`n` must be positive.")
@@ -254,7 +266,10 @@ lity_simulate_trials <- function(design, n = 100L, scenarios = design$scenarios,
     nca_results[[trial]] <- nca$results
     nca_applicability[[trial]] <- nca$applicability
     if (retain_data) data_sets[[trial]] <- dataset
-    fit_result <- if (fit) tryCatch(LibeRation::nm_est(model, dataset, method = method), error = identity) else NULL
+    fit_result <- if (fit) tryCatch(LibeRation::nm_est(
+      model, dataset, method = method, covariance = covariance,
+      covariance_type = covariance_type
+    ), error = identity) else NULL
     if (fit) fits[[trial]] <- fit_result
     summaries[[trial]] <- data.frame(
       trial = trial, scenario = scenario$name, observations = sum(dataset$EVID == 0 & dataset$MDV == 0),
@@ -293,15 +308,39 @@ lity_simulate_trials <- function(design, n = 100L, scenarios = design$scenarios,
 #' @export
 lity_operating_characteristics <- function(simulation, alpha = 0.05) {
   if (!inherits(simulation, "lity_simulation")) .lity_stop("`simulation` must be a LibeRality trial simulation.")
+  alpha <- .lity_number(alpha, "alpha", lower = .Machine$double.eps,
+                        upper = 1 - .Machine$double.eps)
   convergence <- if (is.null(simulation$fits)) NA_real_ else mean(simulation$summary$converged, na.rm = TRUE)
   if (is.null(simulation$fits)) return(list(convergence = convergence, estimates = data.frame(), coverage = data.frame()))
   successful <- which(vapply(simulation$fits, inherits, logical(1), "nm_fit"))
   if (!length(successful)) return(list(convergence = convergence, estimates = data.frame(), coverage = data.frame()))
+  interval_rows <- list()
   estimates <- do.call(rbind, lapply(successful, function(i) {
     fit <- simulation$fits[[i]]
     value <- fit$theta %||% fit$par[seq_len(length(simulation$truth[[simulation$scenario_draws[[i]]]]))]
-    data.frame(trial = i, parameter = paste0("THETA", seq_along(value)), estimate = value,
-               truth = simulation$truth[[simulation$scenario_draws[[i]]]], stringsAsFactors = FALSE)
+    truth <- simulation$truth[[simulation$scenario_draws[[i]]]]
+    parameters <- paste0("THETA", seq_along(value))
+    result <- data.frame(
+      trial = i, parameter = parameters, estimate = value, truth = truth,
+      stringsAsFactors = FALSE
+    )
+    covariance <- fit$covariance
+    if (inherits(covariance, "nm_covariance") &&
+        identical(covariance$status %||% "completed", "completed")) {
+      standard_error <- as.numeric(covariance$se[parameters])
+      critical <- stats::qnorm(1 - alpha / 2)
+      lower <- value - critical * standard_error
+      upper <- value + critical * standard_error
+      interval_rows[[length(interval_rows) + 1L]] <<- data.frame(
+        trial = i, parameter = parameters, estimate = value, truth = truth,
+        standard_error = standard_error, lower = lower, upper = upper,
+        covered = is.finite(lower) & is.finite(upper) &
+          truth >= lower & truth <= upper,
+        covariance_type = covariance$type %||% NA_character_,
+        stringsAsFactors = FALSE
+      )
+    }
+    result
   }))
   split_estimate <- split(estimates, estimates$parameter)
   summary <- do.call(rbind, lapply(split_estimate, function(data) data.frame(
@@ -309,8 +348,27 @@ lity_operating_characteristics <- function(simulation, alpha = 0.05) {
     relative_bias = mean((data$estimate - data$truth) / data$truth),
     rmse = sqrt(mean((data$estimate - data$truth)^2)), n = nrow(data), stringsAsFactors = FALSE
   )))
-  list(convergence = convergence, estimates = summary, raw_estimates = estimates,
-       alpha = alpha, theoretical_information = "Use lity_information() for expected precision comparison.")
+  raw_coverage <- if (length(interval_rows)) do.call(rbind, interval_rows) else data.frame()
+  coverage <- if (nrow(raw_coverage)) {
+    do.call(rbind, lapply(split(raw_coverage, raw_coverage$parameter), function(data) {
+      valid <- is.finite(data$standard_error) & data$standard_error >= 0 &
+        !is.na(data$covered)
+      data.frame(
+        parameter = data$parameter[[1L]], coverage = if (any(valid)) mean(data$covered[valid]) else NA_real_,
+        nominal = 1 - alpha, n = sum(valid), unavailable = sum(!valid),
+        stringsAsFactors = FALSE
+      )
+    }))
+  } else data.frame()
+  list(
+    convergence = convergence, estimates = summary, raw_estimates = estimates,
+    coverage = coverage, raw_coverage = raw_coverage,
+    coverage_available = nrow(coverage) > 0L,
+    coverage_reason = if (nrow(coverage)) "" else
+      "No successful fit contained finite parameter confidence intervals; rerun with covariance = TRUE.",
+    alpha = alpha,
+    theoretical_information = "Use lity_information() for expected precision comparison."
+  )
 }
 
 #' @export

@@ -1,0 +1,14 @@
+[Unit]
+Description=Aggregate resource boundary for LibeRties workers
+
+[Slice]
+CPUAccounting=yes
+MemoryAccounting=yes
+TasksAccounting=yes
+TasksMax=4096
+
+# Set deployment-specific aggregate ceilings after measuring the host and
+# intended concurrency. Per-job CPUQuota remains 100% * n_cores underneath.
+# CPUQuota=1600%
+# MemoryHigh=48G
+# MemoryMax=56G

@@ -6,8 +6,10 @@
 #' non-differentiated data to change without retaping, and optimized graph
 #' caches reconstruct tapes with exact source-provenance checks. A small R6
 #' wrapper owns external pointers while numerical evaluation, gradients, dense
-#' or sparse Jacobians, Hessians, matrix operations, and guarded tensor and
-#' Smolyak sparse Gauss-Hermite quadrature grids execute in C++.
+#' or sparse Jacobians, Hessians, and guarded tensor and Smolyak sparse
+#' Gauss-Hermite quadrature grids execute in C++. The public expression IR is
+#' scalar-valued. Downstream native C++ code can separately combine CppAD scalar
+#' types with the bundled Eigen bridge for differentiable matrix algebra.
 #'
 #' @keywords internal
 "_PACKAGE"

@@ -13,7 +13,8 @@ ls_run_api(
   production = !.ls_loopback(host),
   behind_tls_proxy = FALSE,
   policy = ls_security_policy(production = production),
-  isolation_probe = NULL
+  isolation_probe = NULL,
+  executor = if (isTRUE(production)) ls_systemd_executor() else NULL
 )
 }
 \arguments{
@@ -37,6 +38,10 @@ reverse proxy.}
 
 \item{isolation_probe}{Deployment-integrated isolation verifier passed to
 [ls_server_preflight()].}
+
+\item{executor}{Worker executor. Production defaults to
+[ls_systemd_executor()]; trusted loopback development defaults to the
+subprocess backend.}
 }
 \description{
 Bind to loopback by default and place a TLS reverse proxy in front of this

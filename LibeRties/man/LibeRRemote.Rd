@@ -77,13 +77,15 @@ LibeRties remote-server client
   Submit a typed, non-executable job payload.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
-    \preformatted{LibeRRemote$submit(job)}
+    \preformatted{LibeRRemote$submit(job, idempotency_key = NULL)}
     \if{html}{\out{</div>}}
   }
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
       \item{\code{job}}{A job created by [ls_job()].}
+      \item{\code{idempotency_key}}{Optional retry key scoped to the authenticated
+remote user.}
     }
     \if{html}{\out{</div>}}
   }

@@ -1,7 +1,17 @@
 # LibeRtAD 0.7.13
 
+- Adds a public, serializable fixed-shape matrix IR and `ADMatrixModel` wrapper
+  for guarded differentiable matrix multiplication, solves, Cholesky/logdet,
+  matrix exponential, rank updates, quadratic forms, and intrinsically valid
+  covariance construction, including semantic tape-cache round trips.
 - Publishes the final shared asynchronous task-state runtime under a new
   immutable package version after the 0.7.12 release tag.
+- Hardens portable tape caches with a versioned semantic contract: source IR,
+  domain/dynamic/range layout, recorded values, multiple deterministic probes,
+  and finite Jacobians must agree before a cached CppAD graph is accepted.
+- Adds numeric subgraph, kink-convention, cache-tamper, cache-swap, and recovery
+  tests; moves GUI-only dependencies to `Suggests` and installs the complete
+  CppAD GPL-2.0 alternative-license text alongside EPL-2.0.
 
 # LibeRtAD 0.7.12
 

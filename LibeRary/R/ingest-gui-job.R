@@ -50,6 +50,9 @@ ingest_gui_worker <- function(params) {
   if (!is.null(params$deliberative_visual_verification)) {
     cfg$deliberative$visual_verification <- isTRUE(params$deliberative_visual_verification)
   }
+  if (!is.null(params$deliberative_vision_lane)) {
+    cfg$deliberative$vision_lane <- as.character(params$deliberative_vision_lane)
+  }
   if (!is.null(params$deliberative_cache_stages)) {
     cfg$deliberative$cache_stages <- isTRUE(params$deliberative_cache_stages)
   }

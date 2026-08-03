@@ -21,6 +21,34 @@ test_that("scoped expiring credentials and audit records are enforced", {
   expect_error(server$authenticate(user$token), "expired")
 })
 
+test_that("audit records have an append-only journal and optional external mirror", {
+  root <- tempfile("audit-journal-")
+  mirror <- tempfile("audit-mirror-")
+  on.exit(unlink(c(root, mirror), recursive = TRUE, force = TRUE), add = TRUE)
+  old <- getOption("LibeRties.audit_mirror")
+  on.exit(options(LibeRties.audit_mirror = old), add = TRUE)
+  options(LibeRties.audit_mirror = mirror)
+  ls_user_create(root, "alice")
+  ls_user_update(root, "alice", first_name = "Alice")
+
+  journal <- list.files(
+    file.path(root, "server", "audit-events"),
+    pattern = "[.]rds$", full.names = TRUE
+  )
+  mirrored <- list.files(mirror, pattern = "[.]json$", full.names = TRUE)
+  expect_length(journal, 2L)
+  expect_length(mirrored, 2L)
+  audit <- ls_audit_read(root)
+  expect_true(attr(audit, "valid"))
+  expect_true(attr(audit, "journal_valid"))
+  expect_equal(attr(audit, "journal_events"), 2L)
+
+  event <- LibeRties:::.ls_read_rds(journal[[2L]])
+  event$action <- "tampered"
+  LibeRties:::.ls_atomic_save_rds(event, journal[[2L]])
+  expect_false(attr(ls_audit_read(root), "valid"))
+})
+
 test_that("optional storage encryption authenticates all RDS records", {
   root <- tempfile("liberties-encrypted-")
   on.exit(unlink(root, recursive = TRUE, force = TRUE), add = TRUE)
@@ -41,6 +69,20 @@ test_that("optional storage encryption authenticates all RDS records", {
   )
   expect_true(report$ready)
   expect_true(report$storage_encrypted)
+})
+
+test_that("encrypted storage refuses legacy plaintext records", {
+  old <- Sys.getenv("LIBERTIES_STORAGE_KEY", unset = NA_character_)
+  on.exit(if (is.na(old)) Sys.unsetenv("LIBERTIES_STORAGE_KEY") else
+    Sys.setenv(LIBERTIES_STORAGE_KEY = old), add = TRUE)
+  Sys.setenv(LIBERTIES_STORAGE_KEY = ls_generate_storage_key())
+  path <- tempfile(fileext = ".rds")
+  on.exit(unlink(path), add = TRUE)
+  saveRDS(list(secret = "plaintext"), path)
+  expect_error(
+    LibeRties:::.ls_read_rds(path),
+    "Refusing a plaintext LibeRties record"
+  )
 })
 
 test_that("production preflight distinguishes subprocesses from OS isolation", {
@@ -71,6 +113,14 @@ test_that("production preflight distinguishes subprocesses from OS isolation", {
   expect_true(isolated$ready)
   expect_true(isolated$os_isolation_active)
   expect_identical(isolated$os_isolation, "test-sandbox")
+})
+
+test_that("container markers alone are not accepted as isolation attestation", {
+  probe <- LibeRties:::.ls_default_isolation_probe()
+  if (identical(probe$provider, "unattested-linux-container")) {
+    expect_false(probe$active)
+    expect_match(paste(probe$evidence, collapse = " "), "not proof")
+  }
 })
 
 test_that("forwarded addresses are trusted only from configured proxies", {

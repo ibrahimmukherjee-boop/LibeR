@@ -3,6 +3,12 @@
 - Uses the shared LibeRation native NCA backend for individual and candidate
   regimen AUC, average steady-state concentration, peak, trough, and fluctuation
   summaries while retaining a defensive fallback for non-evaluable profiles.
+- Bounds active assessment history and moves older assessments into individually
+  encrypted archives with a tamper-evident index. `lator_assessment_history()`
+  retrieves and verifies active and archived records.
+- Durable assessments now retain model registry id, version, and content hash
+  instead of repeatedly embedding the full model; time-varying ETA assessments
+  validate and record their process-covariance and `process_scale` provenance.
 
 # LibeRator 0.3.4
 

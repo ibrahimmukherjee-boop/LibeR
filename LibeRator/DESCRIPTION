@@ -10,8 +10,10 @@ Description: Longitudinal model-informed precision-dosing tools designed
     toward eventual clinical use and currently labelled Research because the
     system is not yet clinically validated. Maintains encrypted, auditable patient timelines;
     resolves time-varying and intermittently observed covariates without
-    silently inventing values; performs automatic-differentiation-backed
-    Bayesian individualisation; represents changing patient parameters; and
+    silently inventing values or applying an unstated carry-forward policy;
+    performs automatic-differentiation-backed empirical-Bayes/MAP
+    individualisation with explicitly scoped conditional uncertainty;
+    represents changing patient parameters; and
     compares clinically feasible regimens against versioned pharmacokinetic,
     pharmacodynamic, biomarker, and composite endpoints. Integrates with
     LibeRation models, the LibeRary model catalogue, and local or remote

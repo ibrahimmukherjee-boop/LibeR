@@ -10,8 +10,8 @@ Licence: Eclipse Public License 2.0 OR GNU General Public License 2.0 or later
 The bundled header contents, after normalising line endings, match the official
 upstream release tag. The generated cppad/configure.hpp retains the settings
 used by the previously validated build; the upstream configuration template
-changed only in comments. The full EPL-2.0 text is installed at
-LICENSES/EPL-2.0.txt.
+changed only in comments. The full EPL-2.0 and GPL-2.0 texts are installed at
+LICENSES/EPL-2.0.txt and LICENSES/GPL-2.0.txt.
 
 LibeRtAD also bundles the Eigen C++ linear-algebra headers required by the
 native AD and pharmacometric engines.

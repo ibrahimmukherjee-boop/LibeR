@@ -75,8 +75,8 @@ ls_admin_gui <- function(root = .ls_default_root(),
                          admin_token = Sys.getenv("LIBERTIES_ADMIN_TOKEN")) {
   root <- .ls_ensure_dir(root)
   admin_token <- as.character(admin_token)
-  if (length(admin_token) != 1L || is.na(admin_token) || nchar(admin_token) < 16L) {
-    .ls_stop("`admin_token` must contain at least 16 characters.")
+  if (length(admin_token) != 1L || is.na(admin_token) || nchar(admin_token) < 32L) {
+    .ls_stop("`admin_token` must contain at least 32 characters (prefer a generated 256-bit secret).")
   }
   admin_hash <- .ls_token_hash(admin_token)
   rm(admin_token)
@@ -199,7 +199,7 @@ ls_admin_gui <- function(root = .ls_default_root(),
         shiny::div(class = "la-grid la-grid-server",
                    shiny::tags$section(class = "la-panel", shiny::h2("Runtime"), shiny::tableOutput("runtime")),
                    shiny::tags$section(class = "la-panel", shiny::h2("Security boundary"),
-                                  shiny::p("Each tenant has a separate filesystem namespace and bearer token. Worker processes run with restricted inherited environment variables and enforced resource limits."),
+                                  shiny::p("Each tenant has a separate filesystem namespace and bearer token. Worker processes use a restricted inherited environment; application-level resource use is monitored and over-limit jobs are terminated when the supervisor polls."),
                                   shiny::p("The administrator credential is kept as a one-way digest in this application process and is not written to the server registry.")))
       )
     )
@@ -222,7 +222,28 @@ ls_admin_gui <- function(root = .ls_default_root(),
     shiny::uiOutput("gate")
   )
 
+  # Shared by every Shiny session in this administrator process so opening a
+  # new browser session cannot bypass the failed-login throttle.  Keys are the
+  # transport peer address, not a user-controlled forwarded header.
+  login_guard <- new.env(hash = TRUE, parent = emptyenv())
+
   server <- function(input, output, session) {
+    peer <- tryCatch(
+      suppressWarnings(
+        as.character(session$request$REMOTE_ADDR %||% "unknown")[[1L]]
+      ),
+      error = function(error) "unknown"
+    )
+    if (!nzchar(peer)) peer <- "unknown"
+    read_login_guard <- function() get0(
+      peer, envir = login_guard, inherits = FALSE,
+      ifnotfound = list(failures = 0L, locked_until = as.POSIXct(NA))
+    )
+    write_login_guard <- function(value) {
+      assign(peer, value, envir = login_guard)
+      invisible(value)
+    }
+    last_activity <- shiny::reactiveVal(Sys.time())
     initial_users <- ls_user_list(root)
     authenticated <- shiny::reactiveVal(FALSE)
     notice <- shiny::reactiveVal(NULL)
@@ -405,9 +426,20 @@ ls_admin_gui <- function(root = .ls_default_root(),
     }, striped = TRUE, bordered = FALSE)
 
     shiny::observeEvent(input$login, {
+      guard <- read_login_guard()
+      lock_end <- guard$locked_until
+      if (!is.na(lock_end) && Sys.time() < lock_end) {
+        wait <- ceiling(as.numeric(difftime(lock_end, Sys.time(), units = "secs")))
+        set_notice(paste("Administrator login is temporarily locked. Retry in", wait, "seconds."), "error")
+        return()
+      }
       supplied <- .ls_token_hash(input$admin_token %||% "")
       if (.ls_constant_time_equal(supplied, admin_hash)) {
+        if (exists(peer, envir = login_guard, inherits = FALSE)) {
+          rm(list = peer, envir = login_guard)
+        }
         authenticated(TRUE)
+        last_activity(Sys.time())
         shiny::updateTextInput(session, "admin_token", value = "")
         set_notice("Administrator session authenticated.", "success")
         session$onFlushed(
@@ -415,7 +447,33 @@ ls_admin_gui <- function(root = .ls_default_root(),
           once = TRUE
         )
       } else {
-        set_notice("Invalid administrator token.", "error")
+        failures <- as.integer(guard$failures %||% 0L) + 1L
+        if (failures >= 5L) {
+          write_login_guard(list(
+            failures = 0L, locked_until = Sys.time() + 60
+          ))
+          set_notice("Too many failed logins. Administrator login is locked for 60 seconds.", "error")
+        } else {
+          write_login_guard(list(
+            failures = failures, locked_until = as.POSIXct(NA)
+          ))
+          set_notice("Invalid administrator token.", "error")
+        }
+      }
+    })
+    shiny::observe({
+      shiny::reactiveValuesToList(input)
+      if (isTRUE(authenticated())) last_activity(Sys.time())
+    })
+    shiny::observe({
+      shiny::invalidateLater(60000, session)
+      if (isTRUE(authenticated()) &&
+          as.numeric(difftime(Sys.time(), last_activity(), units = "mins")) >= 30) {
+        authenticated(FALSE)
+        set_notice(
+          "Administrator session expired after 30 minutes of inactivity.",
+          "error"
+        )
       }
     })
     shiny::observeEvent(input$logout, {

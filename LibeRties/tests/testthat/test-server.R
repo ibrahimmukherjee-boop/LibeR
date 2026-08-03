@@ -31,6 +31,73 @@ test_that("authenticated operations cannot cross tenant namespaces", {
   expect_error(server$status(bob$token, id), "Unknown job id")
 })
 
+test_that("job submission idempotency is user scoped and payload bound", {
+  root <- tempfile("server-idempotency-")
+  alice <- ls_user_create(root, "alice")
+  bob <- ls_user_create(root, "bob")
+  server <- ls_server(root, max_workers_per_user = 1L)
+  job <- ls_job(
+    "simulate", model = list(version = 1L),
+    data = data.frame(ID = 1, TIME = 0)
+  )
+  first <- server$submit(
+    alice$token, job, start = FALSE, idempotency_key = "client-request-1"
+  )
+  replay <- server$submit(
+    alice$token, job, start = FALSE, idempotency_key = "client-request-1"
+  )
+  expect_identical(unname(as.character(replay)), unname(as.character(first)))
+  expect_true(attr(replay, "idempotent_replay", exact = TRUE))
+  expect_equal(nrow(server$list(alice$token)), 1L)
+
+  changed <- job
+  changed$label <- "different payload"
+  expect_error(
+    server$submit(
+      alice$token, changed, start = FALSE,
+      idempotency_key = "client-request-1"
+    ),
+    "different payload"
+  )
+  bob_id <- server$submit(
+    bob$token, job, start = FALSE, idempotency_key = "client-request-1"
+  )
+  expect_false(identical(unname(as.character(bob_id)), unname(as.character(first))))
+})
+
+test_that("concurrent queue submissions reserve quota atomically", {
+  skip_if_not_installed("callr")
+  root <- tempfile("server-quota-race-")
+  job <- ls_job(
+    "simulate", model = list(version = 1L),
+    data = data.frame(ID = 1, TIME = 0)
+  )
+  runner <- function(root, job, libraries) {
+    .libPaths(libraries)
+    library(LibeRties)
+    queue <- ls_local_queue(
+      root, user = "local", max_workers = 1L,
+      limits = list(max_queued_jobs = 1L)
+    )
+    tryCatch(
+      list(ok = TRUE, id = queue$submit(job, start = FALSE)),
+      error = function(error) list(ok = FALSE, error = conditionMessage(error))
+    )
+  }
+  processes <- lapply(seq_len(2L), function(index) {
+    callr::r_bg(runner, args = list(root, job, .libPaths()), supervise = TRUE)
+  })
+  on.exit(lapply(processes, function(process) {
+    if (process$is_alive()) process$kill()
+  }), add = TRUE)
+  lapply(processes, function(process) process$wait(timeout = 30000L))
+  results <- lapply(processes, function(process) process$get_result())
+  expect_equal(sum(vapply(results, `[[`, logical(1), "ok")), 1L)
+  expect_equal(nrow(ls_local_queue(root)$list()), 1L)
+  failure <- results[[which(!vapply(results, `[[`, logical(1), "ok"))]]$error
+  expect_match(failure, "Queued-job limit")
+})
+
 test_that("disabled users and quota violations are rejected", {
   root <- tempfile("server-")
   user <- ls_user_create(root, "alice", limits = list(

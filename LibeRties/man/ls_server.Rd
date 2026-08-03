@@ -4,12 +4,18 @@
 \alias{ls_server}
 \title{Create the authenticated LibeRties server core}
 \usage{
-ls_server(root = .ls_default_root(), max_workers_per_user = 2L)
+ls_server(
+  root = .ls_default_root(),
+  max_workers_per_user = 2L,
+  executor = NULL
+)
 }
 \arguments{
 \item{root}{Persistent server storage root.}
 
 \item{max_workers_per_user}{Host-level worker ceiling per tenant.}
+
+\item{executor}{Optional [ls_systemd_executor()] specification.}
 }
 \value{
 A `LibeRServer` object.

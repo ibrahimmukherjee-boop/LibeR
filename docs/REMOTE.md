@@ -54,7 +54,12 @@ the client's catalogue implicitly.
 The LibeRation Jobs tab stores remote client definitions, the selected queue,
 and the bearer token in `<workspace>/.liberation/client-settings.rds`. This file
 is outside the package library, is written atomically, and is restricted to the
-current user (`0600`) where the platform supports POSIX permissions. Editing a
+current user (`0600`) on POSIX systems. On Windows, the shared durability layer
+replaces inherited access with an ACL granting full access only to the current
+user SID, SYSTEM, and local Administrators. Set
+`options(LibeR.strict_windows_acl = TRUE)` for deployments that must fail a
+write when this ACL cannot be applied. Authenticated encryption remains the
+primary at-rest control for sensitive workspaces. Editing a
 remote without entering a replacement token retains the existing token. Remove
 the queue from the Jobs tab to remove its saved client definition.
 
@@ -102,17 +107,19 @@ Rscript tools/smoke-remote.R
   are sealed into authenticated encrypted archives when a job becomes terminal.
 
 For a remote deployment, keep the R service on a private/loopback interface and
-terminate TLS at a maintained reverse proxy. `ls_server_preflight()` checks the
-declared TLS, at-rest encryption, and OS-isolation boundary and production mode
-fails closed. The worker boundary is a fresh
-restricted R subprocess, scrubbed startup environment, single-thread numerical
-environment, job-specific working directory, and tenant-specific storage.
-Resource monitoring also survives queue-controller restarts by verifying PID
-creation times before acting on a recovered worker. Production hosting must
-still add OS-account or container isolation; an R subprocess alone is not
-claimed as a hostile-code sandbox. Production preflight accepts automatic
-Linux container/cgroup evidence or a deployment-integrated `isolation_probe`;
-the descriptive `LIBERTIES_OS_ISOLATION` variable does not satisfy the check.
+terminate TLS at a maintained reverse proxy. Production mode uses a transient
+systemd user service for every job and fails closed unless a live sandbox can
+be created. The worker receives a private user/mount/process view, a private
+network namespace for compute work, its one writable job directory, read-only
+R/package libraries, and cgroup-v2 CPU, task, memory, and wall-time limits.
+`KillMode=control-group` also makes cancellation and restart recovery apply to
+all parallel child workers rather than only the parent R PID.
+
+Use a dedicated non-root Linux account and enable its systemd user manager at
+boot. Windows deployments must run the service inside WSL 2 with systemd;
+macOS deployments must supply their own Linux systemd environment. LibeRties
+does not install or emulate systemd on either host. Full setup is documented in
+[SYSTEMD.md](SYSTEMD.md).
 
 Example proxy-aware policy:
 
@@ -126,9 +133,12 @@ policy <- ls_security_policy(
 ls_run_api(
   root, host = "127.0.0.1", behind_tls_proxy = TRUE,
   policy = policy,
-  isolation_probe = function() deployment_sandbox_status()
+  executor = ls_systemd_executor(
+    max_cores_per_job = 16L,
+    storage_credential = "/var/lib/liberties/secrets/storage-key"
+  )
 )
 ```
 
-The probe must return `list(active = TRUE, provider = ..., evidence = ...)`
-only after checking the real service/container boundary.
+An `isolation_probe` remains available for deployment-specific attestation,
+but is no longer needed for the standard systemd production backend.

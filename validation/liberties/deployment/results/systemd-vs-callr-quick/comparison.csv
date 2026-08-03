@@ -1,0 +1,8 @@
+"workload","metric","callr_median_seconds","systemd_median_seconds","systemd_minus_callr_seconds","systemd_percent_change"
+"tiny_simulation","total_seconds",0.2995,0.435,0.1355,45.2420701168615
+"tiny_simulation","worker_seconds",0.0920000076293945,0.0820000171661377,-0.00999999046325684,-10.8695539499736
+"dense_simulation","total_seconds",0.800000000000001,0.958,0.157999999999999,19.7499999999999
+"dense_simulation","worker_seconds",0.555999994277954,0.578999996185303,0.0230000019073486,4.13669103310288
+"focei_estimation","total_seconds",0.579499999999999,0.7455,0.166,28.6453839516826
+"focei_estimation","worker_seconds",0.378999948501587,0.38100004196167,0.00200009346008301,0.527729216848338
+"focei_estimation","engine_core_seconds",0.301,0.2995,-0.0015,-0.498338870431891

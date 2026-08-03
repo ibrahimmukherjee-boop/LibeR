@@ -24,3 +24,10 @@ retained files by location, size, and digest.
 No automated cleanup command deletes application data. Generated files are
 first moved to a dated quarantine directory with CSV manifests so that they can
 be inspected before manual deletion.
+
+Atomic durable files requested with mode `0600` are owner-only on POSIX. On
+Windows, LibeR applies an explicit ACL for the current user SID, SYSTEM, and
+local Administrators and removes inherited access. This is defence in depth;
+sensitive LibeRator and LibeRties stores should also use their authenticated
+encryption. Set `options(LibeR.strict_windows_acl = TRUE)` to make ACL failure
+abort a durable write instead of issuing a once-per-session warning.

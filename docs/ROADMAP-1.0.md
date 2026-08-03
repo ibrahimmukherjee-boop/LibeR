@@ -69,8 +69,9 @@ The following boundaries remain explicit:
   evidence.
 - large/general SDE, DDE, DAE, QSP, PBPK, and hybrid models may remain
   experimental where the validated numerical envelope is narrower;
-- hostile-code isolation requires operating-system, container, or virtual
-  machine controls outside an ordinary R subprocess; and
+- production remote execution requires qualification of the new Linux systemd
+  namespace/cgroup boundary on the intended host; ordinary local subprocesses
+  remain trusted-user execution only; and
 - regulatory-submission readiness is a later programme.
 
 ## 3. Scientific validation programme

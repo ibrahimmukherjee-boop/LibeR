@@ -22,6 +22,50 @@ test_that("local worker reconstructs and runs a LibeRation C++ engine", {
   expect_equal(status$termination_reason, "completed normally")
 })
 
+test_that("a stale queued claim is reclaimed after supervisor restart", {
+  skip_if_not_installed("LibeRation")
+  model <- LibeRation::nm_model(
+    INPUT = c("ID", "TIME", "EVID", "AMT"), ADVAN = 1,
+    PRED = "CL=THETA(1); V=THETA(2); S1=V", ERROR = "Y=F",
+    THETAS = data.frame(THETA = 1:2, Value = c(2, 20))
+  )
+  root <- tempfile("stale-claim-")
+  queue <- ls_local_queue(root, max_workers = 1L)
+  id <- queue$submit(ls_job(
+    "simulate", model,
+    data.frame(ID = 1, TIME = c(0, 1), EVID = c(1, 0), AMT = c(100, 0))
+  ), start = FALSE)
+  job_dir <- LibeRties:::.ls_job_dir(root, "local", id)
+  expect_true(dir.create(file.path(job_dir, ".claimed")))
+  Sys.setFileTime(file.path(job_dir, ".claimed"), Sys.time() - 10)
+  queue$poll(start = TRUE)
+  status <- queue$wait(id, timeout = 30, poll_interval = 0.05)
+  expect_identical(status$status, "completed")
+  expect_false(dir.exists(file.path(job_dir, ".claimed")))
+})
+
+test_that("cancel never kills a reused PID", {
+  model <- structure(list(), class = "nm_model")
+  root <- tempfile("pid-reuse-")
+  queue <- ls_local_queue(root, max_workers = 1L)
+  id <- queue$submit(ls_job(
+    "simulate", model,
+    data.frame(ID = 1, TIME = 0, EVID = 0, AMT = 0)
+  ), start = FALSE)
+  job_dir <- LibeRties:::.ls_job_dir(root, "local", id)
+  LibeRties:::.ls_update_meta(job_dir, list(
+    status = "running", pid = Sys.getpid(), pid_started = 0
+  ), allowed_status = "queued")
+  killed <- FALSE
+  testthat::local_mocked_bindings(
+    .ls_kill_process_tree = function(pid) killed <<- TRUE,
+    .package = "LibeRties"
+  )
+  expect_true(queue$cancel(id))
+  expect_false(killed)
+  expect_identical(queue$status(id)$status, "cancelled")
+})
+
 test_that("estimation gradients are retained in the worker log", {
   skip_if_not_installed("LibeRation")
   model <- LibeRation::nm_model(

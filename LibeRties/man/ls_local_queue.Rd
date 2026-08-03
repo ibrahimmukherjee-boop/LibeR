@@ -8,7 +8,8 @@ ls_local_queue(
   root = .ls_default_root(),
   user = "local",
   max_workers = 1L,
-  limits = list()
+  limits = list(),
+  executor = NULL
 )
 }
 \arguments{
@@ -20,6 +21,9 @@ ls_local_queue(
 
 \item{limits}{Named resource limits, including wall time, CPU time, memory,
 payload, result, and storage quotas.}
+
+\item{executor}{Optional [ls_systemd_executor()] specification. `NULL` uses
+the trusted-local subprocess backend.}
 }
 \value{
 A persistent `LibeRQueue` object.

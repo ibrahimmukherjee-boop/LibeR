@@ -116,6 +116,57 @@ test_that("FOCE and ITS covariance start from fitted conditional modes", {
   }
 })
 
+test_that("native conditional Hessians agree with the numerical gradient Jacobian", {
+  fixture <- estimation_fixture()
+  fixture$model$THETAS$FIX <- c(FALSE, TRUE)
+  fixture$model$SIGMAS$FIX <- TRUE
+  fixture$model$OMEGAS$FIX <- TRUE
+  for (method in c("ITS", "FOCE", "FOCEI", "LAPLACE")) {
+    fit <- nm_est(
+      fixture$model, fixture$data, method = method,
+      maxit = 8, eta_maxit = 80, tolerance = 1e-8
+    )
+    exact <- nm_cov_step(
+      fit, type = "hessian", hessian_backend = "cppad"
+    )
+    numerical <- nm_cov_step(
+      fit, type = "hessian", hessian_backend = "numerical"
+    )
+    expect_true(exact$bread_exact, info = method)
+    expect_identical(exact$hessian_backend, "cppad", info = method)
+    expect_false(numerical$bread_exact, info = method)
+    expect_lt(
+      max(abs(exact$bread - numerical$bread)) /
+        max(1, max(abs(numerical$bread))),
+      2e-4, label = method
+    )
+  }
+})
+
+test_that("native Hessians include nonlinear variance-parameter transforms", {
+  fixture <- estimation_fixture()
+  fixture$model$THETAS$FIX <- TRUE
+  fixture$model$SIGMAS$FIX <- FALSE
+  fixture$model$OMEGAS$FIX <- FALSE
+  fit <- nm_est(
+    fixture$model, fixture$data, method = "FO",
+    maxit = 12, tolerance = 1e-8
+  )
+  exact <- nm_cov_step(
+    fit, type = "hessian", hessian_backend = "cppad"
+  )
+  numerical <- nm_cov_step(
+    fit, type = "hessian", hessian_backend = "numerical"
+  )
+  expect_true(exact$bread_exact)
+  expect_equal(dim(exact$bread), c(2L, 2L))
+  expect_lt(
+    max(abs(exact$bread - numerical$bread)) /
+      max(1, max(abs(numerical$bread))),
+    5e-4
+  )
+})
+
 test_that("NONMEM and likelihood covariance conventions have explicit scaling", {
   fixture <- estimation_fixture()
   fixture$model$THETAS$FIX <- c(FALSE, TRUE)

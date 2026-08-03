@@ -57,6 +57,10 @@
     .Call(`_LibeRtAD_libertad_checkpoint_probe`, repetitions, evaluations)
 }
 
+.libertad_recording_recovery_probe <- function() {
+    .Call(`_LibeRtAD_libertad_recording_recovery_probe`)
+}
+
 .libertad_engine_info <- function() {
     .Call(`_LibeRtAD_libertad_engine_info`)
 }

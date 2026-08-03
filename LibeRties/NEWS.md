@@ -1,7 +1,23 @@
 # LibeRties 0.7.7
 
+- Makes recursive queue-directory creation idempotent under concurrent Linux
+  submissions and validates the production bind-mount boundary during live
+  systemd preflight.
 - Publishes the final shared asynchronous task-state runtime under a new
   immutable package version after the 0.7.6 release tag.
+- Makes remote submissions idempotent with user-scoped, payload-bound atomic
+  claims and support for the HTTP `Idempotency-Key` header.
+- Writes append-only per-event encrypted, hash-chained audit journals with an
+  optional external mirror, and validates recovery and tamper evidence.
+- Consolidates resource-limit enforcement and adds concurrent-quota race,
+  stuck-claim, plaintext-rejection, cancellation/PID, and complete HTTP
+  authorization-matrix regression coverage.
+- Adds the native Linux production executor: each job runs as a hardened
+  transient systemd user service with private namespaces, per-job cgroup-v2
+  CPU/task/memory/wall-time limits, complete-control-group cancellation,
+  restart recovery, credential-mounted encrypted storage, and explicit network
+  isolation for compute jobs. `CPUQuota` scales with requested `n_cores`, so
+  existing multi-process estimation and simulation remain available.
 
 # LibeRties 0.7.6
 

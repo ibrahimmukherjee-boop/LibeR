@@ -121,12 +121,17 @@ ls_queue_capabilities <- function() {
                   "library_index", "library_dual_extract", "library_assess",
                   "library_adjudicate"),
     states = c("queued", "running", "completed", "failed", "cancelled"),
-    worker = "restricted R subprocess with scrubbed environment, isolated working directory, process-tree accounting, and typed entry points",
+    worker = paste(
+      "trusted-local restricted R subprocess or production transient systemd",
+      "user service with namespaces, cgroup-v2 limits, and typed entry points"
+    ),
     local_platform = R.version$platform,
-    remote_target = c("Windows", "Linux", "macOS"),
+    remote_target = "Linux with systemd (native; Windows via WSL; macOS via an operator-supplied Linux systemd environment)",
     integrity = "SHA-256 payload and result digests (MD5 retained for v1 diagnostics)",
     isolation = c("non-executable typed remote contract", "per-tenant filesystem namespace",
-                  "process-tree wall-time/CPU/RSS enforcement", "single-thread numerical libraries",
-                  "external OS sandbox required for production")
+                  "systemd mount/user/network namespaces in production",
+                  "whole-cgroup CPU, task, memory and wall-time limits",
+                  "multi-core child workers retained inside one job cgroup",
+                  "single-thread numerical libraries per R process")
   )
 }

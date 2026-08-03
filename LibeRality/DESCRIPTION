@@ -9,9 +9,11 @@ Maintainer: Sven C. van Dijkman <svdijkman@users.noreply.github.com>
 Description: Model-informed evaluation, optimisation, robustness analysis, and
     simulation of clinical trial designs for nonlinear mixed-effects
     pharmacokinetic and pharmacodynamic models. Reuses LibeRation model and
-    event specifications, obtains exact prediction sensitivities from
-    LibeRtAD-backed C++ engines, and supports continuous, categorical, count,
-    ordinal, and time-to-event outcomes. Implements local, Bayesian, robust,
+    event specifications, obtains CppAD mean-prediction sensitivities from
+    LibeRtAD-backed C++ engines, and uses documented working-information
+    approximations for non-continuous outcomes and parts of the variance block.
+    Supports continuous, categorical, count, ordinal, and exponential or
+    fixed-shape Weibull time-to-event outcomes. Implements local, Bayesian, robust,
     discrimination, power, prediction, clinical-decision, cost, burden,
     compound, constrained, and Pareto design criteria with continuous,
     discrete, integer, allocation, and hybrid optimisation. This research and

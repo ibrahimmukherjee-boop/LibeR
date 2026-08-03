@@ -33,9 +33,12 @@ the response scale.}
 \item{thresholds}{Ordered cut points for an ordinal outcome.}
 
 \item{distribution}{Distribution detail, such as `poisson`, `negative_binomial`,
-`exponential`, or `weibull`.}
+`exponential`, or `weibull`. For a Weibull time-to-event endpoint, the
+model response is the positive cumulative-hazard coefficient `lambda` in
+`H(t) = lambda * t^shape`, rather than the conventional scale parameter.}
 
-\item{dispersion}{Optional count dispersion or Weibull shape.}
+\item{dispersion}{Optional count dispersion. For a Weibull endpoint this is
+the fixed positive shape and must be supplied.}
 
 \item{target}{Optional clinical target definition.}
 

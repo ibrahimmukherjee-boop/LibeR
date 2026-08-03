@@ -4,8 +4,10 @@
 \alias{LibeRQueue}
 \title{Persistent cross-platform LibeR job queue}
 \description{
-Each user receives a separate filesystem namespace. Live jobs run in fresh
-`callr` R processes and reconstruct C++ pointers from serialized models.
+Each user receives a separate filesystem namespace. Trusted local jobs can
+run in fresh `callr` R processes; production jobs can run as hardened,
+cgroup-limited transient systemd services. Both reconstruct C++ pointers
+from serialized models.
 }
 \section{Public fields}{
   \if{html}{\out{<div class="r6-fields">}}
@@ -19,6 +21,8 @@ Each user receives a separate filesystem namespace. Live jobs run in fresh
     \item{\code{limits}}{Effective resource and storage limits.}
 
     \item{\code{isolation}}{Description of the worker isolation strategy.}
+
+    \item{\code{executor}}{Worker execution backend specification.}
 
     \item{\code{processes}}{Internal environment of live `callr` worker handles.}
   }
@@ -51,7 +55,8 @@ Each user receives a separate filesystem namespace. Live jobs run in fresh
   root = .ls_default_root(),
   user = "local",
   max_workers = 1L,
-  limits = list()
+  limits = list(),
+  executor = NULL
 )}
     \if{html}{\out{</div>}}
   }
@@ -63,6 +68,8 @@ Each user receives a separate filesystem namespace. Live jobs run in fresh
       \item{\code{max_workers}}{Maximum simultaneous background workers.}
       \item{\code{limits}}{Named overrides for runtime, CPU, memory, payload, result,
 concurrency, queue, and storage limits.}
+      \item{\code{executor}}{Optional executor created by [ls_systemd_executor()].
+`NULL` retains the trusted-local `callr` subprocess backend.}
     }
     \if{html}{\out{</div>}}
   }
@@ -78,7 +85,7 @@ concurrency, queue, and storage limits.}
   Persist a serializable job and optionally start available workers.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
-    \preformatted{LibeRQueue$submit(job, user = self$user, start = TRUE)}
+    \preformatted{LibeRQueue$submit(job, user = self$user, start = TRUE, idempotency_key = NULL)}
     \if{html}{\out{</div>}}
   }
   \subsection{Arguments}{
@@ -87,6 +94,9 @@ concurrency, queue, and storage limits.}
       \item{\code{job}}{A job created by [ls_job()].}
       \item{\code{user}}{Tenant namespace receiving the job.}
       \item{\code{start}}{Start available queued work immediately.}
+      \item{\code{idempotency_key}}{Optional user-scoped retry key. Reusing a key
+with the same payload returns the original job id; reuse with a
+different payload is rejected.}
     }
     \if{html}{\out{</div>}}
   }

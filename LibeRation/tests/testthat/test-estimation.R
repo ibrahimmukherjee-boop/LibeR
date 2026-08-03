@@ -11,6 +11,21 @@ test_that("FO uses the first-order marginal covariance", {
   expect_gte(fit$timing$total_seconds, fit$timing$model_fit_seconds)
 })
 
+test_that("FOCEI and Laplace recover a local analytic population fixture", {
+  fixture <- estimation_fixture()
+  fixture$model$THETAS$Value[[1L]] <- 1.2
+  fixture$model$THETAS$FIX <- c(FALSE, TRUE)
+  for (method in c("FOCEI", "LAPLACE")) {
+    fit <- nm_est(
+      fixture$model, fixture$data, method = method,
+      maxit = 80L, eta_maxit = 60L, tolerance = 1e-7
+    )
+    expect_equal(fit$convergence, 0L, info = method)
+    expect_equal(fit$theta[[1L]], 2, tolerance = 0.08, info = method)
+    expect_true(all(is.finite(fit$eta)), info = method)
+  }
+})
+
 test_that("FO marginal values and population gradients are taped exactly", {
   fixture <- estimation_fixture()
   fixture$model$THETAS$FIX <- c(FALSE, TRUE)
@@ -463,7 +478,7 @@ test_that("native population optimizer and structural tape pool report telemetry
   expect_true(fit$diagnostics$conditional_modes$evaluations > 0L)
 })
 
-test_that("outer optimization recovers from an isolated non-finite AD gradient", {
+test_that("finite-difference population-gradient fallback is explicit", {
   map <- list(
     start = 10,
     lower = -Inf,
@@ -472,7 +487,7 @@ test_that("outer optimization recovers from an isolated non-finite AD gradient",
     in_bounds = function(parameters) all(is.finite(parameters)),
     decode = identity
   )
-  result <- LibeRation:::.nm_outer_optim(
+  arguments <- list(
     map = map,
     objective = function(parameters) (parameters[[1L]] - 2)^2,
     gradient = function(parameters) {
@@ -482,6 +497,19 @@ test_that("outer optimization recovers from an isolated non-finite AD gradient",
     maxit = 100L,
     tolerance = 1e-8,
     optimizer_backend = "r"
+  )
+
+  expect_error(
+    do.call(LibeRation:::.nm_outer_optim, arguments),
+    "Automatic finite-difference substitution is disabled"
+  )
+  result <- NULL
+  expect_warning(
+    result <- do.call(
+      LibeRation:::.nm_outer_optim,
+      c(arguments, list(allow_fd_gradient = TRUE))
+    ),
+    "explicitly enabled finite-difference"
   )
 
   expect_equal(result$par, 2, tolerance = 1e-5)
@@ -685,6 +713,12 @@ test_that("native prior gradients and full-OMEGA transforms are exact", {
     SIGMAS = data.frame(SIGMA = 1, Value = 0.2, FIX = TRUE)
   )
   map <- LibeRation:::.nm_outer_map(correlated)
+  expect_identical(map$omega_parameterization, "log_cholesky")
+  perturbed <- map$start + c(0.2, -0.7, -0.4)
+  perturbed_covariance <- LibeRation:::.nm_omega_matrix(
+    correlated, map$decode(perturbed)$omega
+  )
+  expect_gt(min(eigen(perturbed_covariance, symmetric = TRUE)$values), 0)
   at <- map$start
   analytic <- map$jacobian(map$decode(at))
   omega_rows <- nrow(correlated$THETAS) + nrow(correlated$SIGMAS) +

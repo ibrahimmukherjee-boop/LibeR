@@ -1,10 +1,10 @@
 test_that("server administration app uses an independent protected login", {
   root <- tempfile("admin-")
-  app <- ls_admin_gui(root, admin_token = "a-strong-admin-token")
+  app <- ls_admin_gui(root, admin_token = "a-strong-admin-token-32-characters")
   expect_s3_class(app, "shiny.appobj")
-  expect_error(ls_admin_gui(root, admin_token = "short"), "at least 16")
+  expect_error(ls_admin_gui(root, admin_token = "short"), "at least 32")
   expect_error(
-    ls_run_admin(root, "a-strong-admin-token", host = "0.0.0.0", launch.browser = NULL),
+    ls_run_admin(root, "a-strong-admin-token-32-characters", host = "0.0.0.0", launch.browser = NULL),
     "loopback"
   )
   favicon_path <- system.file("admin-assets", "favicon.svg", package = "LibeRties")
@@ -26,7 +26,7 @@ test_that("server administration app uses an independent protected login", {
 
 test_that("admin visual controls match the client theme and message patterns", {
   root <- tempfile("admin-theme-")
-  app <- ls_admin_gui(root, admin_token = "a-strong-admin-token")
+  app <- ls_admin_gui(root, admin_token = "a-strong-admin-token-32-characters")
   css <- paste(readLines(
     system.file("admin-assets", "admin.css", package = "LibeRties"),
     warn = FALSE
@@ -36,7 +36,7 @@ test_that("admin visual controls match the client theme and message patterns", {
   expect_match(css, ".table.table-striped", fixed = TRUE)
   expect_match(css, "background:var(--la-soft)", fixed = TRUE)
   shiny::testServer(app[["serverFuncSource"]](), {
-    session$setInputs(admin_token = "a-strong-admin-token", login = 1)
+    session$setInputs(admin_token = "a-strong-admin-token-32-characters", login = 1)
     session$flushReact()
     gate <- paste(as.character(output$gate), collapse = "\n")
     expect_match(gate, "la-theme-toggle", fixed = TRUE)
@@ -49,9 +49,9 @@ test_that("admin visual controls match the client theme and message patterns", {
 
 test_that("admin login and create-user controls drive the server registry", {
   root <- tempfile("admin-workflow-")
-  app <- ls_admin_gui(root, admin_token = "a-strong-admin-token")
+  app <- ls_admin_gui(root, admin_token = "a-strong-admin-token-32-characters")
   shiny::testServer(app[["serverFuncSource"]](), {
-    session$setInputs(admin_token = "a-strong-admin-token", login = 1)
+    session$setInputs(admin_token = "a-strong-admin-token-32-characters", login = 1)
     session$flushReact()
     expect_true(any(grepl("Server administration", as.character(output$gate), fixed = TRUE)))
     session$setInputs(
@@ -92,9 +92,9 @@ test_that("admin restart reloads users and retained jobs from the same root", {
   ), start = FALSE)
   queue$cancel(id)
 
-  app <- ls_admin_gui(root, admin_token = "a-strong-admin-token")
+  app <- ls_admin_gui(root, admin_token = "a-strong-admin-token-32-characters")
   shiny::testServer(app[["serverFuncSource"]](), {
-    session$setInputs(admin_token = "a-strong-admin-token", login = 1)
+    session$setInputs(admin_token = "a-strong-admin-token-32-characters", login = 1)
     session$flushReact()
     session$setInputs(admin_section = "Jobs", refresh_jobs = 1)
     session$flushReact()
@@ -109,9 +109,9 @@ test_that("admin user search and row selection include human names", {
   root <- tempfile("admin-search-")
   ls_user_create(root, "scientist-1", first_name = "Ada", last_name = "Lovelace")
   ls_user_create(root, "scientist-2", first_name = "Grace", last_name = "Hopper")
-  app <- ls_admin_gui(root, admin_token = "a-strong-admin-token")
+  app <- ls_admin_gui(root, admin_token = "a-strong-admin-token-32-characters")
   shiny::testServer(app[["serverFuncSource"]](), {
-    session$setInputs(admin_token = "a-strong-admin-token", login = 1)
+    session$setInputs(admin_token = "a-strong-admin-token-32-characters", login = 1)
     session$flushReact()
     session$setInputs(user_search = "Lovelace")
     session$flushReact()
@@ -133,9 +133,9 @@ test_that("server metrics split jobs by state on the Server tab", {
     "simulate", model = list(version = 1L), data = data.frame(ID = 1, TIME = 0)
   ), start = FALSE)
   queue$cancel(id)
-  app <- ls_admin_gui(root, admin_token = "a-strong-admin-token")
+  app <- ls_admin_gui(root, admin_token = "a-strong-admin-token-32-characters")
   shiny::testServer(app[["serverFuncSource"]](), {
-    session$setInputs(admin_token = "a-strong-admin-token", login = 1,
+    session$setInputs(admin_token = "a-strong-admin-token-32-characters", login = 1,
                       admin_section = "Server")
     session$flushReact()
     rendered <- paste(as.character(output$runtime), collapse = "\n")

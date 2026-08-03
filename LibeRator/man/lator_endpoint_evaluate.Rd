@@ -4,7 +4,13 @@
 \alias{lator_endpoint_evaluate}
 \title{Evaluate predictions against a therapeutic endpoint}
 \usage{
-lator_endpoint_evaluate(endpoint, predictions, patient = NULL, interval = NULL)
+lator_endpoint_evaluate(
+  endpoint,
+  predictions,
+  patient = NULL,
+  interval = NULL,
+  value_column = NULL
+)
 }
 \arguments{
 \item{endpoint}{Endpoint definition.}
@@ -14,6 +20,11 @@ lator_endpoint_evaluate(endpoint, predictions, patient = NULL, interval = NULL)
 \item{patient}{Patient timeline, required when an endpoint obtains MIC or an event anchor from it.}
 
 \item{interval}{Optional two-element evaluation interval.}
+
+\item{value_column}{Optional explicit prediction column. Regimen simulation
+uses `"DV"` when residual observation variability is requested and
+`"IPRED"` otherwise, preventing a residualised run from being silently
+scored on its non-residual individual prediction.}
 }
 \value{
 Per-replicate metrics and an aggregate target-attainment summary.

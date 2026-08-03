@@ -348,14 +348,19 @@ LibeRServer <- R6::R6Class(
     root = NULL,
     #' @field max_workers_per_user Host-level simultaneous-worker ceiling per tenant.
     max_workers_per_user = NULL,
+    #' @field executor Worker execution backend shared by all tenant queues.
+    executor = NULL,
 
     #' @description
     #' Create or reopen the transport-independent server core.
     #' @param root Persistent server storage directory.
     #' @param max_workers_per_user Host-level simultaneous-worker ceiling per tenant.
+    #' @param executor Optional [ls_systemd_executor()] specification.
     #' @return A new `LibeRServer` object.
-    initialize = function(root = .ls_default_root(), max_workers_per_user = 2L) {
+    initialize = function(root = .ls_default_root(), max_workers_per_user = 2L,
+                          executor = NULL) {
       self$root <- .ls_ensure_dir(root)
+      self$executor <- .ls_executor(executor)
       self$max_workers_per_user <- as.integer(max_workers_per_user)
       if (length(self$max_workers_per_user) != 1L || is.na(self$max_workers_per_user) ||
           self$max_workers_per_user < 1L) {
@@ -377,26 +382,27 @@ LibeRServer <- R6::R6Class(
     #' @param token Bearer token issued by [ls_user_create()].
     #' @param job A job created by [ls_job()].
     #' @param start Start available work immediately.
+    #' @param idempotency_key Optional authenticated-user-scoped retry key.
     #' @return The durable job identifier, invisibly.
-    submit = function(token, job, start = TRUE) {
+    submit = function(token, job, start = TRUE, idempotency_key = NULL) {
       auth <- self$authenticate(token, "jobs:write")
       if (!inherits(job, "liber_job")) .ls_stop("`job` must be created by ls_job().")
-      payload_bytes <- length(serialize(job, NULL, version = 3))
-      if (payload_bytes > auth$limits$max_payload_mb * 1024^2) {
-        .ls_stop("Payload exceeds this user's max_payload_mb limit.")
-      }
       queue <- private$queue_for(auth)
-      jobs <- queue$list()
-      if (sum(jobs$status == "queued") >= auth$limits$max_queued_jobs) {
-        .ls_stop("Queued-job limit reached for user ", auth$username, ".")
-      }
-      if (.ls_storage_bytes(self$root, auth$username) + payload_bytes >
-          auth$limits$max_storage_mb * 1024^2) {
-        .ls_stop("Storage quota reached for user ", auth$username, ".")
-      }
-      id <- queue$submit(job, start = start)
-      .ls_audit_append(self$root, "job_submitted", auth$username,
-                       list(id = id, type = job$type))
+      key <- .ls_idempotency_key(idempotency_key)
+      id <- queue$submit(
+        job, start = start, idempotency_key = key
+      )
+      replayed <- isTRUE(attr(id, "idempotent_replay", exact = TRUE))
+      .ls_audit_append(
+        self$root,
+        if (replayed) "job_submission_replayed" else "job_submitted",
+        auth$username,
+        list(
+          id = unname(as.character(id)), type = job$type,
+          idempotency_key_sha256 = if (is.null(key)) "" else
+            unname(paste0(openssl::sha256(charToRaw(key))))
+        )
+      )
       id
     },
 
@@ -477,7 +483,8 @@ LibeRServer <- R6::R6Class(
       if (!exists(username, envir = private$queues, inherits = FALSE)) {
         workers <- min(self$max_workers_per_user, auth$limits$max_concurrent_jobs)
         assign(username, ls_local_queue(
-          self$root, username, workers, limits = auth$limits
+          self$root, username, workers, limits = auth$limits,
+          executor = self$executor
         ), envir = private$queues)
       }
       queue <- get(username, envir = private$queues, inherits = FALSE)
@@ -493,11 +500,13 @@ LibeRServer <- R6::R6Class(
 #' Create the authenticated LibeRties server core
 #' @param root Persistent server storage root.
 #' @param max_workers_per_user Host-level worker ceiling per tenant.
+#' @param executor Optional [ls_systemd_executor()] specification.
 #' @return A `LibeRServer` object.
 #' @examples
 #' server <- ls_server(tempfile("liberties-server-"))
 #' server$root
 #' @export
-ls_server <- function(root = .ls_default_root(), max_workers_per_user = 2L) {
-  LibeRServer$new(root, max_workers_per_user)
+ls_server <- function(root = .ls_default_root(), max_workers_per_user = 2L,
+                      executor = NULL) {
+  LibeRServer$new(root, max_workers_per_user, executor = executor)
 }

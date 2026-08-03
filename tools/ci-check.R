@@ -94,6 +94,12 @@ if (!identical(tolower(Sys.getenv("LIBER_SKIP_LOCAL_INSTALL")), "true")) {
 }
 
 failures <- list()
+note_failures <- list()
+note_allowlist_path <- file.path(root, "tools", "ci-note-allowlist.txt")
+note_allowlist <- if (file.exists(note_allowlist_path)) {
+  values <- trimws(readLines(note_allowlist_path, warn = FALSE))
+  values[nzchar(values) & !startsWith(values, "#")]
+} else character()
 for (package in packages) {
   message("\n===== R CMD check: ", package, " =====")
   result <- rcmdcheck::rcmdcheck(
@@ -109,13 +115,27 @@ for (package in packages) {
     check_dir = file.path(tempdir(), paste0(package, "-check"))
   )
   if (length(result$errors) || length(result$warnings)) failures[[package]] <- result
+  unexpected_notes <- Filter(function(note) {
+    !length(note_allowlist) || !any(vapply(
+      note_allowlist, grepl, logical(1), x = note, perl = TRUE
+    ))
+  }, result$notes)
+  if (length(unexpected_notes)) note_failures[[package]] <- unexpected_notes
 }
 
-if (length(failures)) {
+if (length(failures) || length(note_failures)) {
   details <- vapply(names(failures), function(package) {
     result <- failures[[package]]
     paste0(package, ": ", length(result$errors), " error(s), ",
            length(result$warnings), " warning(s)")
   }, character(1))
-  stop("Package checks failed:\n", paste(details, collapse = "\n"), call. = FALSE)
+  note_details <- vapply(names(note_failures), function(package) {
+    paste0(package, ": ", length(note_failures[[package]]),
+           " unexplained NOTE(s): ",
+           paste(note_failures[[package]], collapse = " | "))
+  }, character(1))
+  stop(
+    "Package checks failed:\n",
+    paste(c(details, note_details), collapse = "\n"), call. = FALSE
+  )
 }

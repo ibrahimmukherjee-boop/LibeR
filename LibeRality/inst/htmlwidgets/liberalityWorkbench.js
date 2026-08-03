@@ -225,7 +225,7 @@
         }))),
         e(Field, { label: "Prediction scale" }, e("select", input(state[0], state[1], "scale"),
           e("option", { value: "linear_predictor" }, "Linear predictor"), e("option", { value: "response" }, "Response scale"))),
-        e(Field, { label: "Dispersion", help: "Optional count/Weibull parameter." }, e("input", input(state[0], state[1], "dispersion", { type: "number", min: 0, step: "any" }))),
+        e(Field, { label: "Dispersion / shape", help: "Negative-binomial dispersion, or the required fixed positive shape for Weibull time-to-event models." }, e("input", input(state[0], state[1], "dispersion", { type: "number", min: 0, step: "any" }))),
         state[0].type === "ordinal" ? e(Field, { label: "Ordinal thresholds", className: "ly-span-2" }, e("input", input(state[0], state[1], "thresholds"))) : null,
         e("footer", { className: "ly-modal-actions ly-span-2" },
           item ? e(Button, { className: "ly-danger-quiet ly-push-left", onClick: function () { deleting[1](true); } }, "Delete endpoint") : null,

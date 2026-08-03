@@ -151,10 +151,23 @@ occasion-expanded ETAs, mixtures, priors, censoring, and correlated residuals
 are composed in that same objective.
 
 Frequentist uncertainty is transformed back to the native THETA/SIGMA/OMEGA
-scale. IMP reuses its common-random-number marginal objective; SAEM performs a
+scale. Deterministic FO/ITS/FOCE/FOCEI/Laplace covariance uses a native CppAD
+population Hessian behind `population_objective_api.hpp`; conditional methods
+include implicit mode sensitivities, curvature/log-determinant derivatives,
+and nonlinear parameter transforms. The numerical gradient-Jacobian Hessian
+is retained as a labelled comparator/fallback. Indefinite covariance repair is
+available only through the explicit, audited `nm_covariance_repair()` API.
+IMP reuses its common-random-number marginal objective; SAEM performs a
 post-fit marginal importance-information calculation. Bayesian runs report
 posterior SDs, posterior CVs, 95% credible intervals, and posterior
 covariance/correlation matrices directly from the saved chain.
+
+The compiled engine is organized as one coordinator translation unit with
+separate internal implementation units for event/ADVAN logic, differential
+systems, differentiable propagation, likelihood tapes, population objectives,
+and state-space decoding. Keeping the CppAD/Eigen template units in one
+translation unit avoids duplicate template instantiation; the stable
+population-objective R boundary is compiled separately.
 
 Model, data, fit, and diagnostic state are stored as immutable model versions
 and runs. Workspace schema v2 writes canonical semantic models, datasets, and
@@ -295,13 +308,13 @@ LibeRary, avoiding a required dependency cycle.
 Remote jobs cross the HTTP boundary through `liber.job.wire/2`, a typed JSON
 format that rejects functions, calls, environments, and external pointers. The
 server discards any client-side compiled representation and rebuilds expression
-IR from the versioned `liberation.model/3` contract through `nm_model()`. Wire
+IR from the versioned `liberation.model/4` contract through `nm_model()`. Wire
 version 1 remains readable for queue migration but is never emitted by new
 clients. RDS remains an internal durable-queue format only, after
 authentication and validation, and may be authenticated-encrypted at rest with
 a server-owned key.
 
-Model contract v3 retains separate `$PK` and `$PRED` sources plus one of three
+Model contract v4 retains separate `$PK` and `$PRED` sources plus one of three
 execution modes. The conventional path is `$PK -> ADVAN/$DES -> $ERROR`; the
 direct path is `$PRED -> $ERROR`; and the combined LibeRation extension is
 `$PK -> ADVAN/$DES -> post-ADVAN $PRED -> $ERROR`. The last stage consumes the

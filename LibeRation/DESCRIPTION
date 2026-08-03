@@ -8,10 +8,12 @@ Author: Sven C. van Dijkman [aut, cre]
 Maintainer: Sven C. van Dijkman <svdijkman@users.noreply.github.com>
 Description: NONMEM-compatible population PK/PD model specification,
     simulation, estimation, diagnostics, and graphical workflow management
-    with one C++ numerical runtime. Implements ADVAN1-14 through analytical,
-    arbitrary linear matrix, explicit/stiff ODE, Michaelis-Menten, and
+    with one C++ numerical runtime. Implements ADVAN1-14 through analytical
+    and numerical paths; ADVAN1-13 have paired NONMEM reference coverage,
+    while ADVAN14 is internally verified pending a NONMEM 7.4+ reference.
+    Provides arbitrary linear matrix, explicit/stiff ODE, Michaelis-Menten, and
     equilibrium-DAE paths, plus analytical and nonlinear periodic
-    steady state, exact automatic differentiation, thirteen population
+    steady state, CppAD derivatives on validated smooth tape paths, thirteen population
     estimation methods, declarative continuous, categorical, count,
     event-time, competing-risk, arbitrary-state continuous-time and
     observed/hidden Markov and semi-Markov likelihoods, correlated joint
@@ -37,7 +39,7 @@ Imports:
     htmltools,
     htmlwidgets,
     jsonlite,
-    LibeRtAD (>= 0.7.10),
+    LibeRtAD (>= 0.7.13),
     parallel,
     promises,
     R6,

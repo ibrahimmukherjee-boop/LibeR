@@ -1,0 +1,42 @@
+[Unit]
+Description=LibeRties authenticated job API
+Documentation=https://github.com/svdijkman/LibeR
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+Environment=LIBERTIES_ROOT=/srv/liberties
+Environment=LIBERTIES_HOST=127.0.0.1
+Environment=LIBERTIES_PORT=8000
+Environment=LIBERTIES_MAX_WORKERS_PER_USER=2
+Environment=LIBERTIES_BEHIND_TLS_PROXY=true
+Environment=LIBERTIES_TRUSTED_PROXIES=127.0.0.1
+Environment=LIBERTIES_SYSTEMD_USER=liberties
+Environment=LIBERTIES_SYSTEMD_STORAGE_CREDENTIAL=/srv/liberties-secrets/storage-key
+LoadCredential=liberties-storage-key:/srv/liberties-secrets/storage-key
+ExecStart=/usr/bin/Rscript --vanilla /REPLACE/WITH/INSTALLED/LibeRties/systemd/liberties-api.R
+Restart=on-failure
+RestartSec=5s
+UMask=0007
+NoNewPrivileges=yes
+PrivateUsers=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/srv/liberties
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+RestrictSUIDSGID=yes
+RestrictRealtime=yes
+LockPersonality=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+SystemCallArchitectures=native
+TasksMax=512
+
+[Install]
+WantedBy=default.target

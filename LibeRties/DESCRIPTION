@@ -7,13 +7,14 @@ Authors@R: person("Sven C.", "van Dijkman",
 Author: Sven C. van Dijkman [aut, cre]
 Maintainer: Sven C. van Dijkman <svdijkman@users.noreply.github.com>
 Description: Executes serialized LibeR simulation and estimation jobs in
-    restricted subprocesses with isolated per-user working directories. A persistent cross-platform local queue uses
-    background R worker processes and the same versioned job contract intended
-    for remote Linux servers. Payload checksums, explicit state transitions,
+    restricted subprocesses or hardened transient systemd user services with
+    isolated per-user working directories. A persistent cross-platform local
+    queue uses background R worker processes and the same versioned job
+    contract used by remote Linux servers. Payload checksums, explicit state transitions,
     metadata locking, safe path components, cancellation, logs, restart
     recovery, per-tenant quotas, monitored resource limits, and result
-    provenance are built into the contract. Production deployments require an
-    external operating-system isolation layer and TLS termination.
+    provenance are built into the contract. Production deployments use the
+    native systemd isolation backend and require TLS termination.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Depends: R (>= 4.1.0)

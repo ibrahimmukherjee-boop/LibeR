@@ -1,3 +1,15 @@
+.ad_require_gui <- function() {
+  packages <- c("callr", "htmltools", "htmlwidgets", "processx", "reactR", "shiny")
+  missing <- packages[!vapply(packages, requireNamespace, logical(1), quietly = TRUE)]
+  if (length(missing)) {
+    .ad_stop(
+      "The optional LibeRtAD benchmark GUI requires: ",
+      paste(missing, collapse = ", "), "."
+    )
+  }
+  invisible(TRUE)
+}
+
 .ad_gui_rows <- function(values) {
   if (is.null(values) || !length(values)) return(list())
   if (is.data.frame(values)) {
@@ -42,6 +54,7 @@
 #' @export
 libertad_workbench <- function(payload, input_id = "libertad_workbench",
                                width = NULL, height = "100vh", elementId = NULL) {
+  .ad_require_gui()
   content <- reactR::component("LibeRtADWorkbench", c(payload, list(inputId = input_id)))
   htmlwidgets::createWidget(
     name = "libertadWorkbench", reactR::reactMarkup(content), width = width,
@@ -51,6 +64,7 @@ libertad_workbench <- function(payload, input_id = "libertad_workbench",
 
 #' @noRd
 widget_html.libertadWorkbench <- function(id, style, class, ...) {
+  .ad_require_gui()
   htmltools::attachDependencies(
     htmltools::tags$div(id = id, class = class, style = style),
     list(reactR::html_dependency_corejs(), reactR::html_dependency_react(),
@@ -63,6 +77,7 @@ widget_html.libertadWorkbench <- function(id, style, class, ...) {
 #' @param width,height CSS dimensions.
 #' @export
 libertadWorkbenchOutput <- function(outputId, width = "100%", height = "100vh") {
+  .ad_require_gui()
   htmlwidgets::shinyWidgetOutput(outputId, "libertadWorkbench", width, height,
                                  package = "LibeRtAD")
 }
@@ -73,6 +88,7 @@ libertadWorkbenchOutput <- function(outputId, width = "100%", height = "100vh") 
 #' @param quoted Whether expression is quoted.
 #' @export
 renderLibertadWorkbench <- function(expr, env = parent.frame(), quoted = FALSE) {
+  .ad_require_gui()
   if (!quoted) expr <- substitute(expr)
   htmlwidgets::shinyRenderWidget(expr, libertadWorkbenchOutput, env, quoted = TRUE)
 }

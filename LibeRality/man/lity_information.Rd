@@ -33,4 +33,7 @@ Continuous outcomes use the multivariate-normal population FIM, including
 mean/covariance cross-information and exact LibeRation prediction
 sensitivities. Non-continuous outcomes use distribution-aware working
 moments, allowing shared random effects and variance-component information.
+Exponential and fixed-shape Weibull time-to-event endpoints use
+counting-process interval increments. For Weibull endpoints the model
+response is the coefficient in `H(t) = lambda * t^shape`.
 }

@@ -4,7 +4,7 @@ test_that("LibeRties administration login renders in a real browser", {
   root <- tempfile("liberties-browser-")
   on.exit(unlink(root, recursive = TRUE, force = TRUE), add = TRUE)
   driver <- shinytest2::AppDriver$new(
-    LibeRties::ls_admin_gui(root, admin_token = "browser-test-admin-token"),
+    LibeRties::ls_admin_gui(root, admin_token = "browser-test-admin-token-32-characters"),
     name = "liberties-browser", width = 1366, height = 768,
     load_timeout = 120000, seed = 20260723
   )

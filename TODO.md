@@ -1,6 +1,10 @@
 # LibeR engineering TODO
 
-Last reviewed: 2026-07-23
+Last reviewed: 2026-08-02
+
+The cross-package P2 implementation order, including the implemented audited
+covariance-repair API and a longer-range public matrix-AD surface, is
+maintained in `docs/P2-HARDENING-PROGRAMME.md`.
 
 The substantial model-engine plan (general covariance/multi-state models,
 state-space methods, SDEs, DDEs, richer latent states, sparse DAE/PBPK/QSP,

@@ -77,9 +77,10 @@ provide TLS, request limits, hardened timeouts, access logging, and certificate
 renewal.
 
 Only proxies listed in `ls_security_policy(trusted_proxies = ...)` may supply a
-forwarded client address. Production preflight also requires a real isolation
-probe (or detected Linux container/cgroup evidence); an environment label is
-not accepted as proof of a sandbox.
+forwarded client address. Production mode uses `ls_systemd_executor()` and
+starts a live transient sandbox during preflight; an environment label or a
+container marker is not accepted as proof. See `docs/SYSTEMD.md` for the
+dedicated-account, lingering, credential, and user-service setup.
 
 For example, expose `https://liberties.example.org` through a maintained proxy
 and forward only to `127.0.0.1:8000`. Do not bind an unencrypted bearer-token
@@ -108,7 +109,8 @@ controls for production use.
 - Keep LibeRtAD, LibeRation, and LibeRties versions aligned across clients and
   workers.
 - Run the service under a dedicated least-privilege OS account.
-- Add container or OS-user isolation for mutually untrusted tenants.
+- Enable its systemd user manager at boot and retain the production executor's
+  namespace and cgroup controls.
 - Terminate TLS at a maintained reverse proxy and restrict request sizes.
 - Monitor disk, memory, worker failures, queue latency, and repeated
   authentication failures.

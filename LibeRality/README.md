@@ -18,11 +18,16 @@ matched PopED/PFIM and which currently have internal verification only.
 
 - Exact LibeRation/CppAD prediction sensitivities and native Eigen information
   matrix assembly.
-- Continuous, binary, ordinal, count, recurrent-event, and time-to-event
-  endpoints, including multi-endpoint designs.
+- Continuous, binary, ordinal, count, recurrent-event, and exponential or
+  fixed-shape Weibull time-to-event endpoints, including multi-endpoint
+  designs. Non-continuous information remains a documented working
+  approximation rather than PopED/PFIM-validated continuous FO information.
 - Population strata, covariate distributions, parameter/model uncertainty,
   dropout, adherence, and missed-sample scenarios.
 - D-, ED-, A-, E-, Ds-, c-, L-, RSE-, and prediction-optimality.
+- Criterion-specific allocation updates for supported smooth D, Ds, A, E, c,
+  L, and prediction-variance objectives; unsupported or non-smooth allocation
+  sensitivities are rejected rather than silently optimized as D-optimality.
 - Bayesian/robust, minimax/maximin, model-average, precision-probability,
   T- and KL-discrimination, power, superiority, non-inferiority, target
   attainment, correct-dose selection, expected utility, cost, and burden.
@@ -31,7 +36,8 @@ matched PopED/PFIM and which currently have internal verification only.
   particle-swarm, Fedorov-Wynn, multiplicative, and hybrid optimisation.
 - Empirical complete-trial simulation with endpoint curves and tables, native
   NCA exposure summaries where applicable, optional LibeRation re-estimation,
-  operating characteristics, HTML reports, and typed LibeRties jobs.
+  operating characteristics, HTML reports, and typed LibeRties jobs. Empirical
+  interval coverage is reported only for fits that produced covariance matrices.
 - A unified model browser for curated templates, LibeRation model versions or
   completed fitted runs, reviewed LibeRary entries, and NONMEM control streams.
   Full models are loaded only when previewed, and selected copies retain source

@@ -125,8 +125,11 @@ lity_schedule <- function(sampling_times, dose = 0, dose_times = 0,
 #'   the response scale.
 #' @param thresholds Ordered cut points for an ordinal outcome.
 #' @param distribution Distribution detail, such as `poisson`, `negative_binomial`,
-#'   `exponential`, or `weibull`.
-#' @param dispersion Optional count dispersion or Weibull shape.
+#'   `exponential`, or `weibull`. For a Weibull time-to-event endpoint, the
+#'   model response is the positive cumulative-hazard coefficient `lambda` in
+#'   `H(t) = lambda * t^shape`, rather than the conventional scale parameter.
+#' @param dispersion Optional count dispersion. For a Weibull endpoint this is
+#'   the fixed positive shape and must be supplied.
 #' @param target Optional clinical target definition.
 #' @param metadata Additional serializable metadata.
 #' @export
@@ -172,6 +175,9 @@ lity_endpoint <- function(name, type = c("continuous", "binary", "ordinal", "cou
     }
   }
   if (!is.null(dispersion)) dispersion <- .lity_number(dispersion, "dispersion", lower = .Machine$double.eps)
+  if (type == "time_to_event" && distribution == "weibull" && is.null(dispersion)) {
+    .lity_stop("Weibull time_to_event endpoints require a fixed positive `dispersion` (shape).")
+  }
   structure(list(
     schema = "liberality.endpoint", version = 1L,
     name = .lity_scalar(name, "name"), type = type, dvid = as.integer(dvid)[[1L]],

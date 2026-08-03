@@ -87,9 +87,12 @@ read. Each worker runs in a fresh R process with a scrubbed environment and a
 per-job working directory. Runtime, CPU, memory, result-size, queue, and
 storage limits are applied at the queue boundary.
 
-This is application-level isolation. A production multi-user host should add
-OS-account or container isolation where the threat model requires protection
-from native-code compromise.
+The default subprocess queue is application-level isolation for trusted local
+use. A production server instead passes `ls_systemd_executor()` to the queue:
+each job becomes a transient systemd user service with namespace isolation and
+whole-cgroup CPU, task, memory, and wall-time limits. A request for four cores
+receives a 400% CPU quota, so PSOCK/FORK parallelism is retained inside the
+single job cgroup.
 
 ## Connect to a remote service
 

@@ -13,7 +13,8 @@ lator_endpoint_aminoglycoside(
   efficacy_metric = c("Cmax/MIC", "AUC/MIC"),
   mic_variable = "MIC",
   unit = "ratio",
-  status = c("draft", "reviewed", "qualified")
+  status = c("draft", "reviewed", "qualified"),
+  metadata = list()
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ lator_endpoint_aminoglycoside(
 \item{unit}{Display unit for the efficacy ratio.}
 
 \item{status}{Governance status.}
+
+\item{metadata}{Additional metadata.}
 }
 \description{
 Aminoglycoside exposure endpoint

@@ -1,11 +1,22 @@
 # LibeRality 0.2.12
 
+- Adds fixed-shape Weibull time-to-event working information and simulation
+  using matched cumulative-hazard interval increments. The endpoint contract
+  explicitly uses `H(t) = lambda * t^shape` and requires the shape value.
 - Adds a regulatory-informed first-in-human single-ascending-dose wizard
   template with five editable active-dose cohorts, rich PK sampling, explicit
   escalation order, and retained sentinel/placebo/review-gate planning
   metadata. Compound-specific starting-dose justification, safety limits,
   placebo implementation, stopping rules, and escalation governance remain
   deliberately outside the automatic template.
+- Uses criterion-specific allocation sensitivities for D, Ds, A, E, c,
+  prediction-variance, and L optimality instead of routing non-D criteria
+  through a D-optimal allocation update. Unsupported or non-smooth cases fail
+  explicitly.
+- Replaces ordinal and supported residual-model finite differences with
+  analytic derivatives, adds a default analytic one-compartment FIM regression,
+  and reports empirical estimator-interval coverage only when covariance
+  estimates are actually available.
 
 # LibeRality 0.2.11
 

@@ -185,6 +185,16 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// libertad_recording_recovery_probe
+bool libertad_recording_recovery_probe();
+RcppExport SEXP _LibeRtAD_libertad_recording_recovery_probe() {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    rcpp_result_gen = Rcpp::wrap(libertad_recording_recovery_probe());
+    return rcpp_result_gen;
+END_RCPP
+}
 // libertad_engine_info
 Rcpp::List libertad_engine_info();
 RcppExport SEXP _LibeRtAD_libertad_engine_info() {
@@ -222,6 +232,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_LibeRtAD_libertad_gauss_hermite_grid", (DL_FUNC) &_LibeRtAD_libertad_gauss_hermite_grid, 3},
     {"_LibeRtAD_libertad_smolyak_gauss_hermite_grid", (DL_FUNC) &_LibeRtAD_libertad_smolyak_gauss_hermite_grid, 3},
     {"_LibeRtAD_libertad_checkpoint_probe", (DL_FUNC) &_LibeRtAD_libertad_checkpoint_probe, 2},
+    {"_LibeRtAD_libertad_recording_recovery_probe", (DL_FUNC) &_LibeRtAD_libertad_recording_recovery_probe, 0},
     {"_LibeRtAD_libertad_engine_info", (DL_FUNC) &_LibeRtAD_libertad_engine_info, 0},
     {"_LibeRtAD_libertad_allocator_info", (DL_FUNC) &_LibeRtAD_libertad_allocator_info, 1},
     {NULL, NULL, 0}
