@@ -171,709 +171,709 @@
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "NMEngine",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "liber_doctor",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "liber_support_bundle",
       "status": "stable-contract"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "liber_support_matrix",
       "status": "stable-contract"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "liber_gui",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "liber_workbench",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "liberWorkbenchOutput",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "renderLiberWorkbench",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_compile",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_control_read",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_control_write",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_bootstrap",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_compare",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_compare_read",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_compare_save",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_benchmark_gate",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_benchmark_provenance",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_cov_step",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_covariance_repair",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_covariance_repair_sensitivity",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_etab",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_gof",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_dataset",
       "status": "stable-contract"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_est",
       "status": "stable-contract"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_est_sequence",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_est_stage",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_matrix_model",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_nca",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_lik_config",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_outcome",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_outcomes",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_irt_outcomes",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_outcome_diagnostics",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_hmm_config",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_cthmm_config",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_residual_group",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_kalman_config",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_kalman_decode",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_sde_config",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_switching_state_space_config",
       "status": "experimental"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_re_block",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_re_config",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_arma_config",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_hsmm_config",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_factorial_chain",
       "status": "experimental"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_factorial_hmm_config",
       "status": "experimental"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_hmm_decode",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_experimental_config",
       "status": "experimental"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_dde_config",
       "status": "experimental"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_dae_config",
       "status": "experimental"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_component",
       "status": "experimental"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_component_code",
       "status": "experimental"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_qsp_system",
       "status": "experimental"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_qsp_model",
       "status": "experimental"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_individual_fit",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_advan_template",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_model",
       "status": "stable-contract"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_model_update",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_mu",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_model_contract_fields",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_model_from_contract",
       "status": "stable-contract"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_model_to_contract",
       "status": "stable-contract"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_model_template",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_structural_templates",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_piecewise",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_spline",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_model_outputs",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_model_diagram",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_diagram_preview",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_diagram_generate",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_model_diagram_get",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_report_block",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_report_design",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_report_design_save",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_report_design_load",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_report_design_render",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_model_cpp",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_mixture",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_mixture_posterior",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_npc",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_npde",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_objective",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_ode_tape_benchmark",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_prediction_derivatives",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_project_create",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_project_copy",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_project_delete",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_project_delete_snapshot",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_project_list",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_project_load",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_project_save",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_project_save_run",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_project_save_diagnostics",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_project_load_diagnostics",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_prior",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_report",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_profile",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_log_lik",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_ppc",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_psis_loo",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_sir",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_scm",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_simulate",
       "status": "stable-contract"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_tape_profile",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_vpc",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_vpc_categorical",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_vpc_competing",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_vpc_count",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_vpc_recurrent",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_vpc_tte",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_waic",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_validation_gate",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_support_matrix",
       "status": "stable-contract"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_workspace",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_workspace_backup",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_workspace_gc",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_workspace_migrate",
       "status": "evolving"
     },
     {
       "package": "LibeRation",
-      "version": "0.10.0",
+      "version": "0.10.1",
       "symbol": "nm_workspace_verify",
       "status": "evolving"
     },
