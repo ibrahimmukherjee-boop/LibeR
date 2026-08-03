@@ -1,3 +1,9 @@
+# LibeRtAD 0.8.1
+
+- Routes CppAD value-graph `printf` diagnostics through R's console adapter,
+  preventing GCC from linking direct `puts`/`putchar` calls into LibeRtAD or
+  downstream engine packages.
+
 # LibeRtAD 0.8.0
 
 - Makes native program and tape pointers private lifecycle state. Callers can

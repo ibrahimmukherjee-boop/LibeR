@@ -94,7 +94,7 @@
     stop(
       "Unable to discover the latest LibeR release from GitHub (", detail,
       "). Pass an explicit tag, for example ",
-      "liber_install(tag = \"v0.9.0-research-beta.11\").",
+      "liber_install(tag = \"v0.9.0-research-beta.12\").",
       call. = FALSE
     )
   }

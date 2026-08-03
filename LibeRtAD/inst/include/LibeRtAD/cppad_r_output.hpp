@@ -5,12 +5,15 @@
 #include <R_ext/Utils.h>
 #include <Rembedded.h>
 
+#include <cstdarg>
+
 // LibeRtAD bundles the official CppAD release 20260000.0 at commit
 // 5d51b2aa6d6874c8d561da298a90b3721550d45d. CppAD contains
-// diagnostic and error branches that write directly to std::cout/std::cerr,
-// and its last-resort default error handler calls std::exit. R extensions must
-// use R's console and exception machinery instead. Keep the redirection local
-// to the CppAD include so it cannot alter client code or the official headers.
+// diagnostic and error branches that write directly to std::cout/std::cerr or
+// std::printf, and its last-resort default error handler calls std::exit. R
+// extensions must use R's console and exception machinery instead. Keep the
+// redirection local to the CppAD include so it cannot alter client code or the
+// official headers.
 //
 // CppAD spells the streams both as qualified names and as unqualified names
 // after `using`. Replacing each identifier while parsing the headers therefore
@@ -24,10 +27,18 @@ inline Rcpp::Rostream<false> cppad_r_error;
     false
   );
 }
+inline int cppad_r_printf(const char* format, ...) {
+  std::va_list arguments;
+  va_start(arguments, format);
+  Rvprintf(format, arguments);
+  va_end(arguments);
+  return 0;
+}
 }
 
 #define cout cppad_r_output
 #define cerr cppad_r_error
+#define printf cppad_r_printf
 #define exit cppad_r_exit
 #pragma push_macro("NDEBUG")
 #ifndef NDEBUG
@@ -36,6 +47,7 @@ inline Rcpp::Rostream<false> cppad_r_error;
 #include <cppad/cppad.hpp>
 #pragma pop_macro("NDEBUG")
 #undef exit
+#undef printf
 #undef cerr
 #undef cout
 

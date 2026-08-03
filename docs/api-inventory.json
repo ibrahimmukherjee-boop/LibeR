@@ -1,6 +1,6 @@
 {
   "schema": "liber.api-inventory/1",
-  "release": "0.9.0-research-beta.11",
+  "release": "0.9.0-research-beta.12",
   "lifecycle_schema": "liber.api-lifecycle/1",
   "policy": {
     "default": "evolving",
@@ -39,133 +39,133 @@
   "entries": [
     {
       "package": "LibeRtAD",
-      "version": "0.8.0",
+      "version": "0.8.1",
       "symbol": "ADModel",
       "status": "evolving"
     },
     {
       "package": "LibeRtAD",
-      "version": "0.8.0",
+      "version": "0.8.1",
       "symbol": "ADMatrixModel",
       "status": "evolving"
     },
     {
       "package": "LibeRtAD",
-      "version": "0.8.0",
+      "version": "0.8.1",
       "symbol": "ad_allocator_info",
       "status": "evolving"
     },
     {
       "package": "LibeRtAD",
-      "version": "0.8.0",
+      "version": "0.8.1",
       "symbol": "ad_benchmark",
       "status": "evolving"
     },
     {
       "package": "LibeRtAD",
-      "version": "0.8.0",
+      "version": "0.8.1",
       "symbol": "ad_benchmark_cases",
       "status": "evolving"
     },
     {
       "package": "LibeRtAD",
-      "version": "0.8.0",
+      "version": "0.8.1",
       "symbol": "ad_checkpoint_probe",
       "status": "evolving"
     },
     {
       "package": "LibeRtAD",
-      "version": "0.8.0",
+      "version": "0.8.1",
       "symbol": "ad_compile",
       "status": "stable-contract"
     },
     {
       "package": "LibeRtAD",
-      "version": "0.8.0",
+      "version": "0.8.1",
       "symbol": "ad_engine_info",
       "status": "stable-contract"
     },
     {
       "package": "LibeRtAD",
-      "version": "0.8.0",
+      "version": "0.8.1",
       "symbol": "ad_gauss_hermite",
       "status": "evolving"
     },
     {
       "package": "LibeRtAD",
-      "version": "0.8.0",
+      "version": "0.8.1",
       "symbol": "ad_smolyak_gauss_hermite",
       "status": "evolving"
     },
     {
       "package": "LibeRtAD",
-      "version": "0.8.0",
+      "version": "0.8.1",
       "symbol": "ad_ir",
       "status": "stable-contract"
     },
     {
       "package": "LibeRtAD",
-      "version": "0.8.0",
+      "version": "0.8.1",
       "symbol": "ad_load_tape",
       "status": "stable-contract"
     },
     {
       "package": "LibeRtAD",
-      "version": "0.8.0",
+      "version": "0.8.1",
       "symbol": "ad_matrix_compile",
       "status": "evolving"
     },
     {
       "package": "LibeRtAD",
-      "version": "0.8.0",
+      "version": "0.8.1",
       "symbol": "ad_matrix_ir",
       "status": "evolving"
     },
     {
       "package": "LibeRtAD",
-      "version": "0.8.0",
+      "version": "0.8.1",
       "symbol": "ad_matrix_load_tape",
       "status": "evolving"
     },
     {
       "package": "LibeRtAD",
-      "version": "0.8.0",
+      "version": "0.8.1",
       "symbol": "ad_matrix_op",
       "status": "evolving"
     },
     {
       "package": "LibeRtAD",
-      "version": "0.8.0",
+      "version": "0.8.1",
       "symbol": "ad_matrix_supported",
       "status": "evolving"
     },
     {
       "package": "LibeRtAD",
-      "version": "0.8.0",
+      "version": "0.8.1",
       "symbol": "ad_supported",
       "status": "evolving"
     },
     {
       "package": "LibeRtAD",
-      "version": "0.8.0",
+      "version": "0.8.1",
       "symbol": "libertad_gui",
       "status": "evolving"
     },
     {
       "package": "LibeRtAD",
-      "version": "0.8.0",
+      "version": "0.8.1",
       "symbol": "libertad_workbench",
       "status": "evolving"
     },
     {
       "package": "LibeRtAD",
-      "version": "0.8.0",
+      "version": "0.8.1",
       "symbol": "libertadWorkbenchOutput",
       "status": "evolving"
     },
     {
       "package": "LibeRtAD",
-      "version": "0.8.0",
+      "version": "0.8.1",
       "symbol": "renderLibertadWorkbench",
       "status": "evolving"
     },
