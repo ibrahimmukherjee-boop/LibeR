@@ -65,7 +65,19 @@ if (!identical(unname(actual), unname(versions))) {
        paste(paste(packages, actual, versions, sep = ": "), collapse = "\n"), call. = FALSE)
 }
 
-destination <- file.path(root, "releases", manifest$release)
+release_root <- file.path(root, "releases")
+dir.create(release_root, recursive = TRUE, showWarnings = FALSE)
+release_root <- normalizePath(release_root, winslash = "/", mustWork = TRUE)
+destination <- file.path(release_root, manifest$release)
+if (dir.exists(destination)) {
+  resolved_destination <- normalizePath(
+    destination, winslash = "/", mustWork = TRUE
+  )
+  if (!identical(dirname(resolved_destination), release_root)) {
+    stop("Refusing to clean a release directory outside releases/.", call. = FALSE)
+  }
+  unlink(resolved_destination, recursive = TRUE, force = TRUE)
+}
 dir.create(destination, recursive = TRUE, showWarnings = FALSE)
 pandoc_candidates <- Filter(nzchar, c(
   Sys.getenv("LIBER_PANDOC_HOME", unset = ""),
