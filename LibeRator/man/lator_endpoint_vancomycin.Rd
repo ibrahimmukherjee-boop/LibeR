@@ -12,6 +12,7 @@ lator_endpoint_vancomycin(
   mic_variable = "MIC",
   safety_auc_upper = NULL,
   unit = "AUC24/MIC",
+  mic_max_age = 168,
   status = c("draft", "reviewed", "qualified"),
   metadata = list()
 )
@@ -28,6 +29,8 @@ lator_endpoint_vancomycin(
 \item{safety_auc_upper}{Optional absolute AUC safety ceiling.}
 
 \item{unit}{Display unit.}
+
+\item{mic_max_age}{Maximum age in hours of MIC evidence.}
 
 \item{status}{Governance status.}
 

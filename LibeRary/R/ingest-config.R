@@ -97,7 +97,24 @@ ingest_validate_config <- function(cfg) {
   if (!nzchar(cfg$inbox_dir)) cfg$inbox_dir <- file.path(cfg$data_dir, "inbox")
   if (!nzchar(cfg$cache_dir)) cfg$cache_dir <- file.path(cfg$data_dir, "cache")
   if (!nzchar(cfg$catalog_dir)) cfg$catalog_dir <- file.path(cfg$data_dir, "catalog")
-  cfg$llm <- ingest_merge_config(DEFAULT_CONFIG$llm, cfg$llm %||% list())
+  llm_override <- cfg$llm %||% list()
+  policy_supplied <- !is.null(llm_override$extraction_independence)
+  legacy_independence <- llm_override$require_independent_extraction_models
+  cfg$llm <- ingest_merge_config(DEFAULT_CONFIG$llm, llm_override)
+  if (!policy_supplied && !is.null(legacy_independence)) {
+    cfg$llm$extraction_independence <- if (isTRUE(legacy_independence)) {
+      "required"
+    } else {
+      "preferred"
+    }
+  }
+  cfg$llm$extraction_independence <- match.arg(
+    as.character(cfg$llm$extraction_independence %||% "required")[[1L]],
+    c("required", "preferred", "off")
+  )
+  cfg$llm$require_independent_extraction_models <- identical(
+    cfg$llm$extraction_independence, "required"
+  )
   structured_retries <- suppressWarnings(as.integer(cfg$llm$structured_retries %||% 1L))
   if (!length(structured_retries) || !is.finite(structured_retries[[1L]])) structured_retries <- 1L
   cfg$llm$structured_retries <- max(0L, min(3L, structured_retries[[1L]]))

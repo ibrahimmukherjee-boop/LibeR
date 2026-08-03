@@ -1,3 +1,19 @@
+# LibeRties 0.8.0
+
+- Establishes hardened transient systemd user services as the native Linux
+  production executor, with per-job namespaces, cgroup-v2 CPU/memory/task/time
+  limits, credential-mounted encrypted storage, and network isolation.
+- Production preflight now requires measured live isolation evidence; container
+  marker files and descriptive labels cannot attest a sandbox.
+- Fails closed on plaintext queue records while encryption is active. Existing
+  plaintext stores must be migrated deliberately before enabling a storage key.
+- Hardens cancellation against PID reuse, clears and recovers durable submission
+  claims, authenticates write scope before payload decode, and strengthens
+  administrative authentication and audit journalling.
+- Adds reproducible WSL/Linux systemd smoke and concurrent multi-core queue
+  campaigns. The restricted `callr` executor remains the portable research and
+  local-development path, not a hostile-code isolation boundary.
+
 # LibeRties 0.7.7
 
 - Makes recursive queue-directory creation idempotent under concurrent Linux

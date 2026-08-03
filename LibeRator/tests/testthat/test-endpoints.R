@@ -212,6 +212,33 @@ test_that("beta-lactam endpoint resolves longitudinal MIC", {
   expect_match(outcome$target, "40")
 })
 
+test_that("endpoint MIC freshness is finite and overrides are audited", {
+  patient <- lator_patient_new("MIC-FRESHNESS")
+  patient <- lator_patient_add_event(
+    patient, "covariate", 0, "MIC", 2, "mg/L"
+  )
+  endpoint <- lator_endpoint_beta_lactam(
+    "Example beta-lactam", 0.4, mic_max_age = 24,
+    source = "teaching source"
+  )
+  predictions <- data.frame(TIME = c(48, 49, 50), IPRED = c(4, 2, 0))
+  expect_error(
+    lator_endpoint_evaluate(endpoint, predictions, patient),
+    "freshness_override"
+  )
+  evaluated <- lator_endpoint_evaluate(
+    endpoint, predictions, patient,
+    freshness_override = list(
+      actor = "Teaching reviewer", reason = "Synthetic override test"
+    )
+  )
+  expect_length(evaluated$covariate_freshness, 1L)
+  expect_equal(
+    evaluated$covariate_freshness[[1L]]$override$actor,
+    "Teaching reviewer"
+  )
+})
+
 test_that("ATG endpoints validate explicit pre-event windows", {
   targets <- data.frame(window_start = c(-24, -6), window_end = c(-18, 0),
                         lower = c(1, 2), upper = c(3, 4))

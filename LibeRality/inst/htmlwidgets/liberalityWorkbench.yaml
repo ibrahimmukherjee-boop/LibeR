@@ -1,6 +1,6 @@
 dependencies:
   - name: liberality-workbench-style
-    version: 0.2.12
+    version: 0.3.0
     src: htmlwidgets
     script: liber-design-system.js
     stylesheet:

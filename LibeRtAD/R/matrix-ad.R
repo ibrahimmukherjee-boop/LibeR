@@ -516,7 +516,7 @@ ADMatrixModel <- R6::R6Class(
     #' @param at Named list of fixed-shape input matrices.
     #' @param taped Use the persistent tape when available.
     #' @return A named list of numeric matrices.
-    value = function(at, taped = !is.null(self$scalar$tape_ptr)) {
+    value = function(at, taped = self$scalar$has_tape()) {
       flat <- .ad_matrix_flatten(self$ir, at)
       if (isTRUE(taped)) {
         if (length(self$scalar$dynamic)) self$scalar$set_dynamic(flat[self$scalar$dynamic])

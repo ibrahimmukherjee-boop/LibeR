@@ -109,6 +109,7 @@ lity_design_history <- function(workspace = NULL) {
 lity_design_version_save <- function(
     design, workspace = NULL, series_id = NULL,
     series_name = NULL, label = NULL) {
+  design <- .lity_design_upgrade(design)
   validation <- lity_validate(design)
   if (!validation$valid) {
     .lity_stop(
@@ -202,7 +203,7 @@ lity_design_version_load <- function(
   if (!file.exists(path)) {
     .lity_stop("Saved design object is missing: ", selected$version_id[[1L]], ".")
   }
-  design <- readRDS(path)
+  design <- .lity_design_upgrade(readRDS(path))
   validation <- lity_validate(design)
   if (!validation$valid) {
     .lity_stop(

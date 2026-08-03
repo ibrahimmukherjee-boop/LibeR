@@ -343,6 +343,10 @@ test_that("GQ exposes adaptive and fixed integration with covariance support", {
   expect_identical(optimized$covariance$status, "completed")
   expect_true(all(is.finite(optimized$covariance$se)))
   expect_true(optimized$covariance$eta_warm_start)
+  expect_match(optimized$covariance$bread_source, "quadrature-score Jacobian")
+  expect_false(grepl(
+    "optimHess", optimized$covariance$bread_source, fixed = TRUE
+  ))
 
   context <- LibeRation:::.nm_estimation_context(optimized$model, optimized$data)
   map <- LibeRation:::.nm_outer_map(context$model)

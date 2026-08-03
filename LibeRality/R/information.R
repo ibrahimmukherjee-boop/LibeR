@@ -346,9 +346,8 @@
   }
   # PopED and PFIM use the conventional block-diagonal population-FO FIM:
   # fixed effects contribute through the mean and variance parameters through
-  # the observation covariance, with the cross block set to zero.  Retain the
-  # fuller Gaussian covariance-derivative form as LibeRality's default, but
-  # expose this convention explicitly for interoperable validation.
+  # the observation covariance, with the cross block set to zero. The fuller
+  # Gaussian covariance-derivative form remains an explicit advanced option.
   if (identical(approximation, "fo_block") && length(theta_rows)) {
     dV[theta_rows] <- replicate(length(theta_rows), matrix(0, nrow(V), ncol(V)), simplify = FALSE)
   }
@@ -382,14 +381,16 @@
 #' @param scenario Scenario name, index, or object.
 #' @param model Optional model override.
 #' @param tolerance Numerical rank tolerance.
-#' @param approximation Information approximation. `"full_gaussian"` includes
-#'   covariance derivatives for fixed effects; `"fo_block"` uses the
-#'   conventional block-diagonal population-FO form used by PopED and PFIM.
+#' @param approximation Optional information approximation override.
+#'   `"fo_block"` uses the conventional block-diagonal population-FO form used
+#'   by PopED and PFIM; `"full_gaussian"` includes covariance derivatives for
+#'   fixed effects. When omitted, the convention stored in `design` is used.
 #' @return A `lity_information` object.
 #' @export
 lity_information <- function(design, scenario = 1L, model = NULL, tolerance = 1e-10,
-                             approximation = c("full_gaussian", "fo_block")) {
-  approximation <- match.arg(approximation)
+                             approximation = NULL) {
+  approximation <- approximation %||% design$information_approximation %||% "fo_block"
+  approximation <- match.arg(approximation, c("fo_block", "full_gaussian"))
   validation <- lity_validate(design)
   if (!validation$valid) .lity_stop("Invalid design: ", paste(validation$errors, collapse = "; "))
   if (inherits(scenario, "lity_scenario")) selected <- scenario

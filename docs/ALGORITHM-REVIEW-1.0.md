@@ -1,7 +1,7 @@
 # LibeR algorithm inventory and final pre-1.0 gap review
 
 Review date: 2026-07-31
-Repository baseline: `0.9.0-research-beta.10`
+Repository baseline: `0.9.0-research-beta.11`
 
 ## Executive assessment
 
@@ -208,7 +208,7 @@ checkpoint/resume for very large campaigns.
 
 #### F. Noncompartmental analysis
 
-**Status:** implemented in LibeRation 0.9.8 and consumed by LibeRality and
+**Status:** implemented in LibeRation 0.10.0 and consumed by LibeRality and
 LibeRator.
 
 **Why it matters:** NCA is an everyday clinical-pharmacology and

@@ -10,6 +10,10 @@ test_that("persistent tape returns exact gradient and Hessian", {
     unname(model$hessian(c(X = 2, Z = -1))),
     matrix(c(2, 1, 1, 6), 2, 2), tolerance = 1e-12
   )
+  expect_true(model$has_tape())
+  expect_error(model$tape_ptr <- NULL)
+  expect_error(model$program_ptr <- NULL)
+  expect_equal(unname(model$value(c(X = 2, Z = -1))), 2)
 })
 
 test_that("program evaluation can use non-taped fixed inputs", {

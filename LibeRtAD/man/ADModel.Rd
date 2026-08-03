@@ -12,11 +12,6 @@ reconstruction, while C++ owns the executable program and persistent tape.
   \describe{
     \item{\code{ir}}{Serializable intermediate representation created by [ad_ir()].}
 
-    \item{\code{program_ptr}}{External pointer to the compiled C++ expression program.}
-
-    \item{\code{tape_ptr}}{External pointer to the persistent CppAD tape, or `NULL`
-until [ADModel]$record() is called.}
-
     \item{\code{wrt}}{Character vector naming the active differentiation inputs.}
 
     \item{\code{outputs}}{Character vector naming the active model outputs.}
@@ -45,6 +40,8 @@ tape's semantic cache probe.}
     \item \href{#method-ADModel-tape_info}{\code{ADModel$tape_info()}}
     \item \href{#method-ADModel-tape_cache}{\code{ADModel$tape_cache()}}
     \item \href{#method-ADModel-save_tape}{\code{ADModel$save_tape()}}
+    \item \href{#method-ADModel-has_tape}{\code{ADModel$has_tape()}}
+    \item \href{#method-ADModel-.restore_tape}{\code{ADModel$.restore_tape()}}
     \item \href{#method-ADModel-print}{\code{ADModel$print()}}
     \item \href{#method-ADModel-clone}{\code{ADModel$clone()}}
   }
@@ -126,7 +123,7 @@ may be supplied in the order shown by `$dynamic`.}
   Evaluate model outputs with the compiled program or recorded tape.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
-    \preformatted{ADModel$value(at, taped = !is.null(self$tape_ptr))}
+    \preformatted{ADModel$value(at, taped = self$has_tape())}
     \if{html}{\out{</div>}}
   }
   \subsection{Arguments}{
@@ -282,6 +279,57 @@ The serializable IR remains included as the auditable source of truth.
   }
   \subsection{Returns}{
     The normalized cache path, invisibly.
+  }
+}
+
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-ADModel-has_tape"></a>}}
+\if{latex}{\out{\hypertarget{method-ADModel-has_tape}{}}}
+\subsection{\code{ADModel$has_tape()}}{
+  Report whether this model owns a recorded CppAD tape.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{ADModel$has_tape()}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    One logical value. Raw external pointers are intentionally not
+  exposed because replacing or clearing them can invalidate C++ state.
+  }
+}
+
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-ADModel-.restore_tape"></a>}}
+\if{latex}{\out{\hypertarget{method-ADModel-.restore_tape}{}}}
+\subsection{\code{ADModel$.restore_tape()}}{
+  Reconstruct a tape from an already validated portable cache. This is an
+internal lifecycle operation; it never accepts or exposes raw pointers.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{ADModel$.restore_tape(
+  graph_json,
+  domain,
+  dynamic,
+  dynamic_values,
+  range,
+  recording_values
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{graph_json}}{Serialized CppAD graph JSON.}
+      \item{\code{domain}}{Active differentiation-input names.}
+      \item{\code{dynamic}}{Dynamic-parameter names.}
+      \item{\code{dynamic_values}}{Current dynamic-parameter values.}
+      \item{\code{range}}{Output names.}
+      \item{\code{recording_values}}{Complete cache recording point.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    The model, invisibly.
   }
 }
 

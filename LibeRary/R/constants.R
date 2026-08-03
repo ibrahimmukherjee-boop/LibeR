@@ -104,7 +104,7 @@ DEFAULT_CONFIG <- list(
   ),
   llm = list(
     allow_remote_content = FALSE,
-    require_independent_extraction_models = FALSE,
+    extraction_independence = "required",
     structured_retries = 1L,
     triage = list(provider = "same", model = "", temperature = 0, instruction = ""),
     indexing = list(provider = "ollama", model = "", temperature = 0, instruction = ""),

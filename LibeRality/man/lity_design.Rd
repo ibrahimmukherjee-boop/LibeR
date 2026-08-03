@@ -14,6 +14,7 @@ lity_design(
   variables = list(),
   constraints = list(),
   prior_fim = NULL,
+  information_approximation = c("fo_block", "full_gaussian"),
   name = "Optimal design",
   description = "",
   metadata = list()
@@ -37,6 +38,11 @@ lity_design(
 \item{constraints}{Design constraints.}
 
 \item{prior_fim}{Optional prior Fisher information matrix.}
+
+\item{information_approximation}{Expected-information convention. The
+interoperable population-FO block convention is the default; the fuller
+Gaussian covariance-derivative approximation remains available as an
+explicit advanced choice.}
 
 \item{name, description}{Human-readable identity.}
 

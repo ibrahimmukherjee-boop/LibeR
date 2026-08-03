@@ -101,3 +101,21 @@ systemd user service, exercises PSOCK parallelism with `n_cores=2`, retrieves
 and validates its result, and checks that the unit/profile/core/task provenance
 was durably recorded. It intentionally fails on Windows and macOS rather than
 pretending to validate a non-systemd substitute.
+
+## Concurrent systemd workers
+
+`run-systemd-concurrency.R` submits eight encrypted two-core simulation jobs to
+a four-worker queue, verifies that at least two but never more than four units
+run concurrently, checks unique transient-unit provenance, and retrieves every
+result. The job and worker counts are configurable for larger host tests:
+
+```text
+LIBERTIES_SYSTEMD_STORAGE_CREDENTIAL=/srv/liberties-secrets/storage-key \
+LIBERTIES_CONCURRENCY_JOBS=8 LIBERTIES_CONCURRENCY_WORKERS=4 \
+Rscript validation/liberties/deployment/run-systemd-concurrency.R
+```
+
+Set `LIBERTIES_SYSTEMD_EVIDENCE` to retain the JSON observation timeline and
+per-job resource telemetry. This is a bounded queue-concurrency qualification,
+not a replacement for API-level k6 saturation and soak testing on the intended
+production host.

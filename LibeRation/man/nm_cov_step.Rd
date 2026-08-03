@@ -44,8 +44,12 @@ of the reported objective function for NONMEM-compatible R and S matrices.
 log-likelihood convention.}
 
 \item{hessian_backend}{Hessian implementation. `"auto"` uses the native
-CppAD/implicit-mode Hessian for deterministic compiled objectives and
-falls back explicitly to a numerical Jacobian of the population gradient.
+CppAD/implicit-mode Hessian for deterministic compiled objectives. GQ,
+IMP, and SAEM use an estimator-specific numerical Jacobian of their fixed
+quadrature/importance score; this is deliberately distinct from a generic
+objective `optimHess` calculation.
+Deterministic objectives fall back explicitly to a numerical Jacobian of
+the population gradient.
 `"cppad"` requires the native path; `"numerical"` is retained as a
 comparator and for stochastic marginal objectives.}
 }

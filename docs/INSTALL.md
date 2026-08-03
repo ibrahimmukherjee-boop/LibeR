@@ -24,7 +24,7 @@ reproducible environment:
 
 ```r
 liber_install(channel = "stable")
-liber_install(tag = "v0.9.0-research-beta.10")
+liber_install(tag = "v0.9.0-research-beta.11")
 ```
 
 `LIBER_RELEASE_CHANNEL` and `LIBER_RELEASE_TAG` provide equivalent
@@ -53,6 +53,10 @@ LibeRation::liber_support_matrix()
 
 The doctor reports the compatibility set, compiled CppAD/Eigen provenance,
 wire contracts, queue capabilities, and optional workspace health.
+
+For the behaviour changes in research beta 11, including private AD pointers,
+strict ADDL handling, endpoint-evidence freshness, and systemd production
+isolation, see [the migration guide](MIGRATION-0.9.0-research-beta.11.md).
 
 ## Bundled desktop runtime
 

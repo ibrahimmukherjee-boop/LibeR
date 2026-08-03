@@ -3,7 +3,8 @@
 
 #include <Rcpp.h>
 #include <LibeRtAD/eigen_r.hpp>
-#include "population_objective_api.hpp"
+#include "execution_contract.h"
+#include "population_objective_api.h"
 #include <LibeRtAD/sparse_hessian.hpp>
 #include <unsupported/Eigen/MatrixFunctions>
 #include <LibeRtAD/program.hpp>
@@ -34,12 +35,12 @@ using Vector = Eigen::VectorXd;
 // CppAD/Eigen template definitions remain visible without duplication.
 // The population-objective R boundary is separately compiled in
 // population_objective_api.cpp.
-#include "pk_engine_event_advan.ipp"
-#include "pk_engine_differential_systems.ipp"
-#include "pk_engine_ad_propagation.ipp"
-#include "pk_engine_likelihood.ipp"
-#include "pk_engine_population.ipp"
-#include "pk_engine_state_space.ipp"
+#include "pk_engine_event_advan.h"
+#include "pk_engine_differential_systems.h"
+#include "pk_engine_ad_propagation.h"
+#include "pk_engine_likelihood.h"
+#include "pk_engine_population.h"
+#include "pk_engine_state_space.h"
 
 }  // namespace liberation
 
@@ -60,6 +61,7 @@ Rcpp::List liberation_engine_simulate(
     const Rcpp::NumericMatrix& eta,
     const Rcpp::NumericVector& sigma) {
   Rcpp::XPtr<liberation::ModelEngine> engine(engine_pointer);
+  liberation::require_materialized_addl(data);
   return liberation::simulate(*engine, data, theta, eta, sigma);
 }
 
@@ -71,6 +73,7 @@ Rcpp::List liberation_engine_hmm_filter(
     const Rcpp::NumericMatrix& eta,
     const Rcpp::NumericVector& sigma) {
   Rcpp::XPtr<liberation::ModelEngine> engine(engine_pointer);
+  liberation::require_materialized_addl(data);
   return liberation::hmm_filter(*engine, data, theta, eta, sigma);
 }
 
@@ -82,6 +85,7 @@ Rcpp::List liberation_engine_kalman_filter(
     const Rcpp::NumericMatrix& eta,
     const Rcpp::NumericVector& sigma) {
   Rcpp::XPtr<liberation::ModelEngine> engine(engine_pointer);
+  liberation::require_materialized_addl(data);
   return liberation::kalman_filter(*engine, data, theta, eta, sigma);
 }
 
@@ -93,6 +97,7 @@ Rcpp::NumericVector liberation_engine_kalman_simulate(
     const Rcpp::NumericMatrix& process_normals,
     const Rcpp::NumericVector& observation_normals) {
   Rcpp::XPtr<liberation::ModelEngine> engine(engine_pointer);
+  liberation::require_materialized_addl(data);
   return liberation::kalman_simulate(
     *engine, data, theta, eta, sigma, process_normals, observation_normals);
 }
@@ -109,6 +114,7 @@ Rcpp::NumericVector liberation_engine_derivative(
     const Rcpp::NumericMatrix& eta,
     const Rcpp::NumericVector& sigma) {
   Rcpp::XPtr<liberation::ModelEngine> engine(engine_pointer);
+  liberation::require_materialized_addl(data);
   if (row < 1 || row > data.nrows()) Rcpp::stop("Derivative row is outside the dataset.");
   if (subject < 1 || subject > eta.nrow()) Rcpp::stop("Derivative subject is outside the ETA matrix.");
   if (state.size() != engine->n_state) Rcpp::stop("Derivative state has the wrong length.");
@@ -148,6 +154,7 @@ SEXP liberation_prediction_tape_create(
     const Rcpp::NumericVector& theta, const Rcpp::NumericMatrix& eta,
     const Rcpp::NumericVector& sigma) {
   Rcpp::XPtr<liberation::ModelEngine> engine(engine_pointer);
+  liberation::require_materialized_addl(data);
   std::unique_ptr<liberation::PredictionTape> tape = liberation::record_prediction_tape(
     *engine, data, theta, eta, sigma);
   Rcpp::XPtr<liberation::PredictionTape> pointer(tape.release(), true);
@@ -207,6 +214,7 @@ Rcpp::List liberation_prediction_tape_info(SEXP tape_pointer) {
 // [[Rcpp::export(name = ".liberation_prediction_tape_new_dynamic")]]
 Rcpp::NumericVector liberation_prediction_tape_new_dynamic(
     SEXP tape_pointer, const Rcpp::DataFrame& data) {
+  liberation::require_materialized_addl(data);
   Rcpp::XPtr<liberation::PredictionTape> tape(tape_pointer);
   std::vector<double> values = liberation::prediction_dynamic_values(
     tape->dynamic_columns, data, tape->n_rows);
@@ -220,6 +228,7 @@ Rcpp::NumericVector liberation_prediction_tape_new_dynamic(
 // [[Rcpp::export(name = ".liberation_fo_tape_new_dynamic")]]
 Rcpp::NumericVector liberation_fo_tape_new_dynamic(
     SEXP tape_pointer, const Rcpp::DataFrame& data) {
+  liberation::require_materialized_addl(data);
   Rcpp::XPtr<liberation::ObjectiveTape> tape(tape_pointer);
   liberation::set_fo_dynamic(*tape, data);
   return Rcpp::wrap(tape->dynamic_values);
@@ -352,6 +361,7 @@ SEXP liberation_fo_tape_create(
     SEXP engine_pointer, SEXP prediction_tape_pointer,
     const Rcpp::DataFrame& data, const Rcpp::NumericVector& theta,
     const Rcpp::NumericVector& sigma, const Rcpp::NumericVector& omega) {
+  liberation::require_materialized_addl(data);
   Rcpp::XPtr<liberation::ModelEngine> engine(engine_pointer);
   Rcpp::XPtr<liberation::PredictionTape> prediction_tape(prediction_tape_pointer);
   std::unique_ptr<liberation::ObjectiveTape> tape = liberation::record_fo_tape(
@@ -370,6 +380,7 @@ SEXP liberation_curvature_tape_create(
     const Rcpp::NumericVector& theta, const Rcpp::NumericVector& eta,
     const Rcpp::NumericVector& sigma, const Rcpp::NumericVector& omega,
     const std::string& approximation) {
+  liberation::require_materialized_addl(data);
   Rcpp::XPtr<liberation::ModelEngine> engine(engine_pointer);
   Rcpp::XPtr<liberation::PredictionTape> prediction_tape(prediction_tape_pointer);
   Rcpp::XPtr<liberation::ObjectiveTape> objective_tape(objective_tape_pointer);
@@ -389,6 +400,7 @@ SEXP liberation_objective_tape_create(
     const Rcpp::NumericVector& theta, const Rcpp::NumericMatrix& eta,
     const Rcpp::NumericVector& sigma, const Rcpp::NumericVector& omega,
     bool interaction = true) {
+  liberation::require_materialized_addl(data);
   Rcpp::XPtr<liberation::ModelEngine> engine(engine_pointer);
   std::unique_ptr<liberation::ObjectiveTape> tape = liberation::record_objective_tape(
     *engine, data, theta, eta, sigma, omega, interaction);
@@ -959,6 +971,7 @@ Rcpp::NumericMatrix liberation_mixture_component_nll(
     SEXP engine_pointer, const Rcpp::DataFrame& data,
     const Rcpp::NumericVector& theta, const Rcpp::NumericMatrix& eta,
     const Rcpp::NumericVector& sigma) {
+  liberation::require_materialized_addl(data);
   Rcpp::XPtr<liberation::ModelEngine> engine(engine_pointer);
   if (engine->mixture_probabilities.empty()) {
     Rcpp::stop("The model does not define a finite mixture.");

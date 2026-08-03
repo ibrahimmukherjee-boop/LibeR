@@ -1,3 +1,22 @@
+# LibeRation 0.10.0
+
+- Makes the compiled engine pointer read-only and routes every engine input
+  through one canonical ADDL materializer. Native entry points now fail closed
+  if an unexpanded ADDL record bypasses that boundary.
+- Disables silent finite-difference recovery for a non-finite outer gradient by
+  default. `allow_fd_gradient = TRUE` is an explicit, warned, and telemetered
+  compatibility escape hatch.
+- Uses the complete CppAD population-objective Hessian for supported
+  deterministic estimators. GQ, IMP, and SAEM covariance now use
+  estimator-specific observed marginal score information at the final fit,
+  with proposal adaptation held fixed and full provenance; they no longer use
+  `optimHess` as their ordinary covariance bread.
+- Keeps covariance repair opt-in, records spectral and adjustment diagnostics,
+  and never silently changes a materially indefinite ETA covariance matrix.
+- Completes the seam-aligned engine source split, adds regression coverage for
+  parameter recovery and native-boundary invariants, and publishes the related
+  NONMEM and covariance validation evidence.
+
 # LibeRation 0.9.8
 
 - Extends explicit covariance recovery with a symmetric pivoted

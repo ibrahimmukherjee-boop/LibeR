@@ -9,7 +9,7 @@ lity_information(
   scenario = 1L,
   model = NULL,
   tolerance = 1e-10,
-  approximation = c("full_gaussian", "fo_block")
+  approximation = NULL
 )
 }
 \arguments{
@@ -21,9 +21,10 @@ lity_information(
 
 \item{tolerance}{Numerical rank tolerance.}
 
-\item{approximation}{Information approximation. `"full_gaussian"` includes
-covariance derivatives for fixed effects; `"fo_block"` uses the
-conventional block-diagonal population-FO form used by PopED and PFIM.}
+\item{approximation}{Optional information approximation override.
+`"fo_block"` uses the conventional block-diagonal population-FO form used
+by PopED and PFIM; `"full_gaussian"` includes covariance derivatives for
+fixed effects. When omitted, the convention stored in `design` is used.}
 }
 \value{
 A `lity_information` object.

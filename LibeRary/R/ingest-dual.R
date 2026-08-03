@@ -538,7 +538,9 @@ ingest_dual_extract <- function(metadata, bundle, cfg = NULL, adjudicate = TRUE,
       status = status, model_present = model_present,
       extraction = text$result$extraction %||% NULL,
       text = text, vision = vision, comparison = comparison,
-      adjudication = NULL, independent_models = NA, warning = warning,
+      adjudication = NULL, independent_models = NA,
+      independence_policy = "not_applicable_falsification",
+      independence_gate_passed = TRUE, warning = warning,
       audit = list(
         schema_version = LIBRARY_SCHEMA_VERSION,
         prompt_version = LIBRARY_PROMPT_VERSION,
@@ -547,7 +549,9 @@ ingest_dual_extract <- function(metadata, bundle, cfg = NULL, adjudicate = TRUE,
         text = text$audit %||% list(error = text$error %||% ""),
         vision = vision$audit %||% list(error = vision$error %||% ""),
         comparison = comparison, adjudication = list(skipped = TRUE),
-        independent_models = NA, warning = warning
+        independent_models = NA,
+        independence_policy = "not_applicable_falsification",
+        independence_gate_passed = TRUE, warning = warning
       )
     ))
   }
@@ -562,7 +566,8 @@ ingest_dual_extract <- function(metadata, bundle, cfg = NULL, adjudicate = TRUE,
     paste(text_endpoint$provider, text_endpoint$model, sep = "|"),
     paste(vision_endpoint$provider, vision_endpoint$model, sep = "|")
   )
-  if (isTRUE(cfg$llm$require_independent_extraction_models) && !independent_models) {
+  independence_policy <- cfg$llm$extraction_independence %||% "required"
+  if (identical(independence_policy, "required") && !independent_models) {
     stop("Text and vision extraction roles must use different provider/model combinations.", call. = FALSE)
   }
   warning <- if (independent_models) "" else
@@ -576,7 +581,8 @@ ingest_dual_extract <- function(metadata, bundle, cfg = NULL, adjudicate = TRUE,
     stage(1, "No valid extraction lane; article requires review", "complete")
     return(list(status = "needs_review", model_present = NA, extraction = NULL,
                 text = text, vision = vision, comparison = comparison,
-                adjudication = NULL, warning = warning,
+                adjudication = NULL, independent_models = independent_models,
+                warning = warning,
                 audit = list(
                   schema_version = LIBRARY_SCHEMA_VERSION,
                   prompt_version = LIBRARY_PROMPT_VERSION,
@@ -586,6 +592,9 @@ ingest_dual_extract <- function(metadata, bundle, cfg = NULL, adjudicate = TRUE,
                   comparison = comparison,
                   adjudication = list(error = "No valid extraction lane was available."),
                   independent_models = independent_models,
+                  independence_policy = independence_policy,
+                  independence_gate_passed = independent_models ||
+                    identical(independence_policy, "off"),
                   warning = warning
                 )))
   }
@@ -628,6 +637,17 @@ ingest_dual_extract <- function(metadata, bundle, cfg = NULL, adjudicate = TRUE,
       "The evidence-led investigation did not pass all deterministic completeness, consistency, and ledger-binding gates."
     )), collapse = " ")
   }
+  if (!independent_models && identical(independence_policy, "preferred") &&
+      status %in% c("machine_consistent", "machine_adjudicated")) {
+    status <- "needs_review"
+    warning <- paste(Filter(nzchar, c(
+      warning,
+      paste(
+        "Correlated extraction lanes are retained as exploratory evidence",
+        "and cannot receive a machine-consistent publication status."
+      )
+    )), collapse = " ")
+  }
   stage(1, "Extraction and reconciliation complete", "complete")
   list(
     status = status,
@@ -638,6 +658,9 @@ ingest_dual_extract <- function(metadata, bundle, cfg = NULL, adjudicate = TRUE,
     comparison = comparison,
     adjudication = adjudication,
     independent_models = independent_models,
+    independence_policy = independence_policy,
+    independence_gate_passed = independent_models ||
+      identical(independence_policy, "off"),
     warning = warning,
     audit = list(
       schema_version = LIBRARY_SCHEMA_VERSION,
@@ -648,6 +671,9 @@ ingest_dual_extract <- function(metadata, bundle, cfg = NULL, adjudicate = TRUE,
       comparison = comparison,
       adjudication = adjudication$audit %||% list(error = adjudication$error %||% ""),
       independent_models = independent_models,
+      independence_policy = independence_policy,
+      independence_gate_passed = independent_models ||
+        identical(independence_policy, "off"),
       warning = warning
     )
   )

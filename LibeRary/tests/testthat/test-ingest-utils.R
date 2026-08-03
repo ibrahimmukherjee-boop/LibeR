@@ -357,7 +357,19 @@ test_that("failed acquisition leaves a resumable manual-inbox request", {
 test_that("deliberative vision role is explicit and defaults to falsification", {
   cfg <- ingest_validate_config(getFromNamespace("DEFAULT_CONFIG", "LibeRary"))
   expect_equal(cfg$deliberative$vision_lane, "falsification")
+  expect_equal(cfg$llm$extraction_independence, "required")
   expect_gte(cfg$deliberative$max_gap_rounds, 2L)
   cfg$deliberative$vision_lane <- "duplicate_synthesis"
+  expect_error(ingest_validate_config(cfg), "arg")
+})
+
+test_that("legacy extraction independence settings migrate explicitly", {
+  cfg <- getFromNamespace("DEFAULT_CONFIG", "LibeRary")
+  cfg$llm$extraction_independence <- NULL
+  cfg$llm$require_independent_extraction_models <- FALSE
+  cfg <- ingest_validate_config(cfg)
+  expect_equal(cfg$llm$extraction_independence, "preferred")
+  expect_false(cfg$llm$require_independent_extraction_models)
+  cfg$llm$extraction_independence <- "invalid"
   expect_error(ingest_validate_config(cfg), "arg")
 })

@@ -3,6 +3,8 @@ test_that("design history saves immutable sequential versions", {
   dir.create(workspace)
   on.exit(unlink(workspace, recursive = TRUE, force = TRUE), add = TRUE)
   original <- lity_example()$design
+  original$information_approximation <- NULL
+  original$version <- 1L
 
   first <- lity_design_version_save(
     original, workspace, series_name = "Theo study design"
@@ -42,6 +44,9 @@ test_that("design history saves immutable sequential versions", {
     )$name,
     revised$name
   )
+  upgraded <- lity_design_version_load(workspace, first$series_id, 1L)
+  expect_equal(upgraded$version, 2L)
+  expect_equal(upgraded$information_approximation, "fo_block")
 })
 
 test_that("design histories keep separate designs and expose GUI state", {

@@ -1,0 +1,39 @@
+{
+  "schema": "liberties.systemd.smoke",
+  "version": 1,
+  "passed": true,
+  "checked": "2026-08-03T14:18:09.484Z",
+  "preflight": {
+    "ready": true,
+    "production": true,
+    "root": "/tmp/liberties-systemd-smoke-1835b376805",
+    "host": "127.0.0.1",
+    "tls_proxy": true,
+    "storage_encrypted": true,
+    "executor": "systemd",
+    "os_isolation": "systemd-transient-service",
+    "os_isolation_active": true,
+    "os_isolation_evidence": ["live transient sandbox completed", "pid1=systemd", "cgroup_v2=TRUE", "service_user=nvidia", "manager=user", "worker_slice=liberties-workers.slice", "max_cores_per_job=2", "per-job CPUQuota=100%*n_cores; child processes remain in the unit cgroup"],
+    "os_isolation_label": "",
+    "requests_per_minute": 120,
+    "max_rate_limit_keys": 10000,
+    "trusted_proxies": [],
+    "issues": [],
+    "warnings": "Live logs are plaintext while a worker runs and are encrypted when it becomes terminal.",
+    "checked": "2026-08-03T14:18:08.493Z"
+  },
+  "job": {
+    "id": "20260803T141808-416b2a1bade58d663a06b60ac56703c6",
+    "status": "completed",
+    "isolation": "systemd-transient-service",
+    "executor": "systemd",
+    "systemd_unit": "liberties-job-1ca3cc98dcda82539f2fdd78.service",
+    "systemd_profile": "network-isolated-compute",
+    "requested_cores": 2,
+    "tasks_max": 64,
+    "peak_memory_mb": 0.0499,
+    "cpu_seconds": 0.38,
+    "elapsed_seconds": 0.3306
+  },
+  "packages": ["0.8.0", "0.10.0", "0.8.0"]
+}

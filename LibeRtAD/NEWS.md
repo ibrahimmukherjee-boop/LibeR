@@ -1,3 +1,15 @@
+# LibeRtAD 0.8.0
+
+- Makes native program and tape pointers private lifecycle state. Callers can
+  inspect `has_tape()` but can no longer replace, null, or serialize raw
+  external pointers; semantic tape-cache restoration remains supported.
+- Completes the fixed-shape matrix-AD contract and adds recording guards that
+  always abort an interrupted CppAD recording before control returns to R.
+- Clarifies that a tape is evaluated by one thread at a time and strengthens
+  matrix, subgraph, branch-derivative, cache-tamper, and pointer-lifetime tests.
+- This is a breaking lifecycle release for code that accessed `$tape_ptr` or
+  `$program_ptr` directly. Such code must use the documented model methods.
+
 # LibeRtAD 0.7.13
 
 - Adds a public, serializable fixed-shape matrix IR and `ADMatrixModel` wrapper

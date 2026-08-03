@@ -1,3 +1,13 @@
+.nm_parallel_registry <- new.env(parent = emptyenv())
+
+.nm_parallel_worker_state <- function() {
+  state <- .nm_parallel_registry$state
+  if (!is.environment(state)) {
+    .nm_stop("Parallel estimation worker state is not initialized.")
+  }
+  state
+}
+
 .nm_subject_data <- function(data, subject) {
   out <- as.data.frame(data[data$.ID_INDEX == subject, , drop = FALSE])
   internal <- intersect(c(".ID_INDEX", ".source_row", ".generated", ".sort_priority"), names(out))
@@ -651,7 +661,8 @@
           state <- new.env(parent = emptyenv())
           state$subjects <- evaluators
           state$model <- specification
-          assign(".liber_parallel_state", state, envir = .GlobalEnv)
+          registry <- get(".nm_parallel_registry", envir = namespace)
+          registry$state <- state
           TRUE
         },
         data_chunks = lapply(chunks, function(rows) subject_data[rows]),
@@ -1320,7 +1331,10 @@
       context$parallel$cluster, seq_along(chunks),
        function(index, start_chunks, theta, sigma, omega, maxit, tolerance,
                 interaction, exact_hessian) {
-        evaluators <- get(".liber_parallel_state", envir = .GlobalEnv)$subjects
+        worker_state <- get(
+          ".nm_parallel_worker_state", envir = asNamespace("LibeRation")
+        )
+        evaluators <- worker_state()$subjects
         worker_starts <- start_chunks[[index]]
         context <- list(n_eta = ncol(worker_starts))
         parameters <- list(theta = theta, sigma = sigma, omega = omega)
@@ -1456,7 +1470,10 @@
     pieces <- parallel::clusterApply(
       context$parallel$cluster, seq_along(context$parallel$chunks),
       function(index, eta_chunks, parameters, interaction) {
-        evaluators <- get(".liber_parallel_state", envir = .GlobalEnv)$subjects
+        worker_state <- get(
+          ".nm_parallel_worker_state", envir = asNamespace("LibeRation")
+        )
+        evaluators <- worker_state()$subjects
         collection <- get(
           ".nm_objective_collection_gradient", envir = asNamespace("LibeRation")
         )
@@ -1510,7 +1527,10 @@
     pieces <- parallel::clusterApply(
       context$parallel$cluster, seq_along(context$parallel$chunks),
       function(index, eta_chunks, n_eta, parameters, approximation, transform) {
-        evaluators <- get(".liber_parallel_state", envir = .GlobalEnv)$subjects
+        worker_state <- get(
+          ".nm_parallel_worker_state", envir = asNamespace("LibeRation")
+        )
+        evaluators <- worker_state()$subjects
         batch <- get(".nm_nested_gradient_batch", envir = asNamespace("LibeRation"))
         batch(
           evaluators, n_eta, parameters, eta_chunks[[index]],
@@ -1688,7 +1708,9 @@
       function(index, parameters) {
         namespace <- asNamespace("LibeRation")
         subject_objective <- get(".nm_fo_subject", envir = namespace)
-        state <- get(".liber_parallel_state", envir = .GlobalEnv)
+        state <- get(
+          ".nm_parallel_worker_state", envir = namespace
+        )()
         evaluators <- state$subjects
         model <- state$model
         vapply(
@@ -1723,7 +1745,10 @@
     pieces <- parallel::clusterCall(
       context$parallel$cluster,
       function(parameters) {
-        evaluators <- get(".liber_parallel_state", envir = .GlobalEnv)$subjects
+        worker_state <- get(
+          ".nm_parallel_worker_state", envir = asNamespace("LibeRation")
+        )
+        evaluators <- worker_state()$subjects
         collection <- get(".nm_fo_collection_gradient", envir = asNamespace("LibeRation"))
         colSums(collection(evaluators, parameters))
       }, parameters = parameters

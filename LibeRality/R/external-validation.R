@@ -540,7 +540,7 @@ lity_external_validation_report <- function(x, file) {
     "<h2>Numerical agreement</h2>", table_html(x$comparisons),
     "<h2>Runtime benchmark</h2>", table_html(x$timings),
     "<h2>Matched D-optimal grid search</h2>", table_html(x$design_search$best),
-    "<h2>Interpretation</h2><p>The pass/fail decision applies to the conventional block-diagonal population-FO approximation shared by PopED and PFIM. LibeRality's default full-Gaussian mode remains available and intentionally includes additional fixed-effect covariance information.</p>",
+    "<h2>Interpretation</h2><p>The pass/fail decision applies to LibeRality's default conventional block-diagonal population-FO approximation shared by PopED and PFIM. The optional full-Gaussian mode intentionally includes additional fixed-effect covariance information and is reported separately.</p>",
     "</body></html>"
   )
   writeLines(html, file, useBytes = TRUE)

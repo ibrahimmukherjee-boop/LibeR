@@ -9,6 +9,20 @@ test_that("the teaching design validates and has usable information", {
   expect_equal(information$rank, nrow(information$matrix))
   expect_true(all(is.finite(information$se)))
   expect_true(all(information$eigenvalues >= -1e-8))
+  expect_equal(example$design$information_approximation, "fo_block")
+  expect_equal(information$diagnostics$approximation, "fo_block")
+
+  full <- example$design
+  full$information_approximation <- "full_gaussian"
+  expect_equal(
+    lity_information(full)$diagnostics$approximation,
+    "full_gaussian"
+  )
+
+  legacy <- example$design
+  legacy$information_approximation <- NULL
+  expect_match(lity_validate(legacy)$warnings, "Legacy design")
+  expect_equal(lity_information(legacy)$diagnostics$approximation, "fo_block")
 })
 
 test_that("the native assembler matches a simple Gaussian result", {

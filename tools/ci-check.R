@@ -109,6 +109,7 @@ for (package in packages) {
     env = c(
       `_R_CHECK_FORCE_SUGGESTS_` = "false",
       `_R_CHECK_CRAN_INCOMING_REMOTE_` = "false",
+      `_R_CHECK_SYSTEM_CLOCK_` = "false",
       `_LIBERALITY_RUN_EXTERNAL_VALIDATION_` = "false"
     ),
     error_on = "never",

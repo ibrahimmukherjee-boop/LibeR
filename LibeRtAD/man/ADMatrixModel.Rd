@@ -89,7 +89,7 @@ Pointer-backed fixed-shape matrix automatic-differentiation model
   Evaluate matrix outputs.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
-    \preformatted{ADMatrixModel$value(at, taped = !is.null(self$scalar$tape_ptr))}
+    \preformatted{ADMatrixModel$value(at, taped = self$scalar$has_tape())}
     \if{html}{\out{</div>}}
   }
   \subsection{Arguments}{

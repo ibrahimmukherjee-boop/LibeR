@@ -9,7 +9,8 @@ lator_endpoint_evaluate(
   predictions,
   patient = NULL,
   interval = NULL,
-  value_column = NULL
+  value_column = NULL,
+  freshness_override = NULL
 )
 }
 \arguments{
@@ -25,6 +26,10 @@ lator_endpoint_evaluate(
 uses `"DV"` when residual observation variability is requested and
 `"IPRED"` otherwise, preventing a residualised run from being silently
 scored on its non-residual individual prediction.}
+
+\item{freshness_override}{Optional named list with `actor` and `reason`.
+This permits stale endpoint covariate evidence for one evaluation and is
+retained in the returned audit record; it never changes the endpoint.}
 }
 \value{
 Per-replicate metrics and an aggregate target-attainment summary.

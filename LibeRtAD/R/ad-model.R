@@ -27,11 +27,6 @@ ADModel <- R6::R6Class(
   public = list(
     #' @field ir Serializable intermediate representation created by [ad_ir()].
     ir = NULL,
-    #' @field program_ptr External pointer to the compiled C++ expression program.
-    program_ptr = NULL,
-    #' @field tape_ptr External pointer to the persistent CppAD tape, or `NULL`
-    #'   until [ADModel]$record() is called.
-    tape_ptr = NULL,
     #' @field wrt Character vector naming the active differentiation inputs.
     wrt = NULL,
     #' @field outputs Character vector naming the active model outputs.
@@ -55,7 +50,7 @@ ADModel <- R6::R6Class(
       }
       self$ir <- ir
       self$outputs <- ir$output_names
-      self$program_ptr <- .libertad_program_create(ir)
+      private$program_ptr_ <- .libertad_program_create(ir)
     },
 
     #' @description
@@ -75,8 +70,8 @@ ADModel <- R6::R6Class(
       outputs <- unique(as.character(outputs))
       unknown_out <- setdiff(outputs, self$ir$output_names)
       if (length(unknown_out)) .ad_stop("Unknown tape output(s): ", paste(unknown_out, collapse = ", "))
-      self$tape_ptr <- .libertad_tape_create(
-        self$program_ptr, at, wrt, outputs, isTRUE(optimize)
+      private$tape_ptr_ <- .libertad_tape_create(
+        private$program_ptr_, at, wrt, outputs, isTRUE(optimize)
       )
       self$wrt <- wrt
       self$dynamic <- setdiff(self$ir$input_names, wrt)
@@ -94,7 +89,7 @@ ADModel <- R6::R6Class(
     set_dynamic = function(values) {
       private$require_tape()
       values <- .ad_named_values(values, self$dynamic, "dynamic parameter values")
-      self$dynamic_values <- .libertad_tape_new_dynamic(self$tape_ptr, values)
+      self$dynamic_values <- .libertad_tape_new_dynamic(private$tape_ptr_, values)
       invisible(self)
     },
 
@@ -104,14 +99,14 @@ ADModel <- R6::R6Class(
     #'   inputs; untaped evaluation requires every IR input.
     #' @param taped Use the persistent tape when available.
     #' @return A named numeric vector of model outputs.
-    value = function(at, taped = !is.null(self$tape_ptr)) {
+    value = function(at, taped = self$has_tape()) {
       if (isTRUE(taped)) {
         private$require_tape()
         x <- private$tape_values(at)
-        return(.libertad_tape_value(self$tape_ptr, x))
+        return(.libertad_tape_value(private$tape_ptr_, x))
       }
       at <- .ad_named_values(at, self$ir$input_names, "program values")
-      .libertad_program_value(self$program_ptr, at, self$outputs)
+      .libertad_program_value(private$program_ptr_, at, self$outputs)
     },
 
     #' @description
@@ -121,7 +116,7 @@ ADModel <- R6::R6Class(
     jacobian = function(at) {
       private$require_tape()
       x <- private$tape_values(at)
-      .libertad_tape_jacobian(self$tape_ptr, x)
+      .libertad_tape_jacobian(private$tape_ptr_, x)
     },
 
     #' @description
@@ -146,7 +141,7 @@ ADModel <- R6::R6Class(
         .ad_stop("hessian() requires a tape with exactly one output.")
       }
       x <- private$tape_values(at)
-      .libertad_tape_hessian(self$tape_ptr, x)
+      .libertad_tape_hessian(private$tape_ptr_, x)
     },
 
     #' @description
@@ -159,7 +154,7 @@ ADModel <- R6::R6Class(
         .ad_stop("value_gradient() requires a tape with exactly one output.")
       }
       x <- private$tape_values(at)
-      .libertad_tape_value_gradient(self$tape_ptr, x)
+      .libertad_tape_value_gradient(private$tape_ptr_, x)
     },
 
     #' @description
@@ -168,7 +163,7 @@ ADModel <- R6::R6Class(
     #' @return A named list describing the current persistent tape.
     tape_info = function() {
       private$require_tape()
-      .libertad_tape_info(self$tape_ptr)
+      .libertad_tape_info(private$tape_ptr_)
     },
 
     #' @description
@@ -213,7 +208,7 @@ ADModel <- R6::R6Class(
         cppad_version = ad_engine_info()$cppad_version,
         cppad_source_commit = ad_engine_info()$cppad_source_commit,
         ir = self$ir,
-        graph_json = .libertad_tape_graph_json(self$tape_ptr),
+        graph_json = .libertad_tape_graph_json(private$tape_ptr_),
         domain = self$wrt,
         dynamic = self$dynamic,
         dynamic_values = original_dynamic,
@@ -234,6 +229,55 @@ ADModel <- R6::R6Class(
     },
 
     #' @description
+    #' Report whether this model owns a recorded CppAD tape.
+    #' @return One logical value. Raw external pointers are intentionally not
+    #'   exposed because replacing or clearing them can invalidate C++ state.
+    has_tape = function() !is.null(private$tape_ptr_),
+
+    #' @description
+    #' Reconstruct a tape from an already validated portable cache. This is an
+    #' internal lifecycle operation; it never accepts or exposes raw pointers.
+    #' @param graph_json Serialized CppAD graph JSON.
+    #' @param domain Active differentiation-input names.
+    #' @param dynamic Dynamic-parameter names.
+    #' @param dynamic_values Current dynamic-parameter values.
+    #' @param range Output names.
+    #' @param recording_values Complete cache recording point.
+    #' @return The model, invisibly.
+    .restore_tape = function(graph_json, domain, dynamic, dynamic_values,
+                             range, recording_values) {
+      inputs <- self$ir$input_names
+      domain <- as.character(domain)
+      dynamic <- as.character(dynamic)
+      range <- as.character(range)
+      if (anyDuplicated(c(domain, dynamic)) || length(intersect(domain, dynamic)) ||
+          !setequal(c(domain, dynamic), inputs) ||
+          !identical(dynamic, setdiff(inputs, domain))) {
+        .ad_stop("The restored tape domain/dynamic contract is invalid.")
+      }
+      if (!length(domain) || !length(range) || anyDuplicated(range) ||
+          any(!range %in% self$ir$output_names)) {
+        .ad_stop("The restored tape range contract is invalid.")
+      }
+      dynamic_values <- .ad_named_values(
+        dynamic_values, dynamic, "restored dynamic parameter values"
+      )
+      recording_values <- .ad_named_values(
+        recording_values, inputs, "restored recording values"
+      )
+      private$tape_ptr_ <- .libertad_tape_from_graph_json(
+        private$program_ptr_, graph_json, domain, dynamic,
+        dynamic_values, range
+      )
+      self$wrt <- domain
+      self$dynamic <- dynamic
+      self$dynamic_values <- dynamic_values
+      self$outputs <- range
+      self$recording_values <- recording_values
+      invisible(self)
+    },
+
+    #' @description
     #' Print a concise summary of the compiled program and tape state.
     #' @param ... Unused.
     #' @return The model, invisibly.
@@ -241,16 +285,18 @@ ADModel <- R6::R6Class(
       cat("LibeRtAD compiled model\n")
       cat("  inputs:", paste(self$ir$input_names, collapse = ", "), "\n")
       cat("  outputs:", paste(self$outputs, collapse = ", "), "\n")
-      cat("  tape:", if (is.null(self$tape_ptr)) "not recorded" else paste("recorded wrt", paste(self$wrt, collapse = ", ")), "\n")
-      if (!is.null(self$tape_ptr) && length(self$dynamic)) {
+      cat("  tape:", if (!self$has_tape()) "not recorded" else paste("recorded wrt", paste(self$wrt, collapse = ", ")), "\n")
+      if (self$has_tape() && length(self$dynamic)) {
         cat("  dynamic:", paste(self$dynamic, collapse = ", "), "\n")
       }
       invisible(self)
     }
   ),
   private = list(
+    program_ptr_ = NULL,
+    tape_ptr_ = NULL,
     require_tape = function() {
-      if (is.null(self$tape_ptr)) {
+      if (is.null(private$tape_ptr_)) {
         .ad_stop("No tape has been recorded. Call $record(at, wrt, outputs) first.")
       }
     },
@@ -323,15 +369,9 @@ ad_load_tape <- function(path) {
     .ad_stop("The tape cache semantic probe does not match its dynamic parameters.")
   }
   model <- ADModel$new(cache$ir)
-  model$tape_ptr <- .libertad_tape_from_graph_json(
-    model$program_ptr, cache$graph_json, domain, dynamic,
-    cache$dynamic_values, range
+  model$.restore_tape(
+    cache$graph_json, domain, dynamic, cache$dynamic_values, range, probe_at
   )
-  model$wrt <- domain
-  model$dynamic <- dynamic
-  model$dynamic_values <- cache$dynamic_values
-  model$outputs <- range
-  model$recording_values <- probe_at
   consistent <- all(vapply(probes, function(probe) {
     tryCatch({
       current <- .ad_named_values(probe$at, inputs, "cache semantic-probe inputs")

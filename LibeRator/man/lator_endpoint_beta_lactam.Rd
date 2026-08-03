@@ -10,6 +10,7 @@ lator_endpoint_beta_lactam(
   mic_variable = "MIC",
   threshold_multiplier = 1,
   free_fraction = 1,
+  mic_max_age = 168,
   source,
   status = c("draft", "reviewed", "qualified"),
   metadata = list()
@@ -25,6 +26,9 @@ lator_endpoint_beta_lactam(
 \item{threshold_multiplier}{Threshold as a multiple of MIC.}
 
 \item{free_fraction}{Fraction unbound; use one if predictions are already free concentrations.}
+
+\item{mic_max_age}{Maximum age in hours of MIC evidence. Stale evidence is
+rejected unless an audited evaluation-time override is supplied.}
 
 \item{source}{Evidence or policy provenance.}
 

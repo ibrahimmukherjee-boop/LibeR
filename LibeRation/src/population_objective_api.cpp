@@ -1,4 +1,5 @@
-#include "population_objective_api.hpp"
+#include "population_objective_api.h"
+#include "execution_contract.h"
 
 // This translation unit is the stable R-facing seam for the persistent
 // population objective. The CppAD-heavy implementation remains private to the
@@ -10,6 +11,7 @@ SEXP liberation_population_objective_create(
     const Rcpp::List& primary_tape_pointers,
     const Rcpp::List& curvature_tape_pointers,
     const Rcpp::List& config) {
+  liberation::require_materialized_addl(subject_data);
   return liberation::population_objective_create_api(
     engine_pointer, subject_data, primary_tape_pointers,
     curvature_tape_pointers, config);

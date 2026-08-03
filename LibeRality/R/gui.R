@@ -50,6 +50,7 @@ liberality_gui <- function(design = NULL, criterion = lity_criterion_D(), queue 
                            workspace = NULL, library_root = NULL,
                            host = "127.0.0.1", port = NULL, launch.browser = TRUE) {
   if (is.null(design)) design <- lity_example()$design
+  design <- .lity_design_upgrade(design)
   validation <- lity_validate(design)
   if (!validation$valid) .lity_stop("Cannot launch an invalid design: ", paste(validation$errors, collapse = "; "))
   workspace <- workspace %||% .lity_default_liberation_workspace()
@@ -464,7 +465,8 @@ liberality_gui <- function(design = NULL, criterion = lity_criterion_D(), queue 
           saveRDS(state$design, path, version = 3)
           state$status <- list(level = "success", text = paste("Saved design to", path))
         } else if (action == "load") {
-          loaded <- readRDS(as.character(event$path)); validation <- lity_validate(loaded)
+          loaded <- .lity_design_upgrade(readRDS(as.character(event$path)))
+          validation <- lity_validate(loaded)
           if (!validation$valid) .lity_stop("Saved design is invalid.")
           state$design <- loaded; state$evaluation <- state$optimisation <- state$simulation <- NULL
           restored_criterion <- state$design$metadata$design_criterion %||% NULL

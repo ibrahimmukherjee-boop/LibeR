@@ -705,6 +705,64 @@ nm_etab <- function(fit) {
   gradient
 }
 
+.nm_marginal_score_information <- function(objective, at,
+                                           relative_step = 1e-4) {
+  gradient <- attr(objective, "gradient", exact = TRUE)
+  if (!is.function(gradient)) {
+    .nm_stop("The marginal objective does not expose an estimator score.")
+  }
+  at <- as.numeric(at)
+  dimension <- length(at)
+  jacobian <- matrix(NA_real_, dimension, dimension)
+  baseline <- NULL
+  evaluations <- 0L
+  one_sided <- integer()
+  for (index in seq_len(dimension)) {
+    step <- relative_step * max(abs(at[[index]]), 1)
+    upper <- lower <- at
+    upper[[index]] <- upper[[index]] + step
+    lower[[index]] <- lower[[index]] - step
+    high <- tryCatch(as.numeric(gradient(upper)), error = function(error) NULL)
+    low <- tryCatch(as.numeric(gradient(lower)), error = function(error) NULL)
+    evaluations <- evaluations + 2L
+    high_ok <- length(high) == dimension && all(is.finite(high))
+    low_ok <- length(low) == dimension && all(is.finite(low))
+    if (high_ok && low_ok) {
+      jacobian[, index] <- (high - low) / (2 * step)
+      next
+    }
+    if (is.null(baseline)) {
+      baseline <- tryCatch(as.numeric(gradient(at)), error = function(error) NULL)
+      evaluations <- evaluations + 1L
+    }
+    baseline_ok <- length(baseline) == dimension && all(is.finite(baseline))
+    if (high_ok && baseline_ok) {
+      jacobian[, index] <- (high - baseline) / step
+      one_sided <- c(one_sided, index)
+    } else if (low_ok && baseline_ok) {
+      jacobian[, index] <- (baseline - low) / step
+      one_sided <- c(one_sided, index)
+    } else {
+      .nm_stop(
+        "Unable to evaluate the marginal score around outer parameter ",
+        index, "."
+      )
+    }
+  }
+  # Monte-Carlo and fixed-grid score Jacobians need not be exactly symmetric
+  # at finite sample size. The observed-information estimate is its symmetric
+  # part; retain asymmetry as a diagnostic rather than silently discarding it.
+  asymmetry <- max(abs(jacobian - t(jacobian)))
+  list(
+    matrix = (jacobian + t(jacobian)) / 2,
+    raw_jacobian = jacobian,
+    evaluations = evaluations,
+    one_sided_parameters = one_sided,
+    maximum_asymmetry = asymmetry,
+    relative_step = relative_step
+  )
+}
+
 .nm_deterministic_subject_scores <- function(fit, context, map, parameters) {
   transform <- .nm_native_transform_jacobian(fit$model, map, parameters)
   scores <- matrix(0, context$n_subjects, ncol(transform))
@@ -784,8 +842,12 @@ nm_etab <- function(fit) {
 #'   default) uses R-inverse S R-inverse. `auto` prefers a well-conditioned R
 #'   matrix and falls back to sandwich or S.
 #' @param hessian_backend Hessian implementation. `"auto"` uses the native
-#'   CppAD/implicit-mode Hessian for deterministic compiled objectives and
-#'   falls back explicitly to a numerical Jacobian of the population gradient.
+#'   CppAD/implicit-mode Hessian for deterministic compiled objectives. GQ,
+#'   IMP, and SAEM use an estimator-specific numerical Jacobian of their fixed
+#'   quadrature/importance score; this is deliberately distinct from a generic
+#'   objective `optimHess` calculation.
+#'   Deterministic objectives fall back explicitly to a numerical Jacobian of
+#'   the population gradient.
 #'   `"cppad"` requires the native path; `"numerical"` is retained as a
 #'   comparator and for stochastic marginal objectives.
 #' @param convention Information-matrix scaling. `"nonmem"` uses derivatives
@@ -885,6 +947,7 @@ nm_cov_step <- function(fit,
   bread_source <- NULL
   bread_exact <- FALSE
   bread_fallback <- NULL
+  marginal_information <- NULL
   objective <- NULL
   if (marginal && (need_bread || need_meat)) {
     objective <- .nm_cov_objective(
@@ -935,7 +998,40 @@ nm_cov_step <- function(fit,
         "use `hessian_backend = \"auto\"` or `\"numerical\"`."
       )
     }
-    if (is.null(bread)) {
+    if (is.null(bread) && marginal) {
+      marginal_error <- NULL
+      marginal_information <- tryCatch(
+        .nm_marginal_score_information(objective, at),
+        error = function(error) {
+          marginal_error <<- conditionMessage(error)
+          NULL
+        }
+      )
+      if (!is.null(marginal_information)) {
+        bread <- information_scale * marginal_information$matrix
+        bread_source <- switch(
+          fit$method,
+          GQ = paste(
+            "fixed-proposal quadrature-score Jacobian",
+            "(CppAD node scores; proposal/node derivatives held at the fitted point)"
+          ),
+          IMP = paste(
+            "fixed-proposal importance-score Jacobian",
+            "(common integration design at the fitted point)"
+          ),
+          SAEM = paste(
+            "post-fit fixed-proposal importance-score Jacobian",
+            "(observed marginal-information approximation)"
+          )
+        )
+      } else {
+        bread_error <- paste(
+          Filter(nzchar, c(bread_error %||% "", marginal_error %||% "")),
+          collapse = "; "
+        )
+      }
+    }
+    if (is.null(bread) && !marginal) {
       numerical_error <- NULL
       bread <- tryCatch(
         information_scale * stats::optimHess(
@@ -1059,6 +1155,17 @@ nm_cov_step <- function(fit,
         .liberation_population_objective_telemetry(bread_compiled$pointer)
       } else NULL
     },
+    marginal_information = if (marginal) c(
+      list(
+        estimator = fit$method,
+        finite_sample = TRUE,
+        exact_cppad_hessian = FALSE
+      ),
+      marginal_information[c(
+        "evaluations", "one_sided_parameters", "maximum_asymmetry",
+        "relative_step"
+      )]
+    ) else NULL,
     samples = if (marginal) samples else NULL,
     actual_samples = if (marginal) marginal_design$actual_samples else NULL,
     sampling = if (marginal) marginal_design$method else NULL,

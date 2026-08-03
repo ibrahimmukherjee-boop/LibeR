@@ -199,6 +199,10 @@ test_that("IMP and SAEM covariance use marginal importance information", {
   expect_equal(
     imp$covariance$objective_backend, "fixed-proposal-importance-score"
   )
+  expect_match(imp$covariance$bread_source, "importance-score Jacobian")
+  expect_false(grepl("optimHess", imp$covariance$bread_source, fixed = TRUE))
+  expect_false(imp$covariance$marginal_information$exact_cppad_hessian)
+  expect_gt(imp$covariance$marginal_information$evaluations, 0L)
   expect_true(imp$covariance$eta_warm_start)
   expect_true(imp$covariance$objective_telemetry$eta_warm_start)
   expect_equal(imp$covariance$objective_telemetry$proposals, 3L)
@@ -224,6 +228,12 @@ test_that("IMP and SAEM covariance use marginal importance information", {
   )
   expect_true(saem$covariance$eta_warm_start)
   expect_true(saem$covariance$objective_telemetry$eta_warm_start)
+
+  saem_bread <- nm_cov_step(
+    saem, type = "hessian", samples = 20, seed = 43
+  )
+  expect_match(saem_bread$bread_source, "post-fit.*importance-score Jacobian")
+  expect_false(grepl("optimHess", saem_bread$bread_source, fixed = TRUE))
 })
 
 test_that("fixed-proposal importance gradients match their marginal objective", {

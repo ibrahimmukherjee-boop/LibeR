@@ -1,3 +1,17 @@
+# LibeRality 0.3.0
+
+- Makes the externally cross-validated FO block-diagonal information
+  approximation the default for new designs. `full_gaussian` remains an
+  explicit supported alternative.
+- Advances the serializable design schema to version 2 and deterministically
+  migrates legacy saved designs to `fo_block`, preventing a silent change of
+  their historical interpretation.
+- Retains criterion-specific allocation derivatives, fixed-shape Weibull TTE
+  information, matched simulation/FIM exposure conventions, and genuine
+  estimator-interval coverage diagnostics.
+- Records the active approximation in information, evaluation, history, and
+  external-validation provenance.
+
 # LibeRality 0.2.12
 
 - Adds fixed-shape Weibull time-to-event working information and simulation

@@ -1,3 +1,17 @@
+# LibeRary 0.8.0
+
+- Makes independent text/vision extraction models the required default.
+  A same-provider/model pairing now stops before extraction unless the operator
+  explicitly selects `preferred` or exploratory `off` policy.
+- Migrates the legacy boolean setting deterministically: `TRUE` becomes
+  `required` and `FALSE` becomes `preferred`. Preferred same-model runs are
+  review-only rather than publishable.
+- Persists the independence policy, model comparison, gate result, and warnings
+  in decision, assessment, and audit provenance.
+- Enforces deterministic pre-synthesis consistency and evidence-ledger binding,
+  and requires an explicit reported variability metric rather than inferring an
+  OMEGA scale from prose or magnitude.
+
 # LibeRary 0.7.11
 
 - Publishes the final shared asynchronous task-state runtime under a new
