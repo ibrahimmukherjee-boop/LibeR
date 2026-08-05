@@ -82,6 +82,13 @@ starts a live transient sandbox during preflight; an environment label or a
 container marker is not accepted as proof. See `docs/SYSTEMD.md` for the
 dedicated-account, lingering, credential, and user-service setup.
 
+On a cluster submission host, pass `ls_slurm_executor()` or
+`ls_grid_engine_executor()` to both `ls_run_api()` and `ls_run_admin()`.
+Scheduler commands then handle submission, status, accounting, and
+cancellation, while the shared LibeRties root remains durable across API
+restarts. Resource scheduling is not automatically an isolation attestation;
+production multi-tenant use requires a deployment-specific `isolation_probe`.
+
 For example, expose `https://liberties.example.org` through a maintained proxy
 and forward only to `127.0.0.1:8000`. Do not bind an unencrypted bearer-token
 service to a public network.

@@ -94,6 +94,29 @@ whole-cgroup CPU, task, memory, and wall-time limits. A request for four cores
 receives a 400% CPU quota, so PSOCK/FORK parallelism is retained inside the
 single job cgroup.
 
+On an HPC submission host, pass `ls_slurm_executor()` or
+`ls_grid_engine_executor()` instead. The scheduler receives native core,
+whole-job memory, and wall-time requests, while the existing LibeRties job
+directory remains the durable exchange boundary for payloads, logs, results,
+and metadata. Scheduler IDs are persisted and reattached after an API restart.
+
+```{r scheduler, eval=FALSE}
+executor <- ls_grid_engine_executor(
+  parallel_environment = "smp",
+  memory_resource = "mem",
+  runtime_resource = "h_rt",
+  max_cores_per_job = 36L
+)
+queue <- ls_local_queue(
+  "~/Scratch/LibeRties", max_workers = 20L, executor = executor
+)
+```
+
+The root and installed R libraries must be visible from compute nodes. A
+scheduler enforces resources but does not automatically prove tenant
+filesystem or network isolation; production use needs an independently
+attested sandbox.
+
 ## Connect to a remote service
 
 ```{r remote, eval=FALSE}

@@ -175,6 +175,6 @@ test_that("the standard production API cannot fall back to subprocesses", {
       tempfile("liberties-no-production-subprocess-"),
       production = TRUE, executor = NULL
     ),
-    "requires the native Linux systemd executor"
+    "requires systemd or a scheduler executor"
   )
 })

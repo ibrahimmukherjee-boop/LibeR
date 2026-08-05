@@ -5,9 +5,9 @@
 \title{Persistent cross-platform LibeR job queue}
 \description{
 Each user receives a separate filesystem namespace. Trusted local jobs can
-run in fresh `callr` R processes; production jobs can run as hardened,
-cgroup-limited transient systemd services. Both reconstruct C++ pointers
-from serialized models.
+run in fresh `callr` R processes; external jobs can run as hardened,
+cgroup-limited transient systemd services or through Slurm/Grid Engine.
+Every backend reconstructs C++ pointers from serialized models.
 }
 \section{Public fields}{
   \if{html}{\out{<div class="r6-fields">}}
@@ -68,8 +68,9 @@ from serialized models.
       \item{\code{max_workers}}{Maximum simultaneous background workers.}
       \item{\code{limits}}{Named overrides for runtime, CPU, memory, payload, result,
 concurrency, queue, and storage limits.}
-      \item{\code{executor}}{Optional executor created by [ls_systemd_executor()].
-`NULL` retains the trusted-local `callr` subprocess backend.}
+      \item{\code{executor}}{Optional executor created by [ls_systemd_executor()],
+[ls_slurm_executor()], or [ls_grid_engine_executor()]. `NULL` retains
+the trusted-local `callr` subprocess backend.}
     }
     \if{html}{\out{</div>}}
   }

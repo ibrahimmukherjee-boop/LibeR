@@ -158,10 +158,12 @@ test_that("result wire retains supported result metadata", {
   result <- data.frame(IPRED = c(1, 2))
   attr(result, "solver") <- "advan"
   attr(result, "state_names") <- "CENTRAL"
+  attr(result, "addl_materialized") <- TRUE
   decoded <- ls_result_decode(ls_result_encode(result))
   expect_s3_class(decoded, "data.frame")
   expect_equal(attr(decoded, "solver"), "advan")
   expect_equal(attr(decoded, "state_names"), "CENTRAL")
+  expect_true(attr(decoded, "addl_materialized"))
 })
 
 test_that("LibeRality results round-trip through the result contract", {

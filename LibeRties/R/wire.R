@@ -356,8 +356,15 @@ ls_result_from_wire <- function(payload) {
   attributes <- .ls_wire_unpack(payload$attributes %||% list(type = "list", named = FALSE,
                                                               names = list(), values = list()))
   if (!is.list(attributes) || length(setdiff(names(attributes),
-                                             c("class", "solver", "state_names", "id_levels")))) {
+                                             c("class", "solver", "state_names", "id_levels",
+                                               "addl_materialized")))) {
     .ls_stop("Remote result contains unsupported attributes.")
+  }
+  if (!is.null(attributes$addl_materialized) &&
+      (!is.logical(attributes$addl_materialized) ||
+       length(attributes$addl_materialized) != 1L ||
+       is.na(attributes$addl_materialized))) {
+    .ls_stop("Remote result contains invalid ADDL-materialization metadata.")
   }
   if (!is.null(attributes$class)) {
     classes <- as.character(attributes$class)

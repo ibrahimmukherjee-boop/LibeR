@@ -1,20 +1,22 @@
 Package: LibeRties
 Type: Package
 Title: Portable Job Execution for LibeR
-Version: 0.8.0
+Version: 0.8.1
 Authors@R: person("Sven C.", "van Dijkman",
     email = "svdijkman@users.noreply.github.com", role = c("aut", "cre"))
 Author: Sven C. van Dijkman [aut, cre]
 Maintainer: Sven C. van Dijkman <svdijkman@users.noreply.github.com>
 Description: Executes serialized LibeR simulation and estimation jobs in
-    restricted subprocesses or hardened transient systemd user services with
-    isolated per-user working directories. A persistent cross-platform local
+    restricted subprocesses, hardened transient systemd user services, or
+    resource-managed Slurm and Grid Engine allocations with isolated per-user
+    working directories. A persistent cross-platform local
     queue uses background R worker processes and the same versioned job
     contract used by remote Linux servers. Payload checksums, explicit state transitions,
     metadata locking, safe path components, cancellation, logs, restart
     recovery, per-tenant quotas, monitored resource limits, and result
     provenance are built into the contract. Production deployments use the
-    native systemd isolation backend and require TLS termination.
+    native systemd isolation backend or an independently attested scheduler
+    sandbox and require TLS termination.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Depends: R (>= 4.1.0)

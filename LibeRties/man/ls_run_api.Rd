@@ -40,8 +40,9 @@ reverse proxy.}
 [ls_server_preflight()].}
 
 \item{executor}{Worker executor. Production defaults to
-[ls_systemd_executor()]; trusted loopback development defaults to the
-subprocess backend.}
+[ls_systemd_executor()]; [ls_slurm_executor()] and
+[ls_grid_engine_executor()] are supported when the API runs on a scheduler
+submission host. Trusted loopback development defaults to subprocesses.}
 }
 \description{
 Bind to loopback by default and place a TLS reverse proxy in front of this

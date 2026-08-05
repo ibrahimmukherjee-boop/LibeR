@@ -1,9 +1,9 @@
 #' Persistent cross-platform LibeR job queue
 #'
 #' Each user receives a separate filesystem namespace. Trusted local jobs can
-#' run in fresh `callr` R processes; production jobs can run as hardened,
-#' cgroup-limited transient systemd services. Both reconstruct C++ pointers
-#' from serialized models.
+#' run in fresh `callr` R processes; external jobs can run as hardened,
+#' cgroup-limited transient systemd services or through Slurm/Grid Engine.
+#' Every backend reconstructs C++ pointers from serialized models.
 #'
 #' @export
 LibeRQueue <- R6::R6Class(
@@ -31,8 +31,9 @@ LibeRQueue <- R6::R6Class(
     #' @param max_workers Maximum simultaneous background workers.
     #' @param limits Named overrides for runtime, CPU, memory, payload, result,
     #'   concurrency, queue, and storage limits.
-    #' @param executor Optional executor created by [ls_systemd_executor()].
-    #'   `NULL` retains the trusted-local `callr` subprocess backend.
+    #' @param executor Optional executor created by [ls_systemd_executor()],
+    #'   [ls_slurm_executor()], or [ls_grid_engine_executor()]. `NULL` retains
+    #'   the trusted-local `callr` subprocess backend.
     #' @return A new `LibeRQueue` object.
     initialize = function(root = .ls_default_root(), user = "local",
                           max_workers = 1L, limits = list(), executor = NULL) {
@@ -42,9 +43,13 @@ LibeRQueue <- R6::R6Class(
       self$limits <- .ls_limits(limits)
       self$max_workers <- min(self$max_workers, self$limits$max_concurrent_jobs)
       self$executor <- .ls_executor(executor)
-      self$isolation <- if (identical(self$executor$type, "systemd")) {
-        "systemd-transient-service"
-      } else "restricted-subprocess"
+      self$isolation <- switch(
+        self$executor$type,
+        systemd = "systemd-transient-service",
+        slurm = "slurm-scheduled-worker",
+        grid_engine = "grid-engine-scheduled-worker",
+        "restricted-subprocess"
+      )
       if (length(self$max_workers) != 1L || is.na(self$max_workers) || self$max_workers < 1L) {
         .ls_stop("`max_workers` must be a positive integer.")
       }
@@ -65,11 +70,12 @@ LibeRQueue <- R6::R6Class(
                       idempotency_key = NULL) {
       if (!inherits(job, "liber_job")) .ls_stop("`job` must be created by ls_job().")
       requested_cores <- .ls_job_requested_cores(job)
-      if (identical(self$executor$type, "systemd") &&
+      if (!is.null(self$executor$max_cores_per_job) &&
           requested_cores > self$executor$max_cores_per_job) {
         .ls_stop(
           "Job requests ", requested_cores, " cores but this queue allows ",
-          self$executor$max_cores_per_job, "."
+          self$executor$max_cores_per_job, " for executor `",
+          self$executor$type, "`."
         )
       }
       user <- .ls_safe_component(user, "user id")
@@ -201,13 +207,12 @@ LibeRQueue <- R6::R6Class(
       if (exists(key, envir = self$processes, inherits = FALSE)) {
         process <- get(key, envir = self$processes, inherits = FALSE)
         if (isTRUE(process$is_alive())) {
-          private$terminate_process(process)
+          private$cancel_process(process)
         }
       } else {
-        unit <- as.character(metadata$systemd_unit %||% "")
-        if (identical(self$executor$type, "systemd") && nzchar(unit)) {
-          process <- .ls_systemd_process(self$executor, unit)
-          if (isTRUE(process$is_alive())) private$terminate_process(process)
+        process <- .ls_executor_process(self$executor, metadata)
+        if (!is.null(process)) {
+          if (isTRUE(process$is_alive())) private$cancel_process(process)
         } else {
           pid <- suppressWarnings(as.integer(metadata$pid %||% NA_integer_))
           if (.ls_pid_matches(pid, metadata$pid_started)) {
@@ -258,6 +263,21 @@ LibeRQueue <- R6::R6Class(
     }
   ),
   private = list(
+    cancel_process = function(process) {
+      if (self$executor$type %in% c("slurm", "grid_engine")) {
+        accepted <- isTRUE(tryCatch(
+          process$kill(), error = function(error) FALSE
+        ))
+        if (!accepted) {
+          .ls_stop(
+            "The ", self$executor$type,
+            " scheduler did not accept the cancellation request; job state was not changed."
+          )
+        }
+        return(invisible(TRUE))
+      }
+      private$terminate_process(process)
+    },
     terminate_process = function(process) {
       if (is.function(process$kill_tree)) {
         try(process$kill_tree(), silent = TRUE)
@@ -336,6 +356,9 @@ LibeRQueue <- R6::R6Class(
         executor = self$executor$type,
         requested_cores = .ls_job_requested_cores(job),
         systemd_unit = "", systemd_profile = "", tasks_max = NA_integer_,
+        scheduler_job_id = "", scheduler_backend = "", scheduler_queue = "",
+        scheduler_profile = "", scheduler_submitted = "",
+        scheduler_script_sha256 = "", scheduler_state = "",
         peak_memory_mb = 0, cpu_seconds = 0, elapsed_seconds = 0,
         termination_reason = ""
       )
@@ -362,9 +385,21 @@ LibeRQueue <- R6::R6Class(
         claim <- file.path(job_dir, ".claimed")
         if (!dir.exists(claim)) next
         metadata <- .ls_read_meta(job_dir)
-        unit <- as.character(metadata$systemd_unit %||% "")
-        if (identical(self$executor$type, "systemd") && nzchar(unit) &&
-            isTRUE(.ls_systemd_process(self$executor, unit)$is_alive())) next
+        if (.ls_scheduler_executor_mismatch(self$executor, metadata)) {
+          .ls_update_meta(job_dir, list(
+            error = .ls_scheduler_mismatch_message(self$executor, metadata),
+            scheduler_state = "RECOVERY_EXECUTOR_MISMATCH"
+          ), allowed_status = "queued")
+          next
+        }
+        external <- .ls_executor_process(self$executor, metadata)
+        if (!is.null(external)) {
+          # Scheduler allocations may legitimately remain pending for a long
+          # time. Reattach their durable handles so capacity accounting and
+          # cancellation continue to work after an API restart.
+          assign(key, external, envir = self$processes)
+          next
+        }
         if (.ls_pid_matches(metadata$pid, metadata$pid_started)) next
         age <- suppressWarnings(as.numeric(difftime(
           Sys.time(), file.info(claim)$mtime, units = "secs"
@@ -404,9 +439,10 @@ LibeRQueue <- R6::R6Class(
           metadata$started, format = "%Y-%m-%dT%H:%M:%OSZ", tz = "UTC"
         ))
         elapsed <- if (is.na(started)) 0 else as.numeric(difftime(Sys.time(), started, units = "secs"))
-        usage <- tryCatch(.ls_resource_usage(process$get_pid()), error = function(e) {
-          list(memory_mb = 0, cpu_seconds = 0)
-        })
+        usage <- .ls_process_resource_usage(process)
+        scheduler_status <- if (self$executor$type %in% c("slurm", "grid_engine")) {
+          tryCatch(process$status(), error = function(error) NULL)
+        } else NULL
         peak <- max(as.numeric(metadata$peak_memory_mb %||% 0), usage$memory_mb)
         reason <- ""
         if (elapsed > limits$max_runtime_seconds) {
@@ -427,7 +463,10 @@ LibeRQueue <- R6::R6Class(
         } else {
           .ls_update_meta(job_dir, list(
             peak_memory_mb = peak, cpu_seconds = usage$cpu_seconds,
-            elapsed_seconds = elapsed
+            elapsed_seconds = elapsed,
+            scheduler_state = if (is.list(scheduler_status))
+              scheduler_status$state %||% metadata$scheduler_state %||% "" else
+              metadata$scheduler_state %||% ""
           ), allowed_status = c("queued", "running"))
         }
       }
@@ -443,9 +482,16 @@ LibeRQueue <- R6::R6Class(
         if (exists(key, envir = self$processes, inherits = FALSE)) next
         job_dir <- .ls_job_dir(self$root, jobs$user[[i]], jobs$id[[i]])
         metadata <- .ls_read_meta(job_dir)
-        unit <- as.character(metadata$systemd_unit %||% "")
-        if (identical(self$executor$type, "systemd") && nzchar(unit)) {
-          process <- .ls_systemd_process(self$executor, unit)
+        if (.ls_scheduler_executor_mismatch(self$executor, metadata)) {
+          .ls_update_meta(job_dir, list(
+            error = .ls_scheduler_mismatch_message(self$executor, metadata),
+            scheduler_state = "RECOVERY_EXECUTOR_MISMATCH"
+          ), allowed_status = "running")
+          next
+        }
+        external <- .ls_executor_process(self$executor, metadata)
+        if (!is.null(external)) {
+          process <- external
           if (isTRUE(process$is_alive())) {
             assign(key, process, envir = self$processes)
             next
@@ -467,7 +513,9 @@ LibeRQueue <- R6::R6Class(
         elapsed <- if (is.na(started)) 0 else {
           as.numeric(difftime(Sys.time(), started, units = "secs"))
         }
-        usage <- tryCatch(.ls_resource_usage(pid), error = function(e) {
+        usage <- if (!is.null(external)) {
+          .ls_process_resource_usage(external)
+        } else tryCatch(.ls_resource_usage(pid), error = function(e) {
           list(memory_mb = 0, cpu_seconds = 0)
         })
         peak <- max(as.numeric(metadata$peak_memory_mb %||% 0), usage$memory_mb)
@@ -480,8 +528,8 @@ LibeRQueue <- R6::R6Class(
           reason <- paste0("memory limit exceeded (", limits$max_memory_mb, " MB)")
         }
         if (nzchar(reason)) {
-          if (identical(self$executor$type, "systemd") && nzchar(unit)) {
-            private$terminate_process(.ls_systemd_process(self$executor, unit))
+          if (!is.null(external)) {
+            private$terminate_process(external)
           } else {
             .ls_kill_process_tree(pid)
           }
@@ -509,12 +557,50 @@ LibeRQueue <- R6::R6Class(
         parts <- strsplit(key, "::", fixed = TRUE)[[1L]]
         job_dir <- .ls_job_dir(self$root, parts[[1L]], parts[[2L]])
         metadata <- .ls_read_meta(job_dir)
+        scheduler_status <- if (self$executor$type %in% c("slurm", "grid_engine")) {
+          tryCatch(process$status(), error = function(error) NULL)
+        } else NULL
+        usage <- .ls_process_resource_usage(process)
         if (!.ls_terminal(metadata$status)) {
           code <- tryCatch(process$get_exit_status(), error = function(e) NA_integer_)
+          detail <- if (is.list(scheduler_status)) {
+            paste0("; scheduler state ", scheduler_status$state %||% "unknown")
+          } else ""
           .ls_update_meta(job_dir, list(
             status = "failed", finished = .ls_now(),
-            error = paste0("Worker exited before publishing a result (exit ", code, ").")
+            error = paste0(
+              "Worker exited before publishing a result (exit ", code, detail, ")."
+            ),
+            scheduler_state = if (is.list(scheduler_status))
+              scheduler_status$state %||% "" else "",
+            peak_memory_mb = max(
+              as.numeric(metadata$peak_memory_mb %||% 0), usage$memory_mb
+            ),
+            cpu_seconds = max(
+              as.numeric(metadata$cpu_seconds %||% 0), usage$cpu_seconds
+            ),
+            elapsed_seconds = max(
+              as.numeric(metadata$elapsed_seconds %||% 0),
+              as.numeric(usage$elapsed_seconds %||% 0), na.rm = TRUE
+            )
           ), allowed_status = c("queued", "running"))
+        } else if (is.list(scheduler_status)) {
+          # The worker may publish its result just before the scheduler moves
+          # the allocation to its terminal state. Preserve that final native
+          # state and accounting without rewriting the LibeRties outcome.
+          .ls_update_meta(job_dir, list(
+            scheduler_state = scheduler_status$state %||% metadata$scheduler_state %||% "",
+            peak_memory_mb = max(
+              as.numeric(metadata$peak_memory_mb %||% 0), usage$memory_mb
+            ),
+            cpu_seconds = max(
+              as.numeric(metadata$cpu_seconds %||% 0), usage$cpu_seconds
+            ),
+            elapsed_seconds = max(
+              as.numeric(metadata$elapsed_seconds %||% 0),
+              as.numeric(usage$elapsed_seconds %||% 0), na.rm = TRUE
+            )
+          ), allowed_status = c("completed", "failed", "cancelled"))
         }
         unlink(file.path(job_dir, ".claimed"), recursive = TRUE, force = TRUE)
         rm(list = key, envir = self$processes)
@@ -555,6 +641,11 @@ LibeRQueue <- R6::R6Class(
           .ls_systemd_start(
             self$executor, job, metadata, job_dir, .libPaths()
           )
+        } else if (self$executor$type %in% c("slurm", "grid_engine")) {
+          job <- .ls_read_rds(.ls_payload_path(job_dir))
+          .ls_scheduler_start(
+            self$executor, job, metadata, job_dir, .libPaths()
+          )
         } else {
           list(process = r_bg(
             function(job_dir, library_paths) {
@@ -584,7 +675,18 @@ LibeRQueue <- R6::R6Class(
           systemd_profile = launch$profile,
           requested_cores = launch$cores,
           tasks_max = launch$tasks
-        ), allowed_status = c("queued", "running"))
+        ), allowed_status = c("queued", "running", "completed", "failed", "cancelled"))
+      } else if (self$executor$type %in% c("slurm", "grid_engine")) {
+        .ls_update_meta(job_dir, list(
+          scheduler_job_id = launch$scheduler_job_id,
+          scheduler_backend = launch$scheduler_backend,
+          scheduler_queue = launch$scheduler_queue,
+          scheduler_profile = launch$profile,
+          scheduler_submitted = .ls_now(),
+          scheduler_script_sha256 = launch$script_sha256,
+          scheduler_state = "SUBMITTED",
+          requested_cores = launch$cores
+        ), allowed_status = c("queued", "running", "completed", "failed", "cancelled"))
       }
       assign(key, launch$process, envir = self$processes)
       invisible(TRUE)
@@ -599,8 +701,9 @@ LibeRQueue <- R6::R6Class(
 #' @param max_workers Maximum simultaneous worker subprocesses for this queue.
 #' @param limits Named resource limits, including wall time, CPU time, memory,
 #'   payload, result, and storage quotas.
-#' @param executor Optional [ls_systemd_executor()] specification. `NULL` uses
-#'   the trusted-local subprocess backend.
+#' @param executor Optional [ls_systemd_executor()], [ls_slurm_executor()], or
+#'   [ls_grid_engine_executor()] specification. `NULL` uses the trusted-local
+#'   subprocess backend.
 #' @return A persistent `LibeRQueue` object.
 #' @examples
 #' queue <- ls_local_queue(tempfile("liberties-queue-"), max_workers = 1L)

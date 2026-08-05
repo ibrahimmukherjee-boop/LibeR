@@ -32,7 +32,9 @@ LibeRties checks Linux container/cgroup evidence. This should be connected
 to the actual service manager or sandbox on other platforms.}
 
 \item{executor}{Optional executor specification. A systemd executor performs
-binary, PID-1, cgroup-v2, service-account, and live transient-unit checks.}
+binary, PID-1, cgroup-v2, service-account, and live transient-unit checks.
+Scheduler executors verify their commands and key delivery but require an
+independent `isolation_probe` to attest hostile multi-tenant isolation.}
 }
 \value{
 A `liberties_security_preflight` report.

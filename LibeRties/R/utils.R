@@ -146,6 +146,15 @@
   encoded <- Sys.getenv("LIBERTIES_STORAGE_KEY", unset = "")
   if (!nzchar(encoded)) encoded <- getOption("LibeRties.storage_key", "")
   if (!nzchar(encoded)) {
+    key_file <- Sys.getenv("LIBERTIES_STORAGE_KEY_FILE", unset = "")
+    if (nzchar(key_file) && file.exists(key_file)) {
+      encoded <- tryCatch(
+        readLines(key_file, n = 1L, warn = FALSE, encoding = "UTF-8"),
+        error = function(error) ""
+      )
+    }
+  }
+  if (!nzchar(encoded)) {
     credential <- .ls_systemd_credential_path()
     if (nzchar(credential)) {
       encoded <- tryCatch(

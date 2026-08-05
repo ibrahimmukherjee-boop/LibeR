@@ -7,6 +7,7 @@
 ls_run_admin(
   root = .ls_default_root(),
   admin_token = Sys.getenv("LIBERTIES_ADMIN_TOKEN"),
+  executor = NULL,
   host = "127.0.0.1",
   port = NULL,
   launch.browser = getOption("shiny.launch.browser", interactive()),
@@ -17,6 +18,8 @@ ls_run_admin(
 \item{root}{LibeRties server storage root.}
 
 \item{admin_token}{Administrator token.}
+
+\item{executor}{Executor used by the corresponding API service.}
 
 \item{host}{Listening host. Loopback is the secure default.}
 

@@ -211,8 +211,9 @@ ls_api <- function(server = ls_server(), policy = ls_security_policy()) {
 #' @param isolation_probe Deployment-integrated isolation verifier passed to
 #'   [ls_server_preflight()].
 #' @param executor Worker executor. Production defaults to
-#'   [ls_systemd_executor()]; trusted loopback development defaults to the
-#'   subprocess backend.
+#'   [ls_systemd_executor()]; [ls_slurm_executor()] and
+#'   [ls_grid_engine_executor()] are supported when the API runs on a scheduler
+#'   submission host. Trusted loopback development defaults to subprocesses.
 #' @export
 ls_run_api <- function(root = .ls_default_root(), host = "127.0.0.1", port = 8000L,
                        max_workers_per_user = 2L, quiet = FALSE,
@@ -221,10 +222,19 @@ ls_run_api <- function(root = .ls_default_root(), host = "127.0.0.1", port = 800
                        isolation_probe = NULL,
                        executor = if (isTRUE(production)) ls_systemd_executor() else NULL) {
   executor <- .ls_executor(executor)
-  if (isTRUE(production) && !identical(executor$type, "systemd")) {
+  if (isTRUE(production) && identical(executor$type, "subprocess")) {
     .ls_stop(
-      "Production ls_run_api() requires the native Linux systemd executor."
+      paste(
+        "Production ls_run_api() requires systemd or a scheduler executor",
+        "with independently attested OS isolation."
+      )
     )
+  }
+  if (executor$type %in% c("slurm", "grid_engine")) {
+    scheduler <- .ls_scheduler_preflight(executor)
+    if (length(scheduler$issues)) {
+      .ls_stop(paste(scheduler$issues, collapse = " "))
+    }
   }
   ls_server_preflight(
     root, host, behind_tls_proxy, policy, strict = isTRUE(production),

@@ -81,6 +81,8 @@
       probe()
     } else if (!is.null(executor) && identical(executor$type, "systemd")) {
       .ls_systemd_preflight(executor)
+    } else if (!is.null(executor) && executor$type %in% c("slurm", "grid_engine")) {
+      .ls_scheduler_preflight(executor)
     } else {
       .ls_default_isolation_probe()
     },
@@ -175,6 +177,8 @@ ls_generate_storage_key <- function() .ls_random_hex(32L)
 #'   to the actual service manager or sandbox on other platforms.
 #' @param executor Optional executor specification. A systemd executor performs
 #'   binary, PID-1, cgroup-v2, service-account, and live transient-unit checks.
+#'   Scheduler executors verify their commands and key delivery but require an
+#'   independent `isolation_probe` to attest hostile multi-tenant isolation.
 #' @return A `liberties_security_preflight` report.
 #' @export
 ls_server_preflight <- function(
@@ -194,6 +198,12 @@ ls_server_preflight <- function(
     issues <- c(issues, "Production storage encryption requires LIBERTIES_STORAGE_KEY.")
   }
   executor <- .ls_executor(executor)
+  scheduler_preflight <- if (executor$type %in% c("slurm", "grid_engine")) {
+    .ls_scheduler_preflight(executor)
+  } else NULL
+  if (!is.null(scheduler_preflight) && length(scheduler_preflight$issues)) {
+    issues <- c(issues, scheduler_preflight$issues)
+  }
   isolation <- .ls_isolation_result(isolation_probe, executor)
   isolation_label <- trimws(Sys.getenv("LIBERTIES_OS_ISOLATION", unset = ""))
   if (policy$require_os_isolation && !isTRUE(isolation$active)) {
@@ -214,6 +224,14 @@ ls_server_preflight <- function(
       "Systemd workers require the storage key through LoadCredential.",
       "Configure `storage_credential` or start LibeRties with a",
       "liberties-storage-key systemd credential."
+    ))
+  }
+  if (policy$require_storage_encryption &&
+      executor$type %in% c("slurm", "grid_engine") &&
+      !nzchar(executor$storage_key_file %||% "")) {
+    issues <- c(issues, paste(
+      "Scheduler workers require the storage key through a protected shared file.",
+      "Configure `storage_key_file` or LIBERTIES_SCHEDULER_STORAGE_KEY_FILE."
     ))
   }
   users <- .ls_registry_load(root)

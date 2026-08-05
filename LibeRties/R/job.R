@@ -122,14 +122,19 @@ ls_queue_capabilities <- function() {
                   "library_adjudicate"),
     states = c("queued", "running", "completed", "failed", "cancelled"),
     worker = paste(
-      "trusted-local restricted R subprocess or production transient systemd",
-      "user service with namespaces, cgroup-v2 limits, and typed entry points"
+      "trusted-local restricted R subprocess, production transient systemd",
+      "user service, or Slurm/Grid Engine allocation with typed entry points"
     ),
     local_platform = R.version$platform,
-    remote_target = "Linux with systemd (native; Windows via WSL; macOS via an operator-supplied Linux systemd environment)",
+    remote_target = paste(
+      "Linux with systemd, Slurm, or Grid Engine; scheduler roots and R/package",
+      "libraries must be shared with compute nodes"
+    ),
+    executors = c("subprocess", "systemd", "slurm", "grid_engine"),
     integrity = "SHA-256 payload and result digests (MD5 retained for v1 diagnostics)",
     isolation = c("non-executable typed remote contract", "per-tenant filesystem namespace",
                   "systemd mount/user/network namespaces in production",
+                  "scheduler-enforced cores, memory and wall time",
                   "whole-cgroup CPU, task, memory and wall-time limits",
                   "multi-core child workers retained inside one job cgroup",
                   "single-thread numerical libraries per R process")

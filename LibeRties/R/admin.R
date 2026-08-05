@@ -4,7 +4,7 @@
   paste(readLines(file, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
 }
 
-.ls_admin_jobs <- function(root, users = ls_user_list(root)) {
+.ls_admin_jobs <- function(root, users = ls_user_list(root), executor = NULL) {
   if (!nrow(users)) return(.ls_empty_jobs())
   records <- lapply(seq_len(nrow(users)), function(index) {
     limits <- as.list(users[index, c(
@@ -12,7 +12,8 @@
       "max_storage_mb", "max_runtime_seconds", "max_cpu_seconds", "max_memory_mb"
     ), drop = FALSE])
     LibeRQueue$new(
-      root, users$username[[index]], max_workers = 1L, limits = limits
+      root, users$username[[index]], max_workers = 1L, limits = limits,
+      executor = executor
     )$list()
   })
   records <- Filter(nrow, records)
@@ -69,11 +70,15 @@
 #' @param root LibeRties server storage root.
 #' @param admin_token Administrator login token. Defaults to the
 #'   `LIBERTIES_ADMIN_TOKEN` environment variable.
+#' @param executor Executor used by the corresponding API service. Supplying
+#'   the same scheduler executor enables scheduler-aware cancellation.
 #' @return A Shiny application object.
 #' @export
 ls_admin_gui <- function(root = .ls_default_root(),
-                         admin_token = Sys.getenv("LIBERTIES_ADMIN_TOKEN")) {
+                         admin_token = Sys.getenv("LIBERTIES_ADMIN_TOKEN"),
+                         executor = NULL) {
   root <- .ls_ensure_dir(root)
+  executor <- .ls_executor(executor)
   admin_token <- as.character(admin_token)
   if (length(admin_token) != 1L || is.na(admin_token) || nchar(admin_token) < 32L) {
     .ls_stop("`admin_token` must contain at least 32 characters (prefer a generated 256-bit secret).")
@@ -281,7 +286,7 @@ ls_admin_gui <- function(root = .ls_default_root(),
     }
     refresh_job_data <- function(preferred = NULL) {
       if (is.null(preferred)) preferred <- shiny::isolate(selected_job())
-      next_jobs <- .ls_admin_jobs(root, shiny::isolate(users()))
+      next_jobs <- .ls_admin_jobs(root, shiny::isolate(users()), executor)
       if (!identical(shiny::isolate(jobs()), next_jobs)) jobs(next_jobs)
       normalize_job_selection(preferred)
     }
@@ -412,12 +417,12 @@ ls_admin_gui <- function(root = .ls_default_root(),
       count <- function(status) sum(queue$status == status)
       data.frame(
         Setting = c(
-          "LibeRties version", "Storage root", "Platform", "R version", "Users", "Running jobs",
+          "LibeRties version", "Execution backend", "Storage root", "Platform", "R version", "Users", "Running jobs",
           "Failed jobs", "Cancelled jobs", "Completed jobs", "Queued jobs",
           "Storage used (MB)"
         ),
         Value = c(
-          package_version, normalizePath(root, winslash = "/"), R.version$platform, R.version.string,
+          package_version, executor$type, normalizePath(root, winslash = "/"), R.version$platform, R.version.string,
           nrow(frame), count("running"), count("failed"), count("cancelled"),
           count("completed"), count("queued"),
           sprintf("%.2f", .ls_storage_bytes(root, "") / 1024^2)
@@ -551,7 +556,8 @@ ls_admin_gui <- function(root = .ls_default_root(),
       row <- users()[users()$username == key[[1L]], , drop = FALSE]
       if (!nrow(row)) return()
       queue <- LibeRQueue$new(
-        root, key[[1L]], 1L, limits = .ls_admin_user_limits(row)
+        root, key[[1L]], 1L, limits = .ls_admin_user_limits(row),
+        executor = executor
       )
       perform(queue$cancel(key[[2L]]), "Job cancellation requested.", refresh = TRUE)
       refresh_job_data(); load_selected_logs()
@@ -574,6 +580,7 @@ ls_admin_gui <- function(root = .ls_default_root(),
 #'
 #' @param root LibeRties server storage root.
 #' @param admin_token Administrator token.
+#' @param executor Executor used by the corresponding API service.
 #' @param host Listening host. Loopback is the secure default.
 #' @param port Listening port; `NULL` selects a free port.
 #' @param launch.browser Passed to [shiny::runApp()].
@@ -581,13 +588,14 @@ ls_admin_gui <- function(root = .ls_default_root(),
 #' @export
 ls_run_admin <- function(root = .ls_default_root(),
                          admin_token = Sys.getenv("LIBERTIES_ADMIN_TOKEN"),
+                         executor = NULL,
                          host = "127.0.0.1", port = NULL,
                          launch.browser = getOption("shiny.launch.browser", interactive()), ...) {
   if (!host %in% c("127.0.0.1", "localhost", "::1")) {
     .ls_stop("The admin GUI only binds to a loopback host; use an authenticated reverse proxy for remote access.")
   }
   shiny::runApp(
-    ls_admin_gui(root, admin_token), host = host, port = port,
+    ls_admin_gui(root, admin_token, executor = executor), host = host, port = port,
     launch.browser = launch.browser, ...
   )
 }

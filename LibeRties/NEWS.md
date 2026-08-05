@@ -1,3 +1,29 @@
+# LibeRties 0.8.1
+
+- Adds first-class Slurm and Grid Engine executors with typed operator
+  configuration, scheduler-native core/memory/wall-time requests, durable job
+  identifiers, restart reattachment, accounting, logs, and cancellation.
+- Provides Myriad-compatible Grid Engine defaults (`smp`, `h_rt`, and per-core
+  `mem`) and Slurm single-node/cpus-per-task mappings without exposing raw
+  scheduler arguments to remote job payloads.
+- Delivers encrypted-storage keys to compute workers through a protected shared
+  key file and records scheduler profile and wrapper checksums in job metadata.
+- Keeps production isolation fail-closed: a resource scheduler is not treated
+  as proof of tenant filesystem/network isolation without an independent
+  deployment probe.
+- Adds reproducible WSL Slurm and Open Cluster Scheduler integration harnesses
+  with real submission, supervisor reattachment, terminal accounting, result,
+  cancellation, and restart-health tests.
+- Extends that harness through a Windows LibeRation two-hop OpenSSH tunnel and
+  verifies recovery after the client forward disappears before both Grid
+  Engine and Slurm jobs finish.
+- Preserves the validated `addl_materialized` flag on remotely transported
+  simulation data so ordinary LibeRation simulation results round-trip through
+  the typed result contract.
+- Accepts unitless zero-memory values emitted by real Grid Engine accounting
+  records and reconciles the scheduler's terminal state after a worker has
+  already published its LibeRties result.
+
 # LibeRties 0.8.0
 
 - Establishes hardened transient systemd user services as the native Linux

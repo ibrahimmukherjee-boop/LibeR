@@ -6,7 +6,8 @@ background R workers, per-tenant namespaces, authenticated HTTP access,
 restart recovery, quotas, resource limits, integrity checks, cancellation,
 logs, and result provenance. Production workers run as transient systemd user
 services with user, mount, process, and (by default) network namespaces plus
-cgroup-v2 resource controls.
+cgroup-v2 resource controls. Cluster deployments can instead submit the same
+durable contract through Slurm or Grid Engine.
 
 LibeRties is distributed as part of the LibeR 0.9 research beta. Use the
 [ecosystem installer](../docs/INSTALL.md) for a compatible package set and
@@ -52,6 +53,32 @@ namespace creation, storage-key delivery, and the configured account. Windows
 hosts must provide this Linux environment through WSL 2; macOS operators must
 provide their own Linux systemd environment. LibeR does not bundle either.
 See [the systemd deployment guide](../docs/SYSTEMD.md).
+
+## Cluster schedulers
+
+`ls_slurm_executor()` and `ls_grid_engine_executor()` submit one durable
+LibeRties job per scheduler allocation. Core, memory and wall-time requests are
+mapped to native scheduler resources; job IDs, logs, accounting, cancellation
+and restart recovery remain part of the normal LibeRties queue. Grid Engine
+defaults follow UCL Myriad's `smp`, `h_rt`, and per-core `mem` conventions.
+
+```r
+executor <- ls_grid_engine_executor(
+  max_cores_per_job = 36L,
+  storage_key_file = "~/.liberties-storage-key"
+)
+ls_run_api(
+  "~/Scratch/LibeRties", host = "127.0.0.1", port = 8000L,
+  max_workers_per_user = 20L, production = FALSE,
+  executor = executor
+)
+```
+
+The API and scheduler commands run on the cluster submission host; workers run
+on compute nodes, so the queue root, R installation and package library must be
+shared. Scheduler resource enforcement is not by itself a hostile multi-tenant
+sandbox. Production mode therefore requires an independent isolation probe for
+scheduler deployments. See [the scheduler deployment guide](../docs/SCHEDULERS.md).
 
 Each job's `n_cores` becomes `CPUQuota = 100% * n_cores`, not a one-core cap.
 `TasksMax` is sized above the requested core count, and `KillMode=control-group`

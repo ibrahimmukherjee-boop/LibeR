@@ -15,7 +15,8 @@ ls_server(
 
 \item{max_workers_per_user}{Host-level worker ceiling per tenant.}
 
-\item{executor}{Optional [ls_systemd_executor()] specification.}
+\item{executor}{Optional [ls_systemd_executor()], [ls_slurm_executor()], or
+[ls_grid_engine_executor()] specification.}
 }
 \value{
 A `LibeRServer` object.

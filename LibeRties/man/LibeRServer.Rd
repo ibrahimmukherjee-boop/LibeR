@@ -53,7 +53,8 @@ namespace from the bearer token; callers cannot nominate another tenant.
     \describe{
       \item{\code{root}}{Persistent server storage directory.}
       \item{\code{max_workers_per_user}}{Host-level simultaneous-worker ceiling per tenant.}
-      \item{\code{executor}}{Optional [ls_systemd_executor()] specification.}
+      \item{\code{executor}}{Optional [ls_systemd_executor()], [ls_slurm_executor()],
+or [ls_grid_engine_executor()] specification.}
     }
     \if{html}{\out{</div>}}
   }

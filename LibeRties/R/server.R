@@ -355,7 +355,8 @@ LibeRServer <- R6::R6Class(
     #' Create or reopen the transport-independent server core.
     #' @param root Persistent server storage directory.
     #' @param max_workers_per_user Host-level simultaneous-worker ceiling per tenant.
-    #' @param executor Optional [ls_systemd_executor()] specification.
+    #' @param executor Optional [ls_systemd_executor()], [ls_slurm_executor()],
+    #'   or [ls_grid_engine_executor()] specification.
     #' @return A new `LibeRServer` object.
     initialize = function(root = .ls_default_root(), max_workers_per_user = 2L,
                           executor = NULL) {
@@ -500,7 +501,8 @@ LibeRServer <- R6::R6Class(
 #' Create the authenticated LibeRties server core
 #' @param root Persistent server storage root.
 #' @param max_workers_per_user Host-level worker ceiling per tenant.
-#' @param executor Optional [ls_systemd_executor()] specification.
+#' @param executor Optional [ls_systemd_executor()], [ls_slurm_executor()], or
+#'   [ls_grid_engine_executor()] specification.
 #' @return A `LibeRServer` object.
 #' @examples
 #' server <- ls_server(tempfile("liberties-server-"))

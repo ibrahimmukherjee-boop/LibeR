@@ -6,7 +6,8 @@
 \usage{
 ls_admin_gui(
   root = .ls_default_root(),
-  admin_token = Sys.getenv("LIBERTIES_ADMIN_TOKEN")
+  admin_token = Sys.getenv("LIBERTIES_ADMIN_TOKEN"),
+  executor = NULL
 )
 }
 \arguments{
@@ -14,6 +15,9 @@ ls_admin_gui(
 
 \item{admin_token}{Administrator login token. Defaults to the
 `LIBERTIES_ADMIN_TOKEN` environment variable.}
+
+\item{executor}{Executor used by the corresponding API service. Supplying
+the same scheduler executor enables scheduler-aware cancellation.}
 }
 \value{
 A Shiny application object.

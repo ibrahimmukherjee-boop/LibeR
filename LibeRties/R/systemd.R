@@ -176,8 +176,11 @@ ls_systemd_executor <- function(
 .ls_executor <- function(executor = NULL) {
   if (is.null(executor)) return(.ls_subprocess_executor())
   if (!inherits(executor, "liberties_executor") ||
-      !executor$type %in% c("subprocess", "systemd")) {
-    .ls_stop("`executor` must be NULL or created by ls_systemd_executor().")
+      !executor$type %in% c("subprocess", "systemd", "slurm", "grid_engine")) {
+    .ls_stop(paste(
+      "`executor` must be NULL or created by ls_systemd_executor(),",
+      "ls_slurm_executor(), or ls_grid_engine_executor()."
+    ))
   }
   executor
 }
