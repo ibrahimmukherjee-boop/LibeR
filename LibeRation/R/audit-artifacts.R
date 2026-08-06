@@ -20,13 +20,13 @@
   if (is.null(value)) return(character())
   value <- as.data.frame(value, stringsAsFactors = FALSE)
   if (!ncol(value)) return(character())
-  connection <- textConnection("lines", "w", local = TRUE, encoding = "UTF-8")
+  connection <- textConnection(NULL, "w", local = TRUE, encoding = "UTF-8")
   on.exit(close(connection), add = TRUE)
   utils::write.table(
     value, connection, sep = "\t", row.names = FALSE, col.names = TRUE,
     quote = TRUE, na = ".", qmethod = "double"
   )
-  lines
+  textConnectionValue(connection)
 }
 
 .nm_audit_matrix_lines <- function(value, label) {
@@ -121,7 +121,7 @@
       paste("Model fit seconds:", result$timing$model_fit_seconds %||% NA_real_),
       paste("Covariance seconds:", result$timing$covariance_seconds %||% NA_real_),
       "",
-      capture.output(print(summary(result)))
+      utils::capture.output(print(summary(result)))
     )
   } else {
     body <- c(
