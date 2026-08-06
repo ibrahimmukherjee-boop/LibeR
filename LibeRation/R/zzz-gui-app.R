@@ -230,7 +230,7 @@ liber_gui <- function(model = NULL, data = NULL, queue = NULL,
             identical(mode, "ssh_scheduler")
           ) config$scheduler$ssh else NULL,
           scheduler = if (identical(mode, "ssh_scheduler")) {
-            config$scheduler[setdiff(names(config$scheduler), "storage_key")]
+            .liber_direct_scheduler_public_config(config$scheduler)
           } else NULL,
           tunnel_status = tunnel_status
         )
@@ -2783,7 +2783,7 @@ liber_gui <- function(model = NULL, data = NULL, queue = NULL,
               connection$scheduler$ssh
             } else connection$ssh,
             scheduler = if (identical(connection$connection_mode, "ssh_scheduler")) {
-              connection$scheduler[setdiff(names(connection$scheduler), "storage_key")]
+              .liber_direct_scheduler_public_config(connection$scheduler)
             } else NULL,
             tunnel_status = if (identical(connection$connection_mode, "ssh_tunnel")) {
               paste0("Connected through 127.0.0.1:", tunnel$local_port)

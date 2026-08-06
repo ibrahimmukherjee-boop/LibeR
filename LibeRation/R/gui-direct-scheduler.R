@@ -281,3 +281,8 @@ LibeRDirectScheduler <- R6::R6Class(
 .liber_direct_scheduler <- function(config, timeout = 60) {
   LibeRDirectScheduler$new(config, timeout = timeout)
 }
+
+.liber_direct_scheduler_public_config <- function(config) {
+  if (!is.list(config)) return(NULL)
+  config[setdiff(names(config), "storage_key")]
+}

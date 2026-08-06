@@ -39,11 +39,13 @@ test_that("direct scheduler response verification fails closed", {
 })
 
 test_that("saved direct scheduler secrets are not rendered into queue metadata", {
-  source <- paste(readLines(
-    test_path("..", "..", "R", "zzz-gui-app.R"), warn = FALSE
-  ), collapse = "\n")
-  expect_match(source, 'setdiff(names(config$scheduler), "storage_key")', fixed = TRUE)
-  expect_match(source, 'setdiff(names(connection$scheduler), "storage_key")', fixed = TRUE)
+  public <- .liber_direct_scheduler_public_config(list(
+    backend = "slurm", queue_name = "teaching",
+    storage_key = paste(rep("ab", 32L), collapse = "")
+  ))
+  expect_identical(public$backend, "slurm")
+  expect_identical(public$queue_name, "teaching")
+  expect_false("storage_key" %in% names(public))
 })
 
 test_that("direct scheduler definitions survive client-settings upgrades", {
