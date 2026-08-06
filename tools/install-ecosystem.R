@@ -93,8 +93,7 @@
     else paste0("download status ", status)
     stop(
       "Unable to discover the latest LibeR release from GitHub (", detail,
-      "). Pass an explicit tag, for example ",
-      "liber_install(tag = \"v0.9.0-research-beta.12\").",
+      "). Pass an explicit published tag with `liber_install(tag = \"...\")`.",
       call. = FALSE
     )
   }
@@ -193,10 +192,14 @@ liber_install <- function(
     warning("Precompiled LibeR archives are Windows-specific; using source packages.",
             call. = FALSE)
   }
-  if (use_binary && !identical(paste(R.version$major, R.version$minor, sep = "."),
-                               "4.6.0")) {
+  r_series <- paste(
+    R.version$major,
+    strsplit(R.version$minor, ".", fixed = TRUE)[[1L]][[1L]],
+    sep = "."
+  )
+  if (use_binary && !identical(r_series, "4.6")) {
     warning(
-      "The published Windows binaries were built with R 4.6.0; using source ",
+      "The published Windows binaries target the R 4.6.x series; using source ",
       "packages for this R version.", call. = FALSE
     )
     use_binary <- FALSE
