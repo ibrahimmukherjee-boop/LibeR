@@ -117,6 +117,15 @@ scheduler enforces resources but does not automatically prove tenant
 filesystem or network isolation; production use needs an independently
 attested sandbox.
 
+For a personal scheduler account, LibeRation can use the same executors without
+an HTTP service. The **Direct SSH scheduler** route calls the fixed
+`ls_direct_scheduler_cli()` entry point over OpenSSH, optionally via a jump
+host. It transmits only the versioned typed JSON job contract and stores the
+queue and its encryption credential under the remote account. Scheduler IDs,
+logs and results therefore remain recoverable after a client disconnect. This
+route inherits the SSH account's permissions and is distinct from the
+centrally administered multi-user API deployment.
+
 ## NONMEM and nlmixr2 workers
 
 Simulation and estimation jobs can use an allow-listed external engine while

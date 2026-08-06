@@ -93,6 +93,8 @@ After=network.target
 
 [Service]
 Type=simple
+RuntimeDirectory=sshd
+RuntimeDirectoryPreserve=yes
 ExecStart=/usr/sbin/sshd -D -e -f ${config_root}/${endpoint}.conf
 Restart=on-failure
 RestartSec=1

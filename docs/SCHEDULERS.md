@@ -2,8 +2,10 @@
 
 LibeRties can submit its existing durable job contract to Slurm or Grid Engine.
 The LibeRties API and scheduler commands run on the cluster submission host;
-the R worker runs on a compute node. The client continues to communicate only
-with the LibeRties API, directly or through LibeRation's SSH-tunnel connection.
+the R worker runs on a compute node. A centrally managed deployment exposes a
+LibeRties API directly or through LibeRation's SSH-tunnel connection. A desktop
+user may instead invoke the same queue directly through short-lived SSH
+connections, without running the API daemon.
 
 ## Requirements
 
@@ -18,9 +20,39 @@ with the LibeRties API, directly or through LibeRation's SSH-tunnel connection.
   executor `prologue`; clients cannot provide module or shell commands.
 - `sbatch`, `squeue`, `sacct`, `scontrol`, and `scancel` must be available for
   Slurm; Grid Engine requires `qsub`, `qstat`, `qacct`, and `qdel`.
-- The API process must remain available to accept and report jobs. Scheduler
+- For an API deployment, the API process accepts and reports jobs. Scheduler
   jobs themselves continue if the API restarts; the durable queue reconnects
-  to their scheduler job IDs.
+  to their scheduler job IDs. A direct SSH queue performs this reconciliation
+  during each client request and does not require a resident API process.
+
+## Direct SSH scheduler route
+
+In LibeRation's Jobs tab, choose **Direct SSH scheduler**, then configure the
+submission host, SSH account, Slurm or Grid Engine settings, and optionally an
+SSH gateway. The existing SSH assistant can discover or generate a key, load it
+into `ssh-agent`, install the public key on the gateway and destination, and
+test each hop. Hosted Shiny sessions do not expose this local OpenSSH route.
+
+Every action invokes the fixed `LibeRties::ls_direct_scheduler_cli()` command
+and sends a checksummed typed JSON envelope on standard input. No API token,
+listener, arbitrary RDS object, client shell fragment, scheduler argument, or
+private-key material is transferred. The first successful connection creates
+an encrypted durable queue below
+`~/.local/share/LibeR/direct-queues/<queue-name>` by default. The locally saved
+connection definition retains the matching random encryption key in the
+mode-restricted LibeRation workspace settings; it is not sent to browser state.
+
+The remote login environment must make `Rscript` and compatible LibeRties,
+LibeRation, and engine packages available. If the cluster requires an R module,
+select a full `Rscript` path or a user-owned wrapper path in the setup dialog.
+The wrapper is remote account configuration—it is never submitted in a model
+job. The queue root and R package library must remain visible to compute nodes.
+
+SSH provides transport authentication and encryption, while the personal SSH
+account provides the filesystem/identity boundary. This route is suitable for
+a user's own scheduler account. A shared service for mutually untrusted users
+still requires the LibeRties API plus independently attested multi-tenant OS or
+cluster isolation.
 
 ## UCL Myriad (Grid Engine)
 
@@ -133,6 +165,8 @@ for setup and restart-health commands. Its optional Windows client campaign
 adds isolated gateway and target SSH daemons, submits through LibeRation's
 managed ProxyJump path, deliberately removes the client tunnel while each job
 runs, reconnects, and verifies durable result retrieval without duplicate jobs.
+The same two-hop harness also exercises daemon-free direct Grid Engine and
+Slurm submission and checksum-validated result recovery.
 
 ## Durability and security boundary
 

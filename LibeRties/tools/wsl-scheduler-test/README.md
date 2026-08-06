@@ -71,3 +71,16 @@ Finish by creating `<mounted-runtime-directory>/stop` and running
 empties the authorized-key file; delete the disposable private key and token
 files on Windows. This harness is intentionally isolated and is not a template
 for a production SSH service.
+
+The same disposable gateway and destination also exercise the daemon-free
+direct scheduler route. With current LibeRation and LibeRties packages loaded
+on Windows and installed in WSL, run:
+
+```powershell
+Rscript LibeRties/tools/wsl-scheduler-test/run-liberties-direct-ssh-client-smoke.R `
+  <disposable-private-key>
+```
+
+The smoke submits one ADVAN1 simulation to each scheduler through ProxyJump,
+allows the one-shot SSH connection to disappear, then reconnects to recover
+status and the checksum-validated numerical result without duplication.

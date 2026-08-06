@@ -1,0 +1,3005 @@
+<!doctype html>
+<html lang='en'><head><meta charset='utf-8'>
+<title>LibeRties 0.8.3 reference manual</title>
+<style>
+@page { size: A4; margin: 17mm 16mm 18mm; }
+body { font-family: 'Segoe UI', Arial, sans-serif; color:#172033; line-height:1.42; max-width:980px; margin:0 auto; }
+h1 { color:#173f73; font-size:30px; margin-bottom:4px; }
+h2 { color:#173f73; border-bottom:2px solid #d9e4f2; padding-bottom:5px; break-before:page; }
+h3 { color:#315d89; margin-top:1.2em; }
+code, pre { font-family: Consolas, 'Courier New', monospace; }
+pre { background:#f5f7fa; border:1px solid #d8dee8; border-radius:4px; padding:10px; overflow-wrap:anywhere; white-space:pre-wrap; }
+table { border-collapse:collapse; width:100%; } td { vertical-align:top; border-bottom:1px solid #e5e9ef; padding:6px; }
+.cover { min-height:235mm; display:flex; flex-direction:column; justify-content:center; }
+.subtitle { color:#516175; font-size:18px; } .meta { margin-top:30px; color:#68778b; }
+.toc { columns:2; column-gap:32px; } .toc li { break-inside:avoid; margin:3px 0; }
+a { color:#175c9c; text-decoration:none; }
+</style></head><body>
+<section class='cover'>
+<h1>LibeRties reference manual</h1>
+<div class='subtitle'>Portable Job Execution for LibeR</div>
+<div class='meta'>Version 0.8.3<br>Generated 2026-08-06<br>36 help topics</div>
+</section>
+<section><h2>Contents</h2><ul class='toc'>
+<li><a href='#LibeRQueue'>LibeRQueue</a></li>
+<li><a href='#LibeRRemote'>LibeRRemote</a></li>
+<li><a href='#LibeRServer'>LibeRServer</a></li>
+<li><a href='#ls_admin_gui'>ls_admin_gui</a></li>
+<li><a href='#ls_api'>ls_api</a></li>
+<li><a href='#ls_audit_read'>ls_audit_read</a></li>
+<li><a href='#ls_direct_scheduler_cli'>ls_direct_scheduler_cli</a></li>
+<li><a href='#ls_generate_storage_key'>ls_generate_storage_key</a></li>
+<li><a href='#ls_grid_engine_executor'>ls_grid_engine_executor</a></li>
+<li><a href='#ls_job'>ls_job</a></li>
+<li><a href='#ls_job_decode'>ls_job_decode</a></li>
+<li><a href='#ls_job_encode'>ls_job_encode</a></li>
+<li><a href='#ls_job_from_wire'>ls_job_from_wire</a></li>
+<li><a href='#ls_job_manifest'>ls_job_manifest</a></li>
+<li><a href='#ls_job_to_wire'>ls_job_to_wire</a></li>
+<li><a href='#ls_library_job'>ls_library_job</a></li>
+<li><a href='#ls_local_queue'>ls_local_queue</a></li>
+<li><a href='#ls_process_supervisor'>ls_process_supervisor</a></li>
+<li><a href='#ls_queue_capabilities'>ls_queue_capabilities</a></li>
+<li><a href='#ls_remote'>ls_remote</a></li>
+<li><a href='#ls_result_decode'>ls_result_decode</a></li>
+<li><a href='#ls_result_from_wire'>ls_result_from_wire</a></li>
+<li><a href='#ls_result_to_wire'>ls_result_to_wire</a></li>
+<li><a href='#ls_run_admin'>ls_run_admin</a></li>
+<li><a href='#ls_run_api'>ls_run_api</a></li>
+<li><a href='#ls_security_policy'>ls_security_policy</a></li>
+<li><a href='#ls_server'>ls_server</a></li>
+<li><a href='#ls_server_preflight'>ls_server_preflight</a></li>
+<li><a href='#ls_slurm_executor'>ls_slurm_executor</a></li>
+<li><a href='#ls_supervise_process'>ls_supervise_process</a></li>
+<li><a href='#ls_systemd_executor'>ls_systemd_executor</a></li>
+<li><a href='#ls_user_create'>ls_user_create</a></li>
+<li><a href='#ls_user_delete'>ls_user_delete</a></li>
+<li><a href='#ls_user_list'>ls_user_list</a></li>
+<li><a href='#ls_user_rotate_token'>ls_user_rotate_token</a></li>
+<li><a href='#ls_user_update'>ls_user_update</a></li>
+</ul></section>
+<h2 id='LibeRQueue'>Persistent cross-platform LibeR job queue</h2><span id='topic+LibeRQueue'></span>
+
+<h3>Description</h3>
+
+<p>Each user receives a separate filesystem namespace. Trusted local jobs can
+run in fresh 'callr' R processes; external jobs can run as hardened,
+cgroup-limited transient systemd services or through Slurm/Grid Engine.
+Every backend reconstructs C++ pointers from serialized models.
+</p>
+
+
+<h3>Public fields</h3>
+
+<div class="r6-fields">
+
+<dl>
+<dt><code>root</code></dt><dd><p>Normalized persistent queue storage directory.</p>
+</dd>
+<dt><code>user</code></dt><dd><p>Safe tenant namespace used by default for queue operations.</p>
+</dd>
+<dt><code>max_workers</code></dt><dd><p>Maximum simultaneous background workers.</p>
+</dd>
+<dt><code>limits</code></dt><dd><p>Effective resource and storage limits.</p>
+</dd>
+<dt><code>isolation</code></dt><dd><p>Description of the worker isolation strategy.</p>
+</dd>
+<dt><code>executor</code></dt><dd><p>Worker execution backend specification.</p>
+</dd>
+<dt><code>processes</code></dt><dd><p>Internal environment of live 'callr' worker handles.</p>
+</dd>
+</dl>
+
+</div>
+
+
+<h3>Methods</h3>
+
+
+
+<h4>Public methods</h4>
+
+
+<ul>
+<li> <p><a href="#method-LibeRQueue-initialize"><code>LibeRQueue$new()</code></a>
+</p>
+</li>
+<li> <p><a href="#method-LibeRQueue-submit"><code>LibeRQueue$submit()</code></a>
+</p>
+</li>
+<li> <p><a href="#method-LibeRQueue-poll"><code>LibeRQueue$poll()</code></a>
+</p>
+</li>
+<li> <p><a href="#method-LibeRQueue-status"><code>LibeRQueue$status()</code></a>
+</p>
+</li>
+<li> <p><a href="#method-LibeRQueue-list"><code>LibeRQueue$list()</code></a>
+</p>
+</li>
+<li> <p><a href="#method-LibeRQueue-result"><code>LibeRQueue$result()</code></a>
+</p>
+</li>
+<li> <p><a href="#method-LibeRQueue-logs"><code>LibeRQueue$logs()</code></a>
+</p>
+</li>
+<li> <p><a href="#method-LibeRQueue-cancel"><code>LibeRQueue$cancel()</code></a>
+</p>
+</li>
+<li> <p><a href="#method-LibeRQueue-wait"><code>LibeRQueue$wait()</code></a>
+</p>
+</li>
+<li> <p><a href="#method-LibeRQueue-print"><code>LibeRQueue$print()</code></a>
+</p>
+</li>
+<li> <p><a href="#method-LibeRQueue-clone"><code>LibeRQueue$clone()</code></a>
+</p>
+</li></ul>
+
+
+<hr>
+<a id="method-LibeRQueue-initialize"></a>
+
+
+
+<h4><code>LibeRQueue$new()</code></h4>
+
+<p>Create or reopen a persistent local queue.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>LibeRQueue$new(
+  root = .ls_default_root(),
+  user = "local",
+  max_workers = 1L,
+  limits = list(),
+  executor = NULL
+)</pre>
+</div>
+
+
+
+<h5>Arguments</h5>
+
+<div class="arguments">
+
+<dl>
+<dt><code>root</code></dt><dd><p>Persistent queue storage directory.</p>
+</dd>
+<dt><code>user</code></dt><dd><p>Default isolated tenant namespace.</p>
+</dd>
+<dt><code>max_workers</code></dt><dd><p>Maximum simultaneous background workers.</p>
+</dd>
+<dt><code>limits</code></dt><dd><p>Named overrides for runtime, CPU, memory, payload, result,
+concurrency, queue, and storage limits.</p>
+</dd>
+<dt><code>executor</code></dt><dd><p>Optional executor created by [ls_systemd_executor()],
+[ls_slurm_executor()], or [ls_grid_engine_executor()]. 'NULL' retains
+the trusted-local 'callr' subprocess backend.</p>
+</dd>
+</dl>
+
+</div>
+
+
+
+<h5>Returns</h5>
+
+<p>A new 'LibeRQueue' object.
+</p>
+
+
+<hr>
+<a id="method-LibeRQueue-submit"></a>
+
+
+
+<h4><code>LibeRQueue$submit()</code></h4>
+
+<p>Persist a serializable job and optionally start available workers.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>LibeRQueue$submit(job, user = self$user, start = TRUE, idempotency_key = NULL)</pre>
+</div>
+
+
+
+<h5>Arguments</h5>
+
+<div class="arguments">
+
+<dl>
+<dt><code>job</code></dt><dd><p>A job created by [ls_job()].</p>
+</dd>
+<dt><code>user</code></dt><dd><p>Tenant namespace receiving the job.</p>
+</dd>
+<dt><code>start</code></dt><dd><p>Start available queued work immediately.</p>
+</dd>
+<dt><code>idempotency_key</code></dt><dd><p>Optional user-scoped retry key. Reusing a key
+with the same payload returns the original job id; reuse with a
+different payload is rejected.</p>
+</dd>
+</dl>
+
+</div>
+
+
+
+<h5>Returns</h5>
+
+<p>The durable job identifier, invisibly.
+</p>
+
+
+<hr>
+<a id="method-LibeRQueue-poll"></a>
+
+
+
+<h4><code>LibeRQueue$poll()</code></h4>
+
+<p>Refresh worker state, enforce limits, recover jobs, and start queued work.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>LibeRQueue$poll(start = TRUE)</pre>
+</div>
+
+
+
+<h5>Arguments</h5>
+
+<div class="arguments">
+
+<dl>
+<dt><code>start</code></dt><dd><p>Whether to start queued work when capacity is available.</p>
+</dd>
+</dl>
+
+</div>
+
+
+
+<h5>Returns</h5>
+
+<p>The current job table, invisibly.
+</p>
+
+
+<hr>
+<a id="method-LibeRQueue-status"></a>
+
+
+
+<h4><code>LibeRQueue$status()</code></h4>
+
+<p>Read durable metadata for one job.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>LibeRQueue$status(id, user = self$user)</pre>
+</div>
+
+
+
+<h5>Arguments</h5>
+
+<div class="arguments">
+
+<dl>
+<dt><code>id</code></dt><dd><p>Durable job identifier.</p>
+</dd>
+<dt><code>user</code></dt><dd><p>Tenant namespace owning the job.</p>
+</dd>
+</dl>
+
+</div>
+
+
+
+<h5>Returns</h5>
+
+<p>A named metadata list.
+</p>
+
+
+<hr>
+<a id="method-LibeRQueue-list"></a>
+
+
+
+<h4><code>LibeRQueue$list()</code></h4>
+
+<p>List durable jobs in a tenant namespace.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>LibeRQueue$list(user = self$user)</pre>
+</div>
+
+
+
+<h5>Arguments</h5>
+
+<div class="arguments">
+
+<dl>
+<dt><code>user</code></dt><dd><p>Tenant namespace to list.</p>
+</dd>
+</dl>
+
+</div>
+
+
+
+<h5>Returns</h5>
+
+<p>A data frame ordered from newest to oldest submission.
+</p>
+
+
+<hr>
+<a id="method-LibeRQueue-result"></a>
+
+
+
+<h4><code>LibeRQueue$result()</code></h4>
+
+<p>Read and verify a completed job result.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>LibeRQueue$result(id, user = self$user)</pre>
+</div>
+
+
+
+<h5>Arguments</h5>
+
+<div class="arguments">
+
+<dl>
+<dt><code>id</code></dt><dd><p>Durable job identifier.</p>
+</dd>
+<dt><code>user</code></dt><dd><p>Tenant namespace owning the job.</p>
+</dd>
+</dl>
+
+</div>
+
+
+
+<h5>Returns</h5>
+
+<p>The deserialized job result.
+</p>
+
+
+<hr>
+<a id="method-LibeRQueue-logs"></a>
+
+
+
+<h4><code>LibeRQueue$logs()</code></h4>
+
+<p>Read a worker log stream.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>LibeRQueue$logs(id, user = self$user, stream = c("stdout", "stderr"))</pre>
+</div>
+
+
+
+<h5>Arguments</h5>
+
+<div class="arguments">
+
+<dl>
+<dt><code>id</code></dt><dd><p>Durable job identifier.</p>
+</dd>
+<dt><code>user</code></dt><dd><p>Tenant namespace owning the job.</p>
+</dd>
+<dt><code>stream</code></dt><dd><p>Standard-output or standard-error stream.</p>
+</dd>
+</dl>
+
+</div>
+
+
+
+<h5>Returns</h5>
+
+<p>A character vector containing log lines.
+</p>
+
+
+<hr>
+<a id="method-LibeRQueue-cancel"></a>
+
+
+
+<h4><code>LibeRQueue$cancel()</code></h4>
+
+<p>Cancel a queued or running job.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>LibeRQueue$cancel(id, user = self$user)</pre>
+</div>
+
+
+
+<h5>Arguments</h5>
+
+<div class="arguments">
+
+<dl>
+<dt><code>id</code></dt><dd><p>Durable job identifier.</p>
+</dd>
+<dt><code>user</code></dt><dd><p>Tenant namespace owning the job.</p>
+</dd>
+</dl>
+
+</div>
+
+
+
+<h5>Returns</h5>
+
+<p>'TRUE' when cancellation changed the job state and 'FALSE' when
+the job was already terminal, invisibly.
+</p>
+
+
+<hr>
+<a id="method-LibeRQueue-wait"></a>
+
+
+
+<h4><code>LibeRQueue$wait()</code></h4>
+
+<p>Poll until a job reaches a terminal state.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>LibeRQueue$wait(id, user = self$user, timeout = Inf, poll_interval = 0.1)</pre>
+</div>
+
+
+
+<h5>Arguments</h5>
+
+<div class="arguments">
+
+<dl>
+<dt><code>id</code></dt><dd><p>Durable job identifier.</p>
+</dd>
+<dt><code>user</code></dt><dd><p>Tenant namespace owning the job.</p>
+</dd>
+<dt><code>timeout</code></dt><dd><p>Maximum elapsed seconds; 'Inf' waits indefinitely.</p>
+</dd>
+<dt><code>poll_interval</code></dt><dd><p>Delay between polls in seconds.</p>
+</dd>
+</dl>
+
+</div>
+
+
+
+<h5>Returns</h5>
+
+<p>Final job metadata.
+</p>
+
+
+<hr>
+<a id="method-LibeRQueue-print"></a>
+
+
+
+<h4><code>LibeRQueue$print()</code></h4>
+
+<p>Print queue location, capacity, limits, and job count.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>LibeRQueue$print(...)</pre>
+</div>
+
+
+
+<h5>Arguments</h5>
+
+<div class="arguments">
+
+<dl>
+<dt><code>...</code></dt><dd><p>Unused.</p>
+</dd>
+</dl>
+
+</div>
+
+
+
+<h5>Returns</h5>
+
+<p>The queue, invisibly.
+</p>
+
+
+<hr>
+<a id="method-LibeRQueue-clone"></a>
+
+
+
+<h4><code>LibeRQueue$clone()</code></h4>
+
+<p>The objects of this class are cloneable with this method.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>LibeRQueue$clone(deep = FALSE)</pre>
+</div>
+
+
+
+<h5>Arguments</h5>
+
+<div class="arguments">
+
+<dl>
+<dt><code>deep</code></dt><dd><p>Whether to make a deep clone.</p>
+</dd>
+</dl>
+
+</div>
+
+
+
+<h2 id='LibeRRemote'>LibeRties remote-server client</h2><span id='topic+LibeRRemote'></span>
+
+<h3>Description</h3>
+
+<p>LibeRties remote-server client
+</p>
+
+
+<h3>Public fields</h3>
+
+<div class="r6-fields">
+
+<dl>
+<dt><code>url</code></dt><dd><p>Normalized HTTP(S) service base URL.</p>
+</dd>
+<dt><code>token</code></dt><dd><p>Bearer token used for authenticated requests.</p>
+</dd>
+<dt><code>timeout</code></dt><dd><p>Per-request timeout in seconds.</p>
+</dd>
+</dl>
+
+</div>
+
+
+<h3>Methods</h3>
+
+
+
+<h4>Public methods</h4>
+
+
+<ul>
+<li> <p><a href="#method-LibeRRemote-initialize"><code>LibeRRemote$new()</code></a>
+</p>
+</li>
+<li> <p><a href="#method-LibeRRemote-authenticate"><code>LibeRRemote$authenticate()</code></a>
+</p>
+</li>
+<li> <p><a href="#method-LibeRRemote-capabilities"><code>LibeRRemote$capabilities()</code></a>
+</p>
+</li>
+<li> <p><a href="#method-LibeRRemote-submit"><code>LibeRRemote$submit()</code></a>
+</p>
+</li>
+<li> <p><a href="#method-LibeRRemote-list"><code>LibeRRemote$list()</code></a>
+</p>
+</li>
+<li> <p><a href="#method-LibeRRemote-status"><code>LibeRRemote$status()</code></a>
+</p>
+</li>
+<li> <p><a href="#method-LibeRRemote-result"><code>LibeRRemote$result()</code></a>
+</p>
+</li>
+<li> <p><a href="#method-LibeRRemote-logs"><code>LibeRRemote$logs()</code></a>
+</p>
+</li>
+<li> <p><a href="#method-LibeRRemote-cancel"><code>LibeRRemote$cancel()</code></a>
+</p>
+</li>
+<li> <p><a href="#method-LibeRRemote-clone"><code>LibeRRemote$clone()</code></a>
+</p>
+</li></ul>
+
+
+<hr>
+<a id="method-LibeRRemote-initialize"></a>
+
+
+
+<h4><code>LibeRRemote$new()</code></h4>
+
+<p>Configure an authenticated remote client.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>LibeRRemote$new(url, token, timeout = 60)</pre>
+</div>
+
+
+
+<h5>Arguments</h5>
+
+<div class="arguments">
+
+<dl>
+<dt><code>url</code></dt><dd><p>HTTP(S) service base URL.</p>
+</dd>
+<dt><code>token</code></dt><dd><p>Bearer token issued by [ls_user_create()].</p>
+</dd>
+<dt><code>timeout</code></dt><dd><p>Per-request timeout in seconds.</p>
+</dd>
+</dl>
+
+</div>
+
+
+
+<h5>Returns</h5>
+
+<p>A new 'LibeRRemote' object.
+</p>
+
+
+<hr>
+<a id="method-LibeRRemote-authenticate"></a>
+
+
+
+<h4><code>LibeRRemote$authenticate()</code></h4>
+
+<p>Verify the bearer token and return the authenticated user metadata.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>LibeRRemote$authenticate()</pre>
+</div>
+
+
+
+<h5>Returns</h5>
+
+<p>Server authentication metadata.
+</p>
+
+
+<hr>
+<a id="method-LibeRRemote-capabilities"></a>
+
+
+
+<h4><code>LibeRRemote$capabilities()</code></h4>
+
+<p>Report the remote worker contracts and locally available execution
+engines. Availability is evaluated on the API submission host; scheduler
+prologues must make the same engines available on compute nodes.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>LibeRRemote$capabilities()</pre>
+</div>
+
+
+
+<h5>Returns</h5>
+
+<p>Remote queue capability metadata.
+</p>
+
+
+<hr>
+<a id="method-LibeRRemote-submit"></a>
+
+
+
+<h4><code>LibeRRemote$submit()</code></h4>
+
+<p>Submit a typed, non-executable job payload.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>LibeRRemote$submit(job, idempotency_key = NULL)</pre>
+</div>
+
+
+
+<h5>Arguments</h5>
+
+<div class="arguments">
+
+<dl>
+<dt><code>job</code></dt><dd><p>A job created by [ls_job()].</p>
+</dd>
+<dt><code>idempotency_key</code></dt><dd><p>Optional retry key scoped to the authenticated
+remote user.</p>
+</dd>
+</dl>
+
+</div>
+
+
+
+<h5>Returns</h5>
+
+<p>The durable remote job identifier.
+</p>
+
+
+<hr>
+<a id="method-LibeRRemote-list"></a>
+
+
+
+<h4><code>LibeRRemote$list()</code></h4>
+
+<p>List jobs belonging to the authenticated user.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>LibeRRemote$list()</pre>
+</div>
+
+
+
+<h5>Returns</h5>
+
+<p>A data frame of remote jobs.
+</p>
+
+
+<hr>
+<a id="method-LibeRRemote-status"></a>
+
+
+
+<h4><code>LibeRRemote$status()</code></h4>
+
+<p>Read the status and metadata of one remote job.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>LibeRRemote$status(id)</pre>
+</div>
+
+
+
+<h5>Arguments</h5>
+
+<div class="arguments">
+
+<dl>
+<dt><code>id</code></dt><dd><p>Durable remote job identifier.</p>
+</dd>
+</dl>
+
+</div>
+
+
+
+<h5>Returns</h5>
+
+<p>A named metadata list.
+</p>
+
+
+<hr>
+<a id="method-LibeRRemote-result"></a>
+
+
+
+<h4><code>LibeRRemote$result()</code></h4>
+
+<p>Download and validate a completed result.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>LibeRRemote$result(id)</pre>
+</div>
+
+
+
+<h5>Arguments</h5>
+
+<div class="arguments">
+
+<dl>
+<dt><code>id</code></dt><dd><p>Durable remote job identifier.</p>
+</dd>
+</dl>
+
+</div>
+
+
+
+<h5>Returns</h5>
+
+<p>The reconstructed result object.
+</p>
+
+
+<hr>
+<a id="method-LibeRRemote-logs"></a>
+
+
+
+<h4><code>LibeRRemote$logs()</code></h4>
+
+<p>Download a remote worker log stream.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>LibeRRemote$logs(id, stream = c("stdout", "stderr"))</pre>
+</div>
+
+
+
+<h5>Arguments</h5>
+
+<div class="arguments">
+
+<dl>
+<dt><code>id</code></dt><dd><p>Durable remote job identifier.</p>
+</dd>
+<dt><code>stream</code></dt><dd><p>Standard-output or standard-error stream.</p>
+</dd>
+</dl>
+
+</div>
+
+
+
+<h5>Returns</h5>
+
+<p>A character vector containing log lines.
+</p>
+
+
+<hr>
+<a id="method-LibeRRemote-cancel"></a>
+
+
+
+<h4><code>LibeRRemote$cancel()</code></h4>
+
+<p>Request cancellation of a queued or running remote job.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>LibeRRemote$cancel(id)</pre>
+</div>
+
+
+
+<h5>Arguments</h5>
+
+<div class="arguments">
+
+<dl>
+<dt><code>id</code></dt><dd><p>Durable remote job identifier.</p>
+</dd>
+</dl>
+
+</div>
+
+
+
+<h5>Returns</h5>
+
+<p>'TRUE' if the server accepted cancellation.
+</p>
+
+
+<hr>
+<a id="method-LibeRRemote-clone"></a>
+
+
+
+<h4><code>LibeRRemote$clone()</code></h4>
+
+<p>The objects of this class are cloneable with this method.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>LibeRRemote$clone(deep = FALSE)</pre>
+</div>
+
+
+
+<h5>Arguments</h5>
+
+<div class="arguments">
+
+<dl>
+<dt><code>deep</code></dt><dd><p>Whether to make a deep clone.</p>
+</dd>
+</dl>
+
+</div>
+
+
+
+<h2 id='LibeRServer'>Authenticated multi-tenant LibeRties server core</h2><span id='topic+LibeRServer'></span>
+
+<h3>Description</h3>
+
+<p>This object is the transport-independent server boundary used by a local
+test host and, later, the HTTP adapter. Every job operation derives the user
+namespace from the bearer token; callers cannot nominate another tenant.
+</p>
+
+
+<h3>Public fields</h3>
+
+<div class="r6-fields">
+
+<dl>
+<dt><code>root</code></dt><dd><p>Normalized persistent server storage directory.</p>
+</dd>
+<dt><code>max_workers_per_user</code></dt><dd><p>Host-level simultaneous-worker ceiling per tenant.</p>
+</dd>
+<dt><code>executor</code></dt><dd><p>Worker execution backend shared by all tenant queues.</p>
+</dd>
+</dl>
+
+</div>
+
+
+<h3>Methods</h3>
+
+
+
+<h4>Public methods</h4>
+
+
+<ul>
+<li> <p><a href="#method-LibeRServer-initialize"><code>LibeRServer$new()</code></a>
+</p>
+</li>
+<li> <p><a href="#method-LibeRServer-authenticate"><code>LibeRServer$authenticate()</code></a>
+</p>
+</li>
+<li> <p><a href="#method-LibeRServer-submit"><code>LibeRServer$submit()</code></a>
+</p>
+</li>
+<li> <p><a href="#method-LibeRServer-poll"><code>LibeRServer$poll()</code></a>
+</p>
+</li>
+<li> <p><a href="#method-LibeRServer-list"><code>LibeRServer$list()</code></a>
+</p>
+</li>
+<li> <p><a href="#method-LibeRServer-status"><code>LibeRServer$status()</code></a>
+</p>
+</li>
+<li> <p><a href="#method-LibeRServer-result"><code>LibeRServer$result()</code></a>
+</p>
+</li>
+<li> <p><a href="#method-LibeRServer-logs"><code>LibeRServer$logs()</code></a>
+</p>
+</li>
+<li> <p><a href="#method-LibeRServer-cancel"><code>LibeRServer$cancel()</code></a>
+</p>
+</li>
+<li> <p><a href="#method-LibeRServer-clone"><code>LibeRServer$clone()</code></a>
+</p>
+</li></ul>
+
+
+<hr>
+<a id="method-LibeRServer-initialize"></a>
+
+
+
+<h4><code>LibeRServer$new()</code></h4>
+
+<p>Create or reopen the transport-independent server core.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>LibeRServer$new(
+  root = .ls_default_root(),
+  max_workers_per_user = 2L,
+  executor = NULL
+)</pre>
+</div>
+
+
+
+<h5>Arguments</h5>
+
+<div class="arguments">
+
+<dl>
+<dt><code>root</code></dt><dd><p>Persistent server storage directory.</p>
+</dd>
+<dt><code>max_workers_per_user</code></dt><dd><p>Host-level simultaneous-worker ceiling per tenant.</p>
+</dd>
+<dt><code>executor</code></dt><dd><p>Optional [ls_systemd_executor()], [ls_slurm_executor()],
+or [ls_grid_engine_executor()] specification.</p>
+</dd>
+</dl>
+
+</div>
+
+
+
+<h5>Returns</h5>
+
+<p>A new 'LibeRServer' object.
+</p>
+
+
+<hr>
+<a id="method-LibeRServer-authenticate"></a>
+
+
+
+<h4><code>LibeRServer$authenticate()</code></h4>
+
+<p>Authenticate a bearer token without exposing credential material.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>LibeRServer$authenticate(token, scope = NULL)</pre>
+</div>
+
+
+
+<h5>Arguments</h5>
+
+<div class="arguments">
+
+<dl>
+<dt><code>token</code></dt><dd><p>Bearer token issued by [ls_user_create()].</p>
+</dd>
+<dt><code>scope</code></dt><dd><p>Optional required API permission.</p>
+</dd>
+</dl>
+
+</div>
+
+
+
+<h5>Returns</h5>
+
+<p>User metadata and effective limits.
+</p>
+
+
+<hr>
+<a id="method-LibeRServer-submit"></a>
+
+
+
+<h4><code>LibeRServer$submit()</code></h4>
+
+<p>Submit a job to the authenticated user's isolated queue.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>LibeRServer$submit(token, job, start = TRUE, idempotency_key = NULL)</pre>
+</div>
+
+
+
+<h5>Arguments</h5>
+
+<div class="arguments">
+
+<dl>
+<dt><code>token</code></dt><dd><p>Bearer token issued by [ls_user_create()].</p>
+</dd>
+<dt><code>job</code></dt><dd><p>A job created by [ls_job()].</p>
+</dd>
+<dt><code>start</code></dt><dd><p>Start available work immediately.</p>
+</dd>
+<dt><code>idempotency_key</code></dt><dd><p>Optional authenticated-user-scoped retry key.</p>
+</dd>
+</dl>
+
+</div>
+
+
+
+<h5>Returns</h5>
+
+<p>The durable job identifier, invisibly.
+</p>
+
+
+<hr>
+<a id="method-LibeRServer-poll"></a>
+
+
+
+<h4><code>LibeRServer$poll()</code></h4>
+
+<p>Poll the authenticated user's queue.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>LibeRServer$poll(token, start = TRUE)</pre>
+</div>
+
+
+
+<h5>Arguments</h5>
+
+<div class="arguments">
+
+<dl>
+<dt><code>token</code></dt><dd><p>Bearer token issued by [ls_user_create()].</p>
+</dd>
+<dt><code>start</code></dt><dd><p>Start available work immediately.</p>
+</dd>
+</dl>
+
+</div>
+
+
+
+<h5>Returns</h5>
+
+<p>The current job table, invisibly.
+</p>
+
+
+<hr>
+<a id="method-LibeRServer-list"></a>
+
+
+
+<h4><code>LibeRServer$list()</code></h4>
+
+<p>List jobs for the authenticated user.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>LibeRServer$list(token)</pre>
+</div>
+
+
+
+<h5>Arguments</h5>
+
+<div class="arguments">
+
+<dl>
+<dt><code>token</code></dt><dd><p>Bearer token issued by [ls_user_create()].</p>
+</dd>
+</dl>
+
+</div>
+
+
+
+<h5>Returns</h5>
+
+<p>A data frame of durable jobs.
+</p>
+
+
+<hr>
+<a id="method-LibeRServer-status"></a>
+
+
+
+<h4><code>LibeRServer$status()</code></h4>
+
+<p>Read metadata for one authenticated-user job.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>LibeRServer$status(token, id)</pre>
+</div>
+
+
+
+<h5>Arguments</h5>
+
+<div class="arguments">
+
+<dl>
+<dt><code>token</code></dt><dd><p>Bearer token issued by [ls_user_create()].</p>
+</dd>
+<dt><code>id</code></dt><dd><p>Durable job identifier.</p>
+</dd>
+</dl>
+
+</div>
+
+
+
+<h5>Returns</h5>
+
+<p>A named metadata list.
+</p>
+
+
+<hr>
+<a id="method-LibeRServer-result"></a>
+
+
+
+<h4><code>LibeRServer$result()</code></h4>
+
+<p>Read and size-check one completed result.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>LibeRServer$result(token, id)</pre>
+</div>
+
+
+
+<h5>Arguments</h5>
+
+<div class="arguments">
+
+<dl>
+<dt><code>token</code></dt><dd><p>Bearer token issued by [ls_user_create()].</p>
+</dd>
+<dt><code>id</code></dt><dd><p>Durable job identifier.</p>
+</dd>
+</dl>
+
+</div>
+
+
+
+<h5>Returns</h5>
+
+<p>The deserialized result object.
+</p>
+
+
+<hr>
+<a id="method-LibeRServer-logs"></a>
+
+
+
+<h4><code>LibeRServer$logs()</code></h4>
+
+<p>Read a worker log for an authenticated-user job.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>LibeRServer$logs(token, id, stream = c("stdout", "stderr"))</pre>
+</div>
+
+
+
+<h5>Arguments</h5>
+
+<div class="arguments">
+
+<dl>
+<dt><code>token</code></dt><dd><p>Bearer token issued by [ls_user_create()].</p>
+</dd>
+<dt><code>id</code></dt><dd><p>Durable job identifier.</p>
+</dd>
+<dt><code>stream</code></dt><dd><p>Standard-output or standard-error stream.</p>
+</dd>
+</dl>
+
+</div>
+
+
+
+<h5>Returns</h5>
+
+<p>A character vector containing log lines.
+</p>
+
+
+<hr>
+<a id="method-LibeRServer-cancel"></a>
+
+
+
+<h4><code>LibeRServer$cancel()</code></h4>
+
+<p>Cancel an authenticated-user job.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>LibeRServer$cancel(token, id)</pre>
+</div>
+
+
+
+<h5>Arguments</h5>
+
+<div class="arguments">
+
+<dl>
+<dt><code>token</code></dt><dd><p>Bearer token issued by [ls_user_create()].</p>
+</dd>
+<dt><code>id</code></dt><dd><p>Durable job identifier.</p>
+</dd>
+</dl>
+
+</div>
+
+
+
+<h5>Returns</h5>
+
+<p>'TRUE' when cancellation changed the job state and 'FALSE' when
+the job was already terminal, invisibly.
+</p>
+
+
+<hr>
+<a id="method-LibeRServer-clone"></a>
+
+
+
+<h4><code>LibeRServer$clone()</code></h4>
+
+<p>The objects of this class are cloneable with this method.
+</p>
+
+
+<h5>Usage</h5>
+
+<div class="r">
+<pre>LibeRServer$clone(deep = FALSE)</pre>
+</div>
+
+
+
+<h5>Arguments</h5>
+
+<div class="arguments">
+
+<dl>
+<dt><code>deep</code></dt><dd><p>Whether to make a deep clone.</p>
+</dd>
+</dl>
+
+</div>
+
+
+
+<h2 id='ls_admin_gui'>Create the LibeRties server-administration application</h2><span id='topic+ls_admin_gui'></span>
+
+<h3>Description</h3>
+
+<p>The browser session is protected by an administrator token whose digest is
+held only in the app process. It is deliberately separate from tenant API
+tokens. Use a long random value supplied through 'LIBERTIES_ADMIN_TOKEN'.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ls_admin_gui(
+  root = .ls_default_root(),
+  admin_token = Sys.getenv("LIBERTIES_ADMIN_TOKEN"),
+  executor = NULL
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ls_admin_gui_+3A_root">root</code></td>
+<td>
+<p>LibeRties server storage root.</p>
+</td></tr>
+<tr><td><code id="ls_admin_gui_+3A_admin_token">admin_token</code></td>
+<td>
+<p>Administrator login token. Defaults to the
+'LIBERTIES_ADMIN_TOKEN' environment variable.</p>
+</td></tr>
+<tr><td><code id="ls_admin_gui_+3A_executor">executor</code></td>
+<td>
+<p>Executor used by the corresponding API service. Supplying
+the same scheduler executor enables scheduler-aware cancellation.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A Shiny application object.
+</p>
+
+<h2 id='ls_api'>Build the authenticated LibeRties HTTP API</h2><span id='topic+ls_api'></span>
+
+<h3>Description</h3>
+
+<p>The API accepts only the typed JSON wire contract. It does not expose an RDS
+deserializer or an endpoint capable of evaluating submitted R code.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ls_api(server = ls_server(), policy = ls_security_policy())
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ls_api_+3A_server">server</code></td>
+<td>
+<p>A [LibeRServer] instance.</p>
+</td></tr>
+<tr><td><code id="ls_api_+3A_policy">policy</code></td>
+<td>
+<p>HTTP security and rate-limit policy.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A configured Plumber router.
+</p>
+
+<h2 id='ls_audit_read'>Read and verify the LibeRties administration audit chain</h2><span id='topic+ls_audit_read'></span>
+
+<h3>Description</h3>
+
+<p>Read and verify the LibeRties administration audit chain
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ls_audit_read(root = .ls_default_root())
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ls_audit_read_+3A_root">root</code></td>
+<td>
+<p>LibeRties server root.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A data frame with a logical 'valid' attribute.
+</p>
+
+<h2 id='ls_direct_scheduler_cli'>Serve one direct SSH scheduler request</h2><span id='topic+ls_direct_scheduler_cli'></span>
+
+<h3>Description</h3>
+
+<p>This is the fixed, non-interactive remote entry point used by LibeRation's
+direct SSH scheduler client. It reads a checksummed typed JSON request from
+standard input and writes one checksummed JSON response between stable
+markers. It is not an interactive shell and never evaluates client code.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ls_direct_scheduler_cli(input = file("stdin", open = "rb"), output = stdout())
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ls_direct_scheduler_cli_+3A_input">input</code></td>
+<td>
+<p>Input connection. The default reads standard input.</p>
+</td></tr>
+<tr><td><code id="ls_direct_scheduler_cli_+3A_output">output</code></td>
+<td>
+<p>Output connection. The default writes standard output.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>The response object, invisibly.
+</p>
+
+<h2 id='ls_generate_storage_key'>Generate a LibeRties storage-encryption key</h2><span id='topic+ls_generate_storage_key'></span>
+
+<h3>Description</h3>
+
+<p>The returned 64-character secret is shown once and should be placed in a
+managed secret store as 'LIBERTIES_STORAGE_KEY', never in source control.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ls_generate_storage_key()
+</code></pre>
+
+<h2 id='ls_grid_engine_executor'>Configure a Grid Engine worker executor</h2><span id='topic+ls_grid_engine_executor'></span>
+
+<h3>Description</h3>
+
+<p>The adapter supports Sun/Oracle/Univa/Open Grid Engine command-line
+interfaces and UCL Myriad's 'smp', 'h_rt', 'mem', and optional 'tmpfs'
+resources. Memory is requested per core by default, matching Myriad.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ls_grid_engine_executor(
+  queue = "",
+  project = "",
+  parallel_environment = "smp",
+  memory_resource = "mem",
+  runtime_resource = "h_rt",
+  tmpfs_resource = "tmpfs",
+  memory_per_core = TRUE,
+  tmpfs_mb = NULL,
+  max_cores_per_job = max(1L, parallel::detectCores(logical = TRUE), na.rm = TRUE),
+  job_name_prefix = "liber",
+  prologue = character(),
+  extra_submit_args = character(),
+  submit = unname(Sys.which("qsub")),
+  query = unname(Sys.which("qstat")),
+  accounting = unname(Sys.which("qacct")),
+  cancel = unname(Sys.which("qdel")),
+  rscript = file.path(R.home("bin"), "Rscript"),
+  shell = "/bin/bash",
+  storage_key_file = Sys.getenv("LIBERTIES_SCHEDULER_STORAGE_KEY_FILE", unset = ""),
+  accounting_grace_seconds = 120,
+  command_timeout = 30
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ls_grid_engine_executor_+3A_queue">queue</code>, <code id="ls_grid_engine_executor_+3A_project">project</code></td>
+<td>
+<p>Optional Grid Engine queue and project.</p>
+</td></tr>
+<tr><td><code id="ls_grid_engine_executor_+3A_parallel_environment">parallel_environment</code></td>
+<td>
+<p>Parallel environment used for multi-core jobs.</p>
+</td></tr>
+<tr><td><code id="ls_grid_engine_executor_+3A_memory_resource">memory_resource</code>, <code id="ls_grid_engine_executor_+3A_runtime_resource">runtime_resource</code>, <code id="ls_grid_engine_executor_+3A_tmpfs_resource">tmpfs_resource</code></td>
+<td>
+<p>Site resource names.</p>
+</td></tr>
+<tr><td><code id="ls_grid_engine_executor_+3A_memory_per_core">memory_per_core</code></td>
+<td>
+<p>Interpret the LibeRties memory limit as a whole-job
+ceiling and divide it across requested Grid Engine slots.</p>
+</td></tr>
+<tr><td><code id="ls_grid_engine_executor_+3A_tmpfs_mb">tmpfs_mb</code></td>
+<td>
+<p>Optional temporary-filesystem request in MB.</p>
+</td></tr>
+<tr><td><code id="ls_grid_engine_executor_+3A_max_cores_per_job">max_cores_per_job</code></td>
+<td>
+<p>Maximum 'n_cores' accepted for one job.</p>
+</td></tr>
+<tr><td><code id="ls_grid_engine_executor_+3A_job_name_prefix">job_name_prefix</code></td>
+<td>
+<p>Prefix used for scheduler-visible job names.</p>
+</td></tr>
+<tr><td><code id="ls_grid_engine_executor_+3A_prologue">prologue</code></td>
+<td>
+<p>Trusted shell statements run before the R worker.</p>
+</td></tr>
+<tr><td><code id="ls_grid_engine_executor_+3A_extra_submit_args">extra_submit_args</code></td>
+<td>
+<p>Additional trusted 'qsub' arguments.</p>
+</td></tr>
+<tr><td><code id="ls_grid_engine_executor_+3A_submit">submit</code>, <code id="ls_grid_engine_executor_+3A_query">query</code>, <code id="ls_grid_engine_executor_+3A_accounting">accounting</code>, <code id="ls_grid_engine_executor_+3A_cancel">cancel</code></td>
+<td>
+<p>Grid Engine command paths or names.</p>
+</td></tr>
+<tr><td><code id="ls_grid_engine_executor_+3A_rscript">rscript</code>, <code id="ls_grid_engine_executor_+3A_shell">shell</code></td>
+<td>
+<p>Compute-node Rscript and shell paths.</p>
+</td></tr>
+<tr><td><code id="ls_grid_engine_executor_+3A_storage_key_file">storage_key_file</code></td>
+<td>
+<p>Optional shared, mode-0600 file containing the
+hexadecimal LibeRties storage key.</p>
+</td></tr>
+<tr><td><code id="ls_grid_engine_executor_+3A_accounting_grace_seconds">accounting_grace_seconds</code></td>
+<td>
+<p>Time allowed for scheduler accounting to
+publish a completed job before an absent job is considered lost.</p>
+</td></tr>
+<tr><td><code id="ls_grid_engine_executor_+3A_command_timeout">command_timeout</code></td>
+<td>
+<p>Scheduler command timeout in seconds.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A serializable 'liberties_grid_engine_executor' specification.
+</p>
+
+<h2 id='ls_job'>Create a versioned LibeR execution job</h2><span id='topic+ls_job'></span>
+
+<h3>Description</h3>
+
+<p>Create a versioned LibeR execution job
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ls_job(
+  type = c("simulate", "estimate", "estimate_sequence", "individualise", "regimen",
+    "optimal_design"),
+  model,
+  data,
+  arguments = list(),
+  label = NULL,
+  engine = c("liber", "nonmem", "nlmixr2")
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ls_job_+3A_type">type</code></td>
+<td>
+<p>'simulate', 'estimate', 'estimate_sequence', 'individualise', 'regimen', or
+'optimal_design'.</p>
+</td></tr>
+<tr><td><code id="ls_job_+3A_model">model</code></td>
+<td>
+<p>A serializable LibeRation model (never a live external pointer).</p>
+</td></tr>
+<tr><td><code id="ls_job_+3A_data">data</code></td>
+<td>
+<p>A serializable NONMEM-style dataset.</p>
+</td></tr>
+<tr><td><code id="ls_job_+3A_arguments">arguments</code></td>
+<td>
+<p>Named arguments passed to the selected LibeRation entry point.</p>
+</td></tr>
+<tr><td><code id="ls_job_+3A_label">label</code></td>
+<td>
+<p>Optional human-readable label.</p>
+</td></tr>
+<tr><td><code id="ls_job_+3A_engine">engine</code></td>
+<td>
+<p>Allow-listed execution engine: native 'liber', 'nonmem', or
+'nlmixr2'. External executable locations are server configuration and are
+never accepted in a submitted job.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A serializable 'liber_job'.
+</p>
+
+<h2 id='ls_job_decode'>Decode and validate a LibeR JSON job</h2><span id='topic+ls_job_decode'></span>
+
+<h3>Description</h3>
+
+<p>Decode and validate a LibeR JSON job
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ls_job_decode(json, max_bytes = 100 * 1024^2)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ls_job_decode_+3A_json">json</code></td>
+<td>
+<p>UTF-8 JSON text or raw bytes.</p>
+</td></tr>
+<tr><td><code id="ls_job_decode_+3A_max_bytes">max_bytes</code></td>
+<td>
+<p>Maximum accepted encoded payload size.</p>
+</td></tr>
+</table>
+
+<h2 id='ls_job_encode'>Encode a LibeR job as JSON</h2><span id='topic+ls_job_encode'></span>
+
+<h3>Description</h3>
+
+<p>Encode a LibeR job as JSON
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ls_job_encode(job)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ls_job_encode_+3A_job">job</code></td>
+<td>
+<p>A [ls_job()] object.</p>
+</td></tr>
+</table>
+
+<h2 id='ls_job_from_wire'>Rebuild and validate a LibeR job from the JSON wire contract</h2><span id='topic+ls_job_from_wire'></span>
+
+<h3>Description</h3>
+
+<p>The transmitted expression IR is never trusted. The semantic model fields
+are compiled again through [LibeRation::nm_model()] on the receiving host.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ls_job_from_wire(payload)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ls_job_from_wire_+3A_payload">payload</code></td>
+<td>
+<p>Parsed JSON-compatible payload.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A validated 'liber_job'.
+</p>
+
+<h2 id='ls_job_manifest'>Create the transport manifest for a job payload</h2><span id='topic+ls_job_manifest'></span>
+
+<h3>Description</h3>
+
+<p>Create the transport manifest for a job payload
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ls_job_manifest(job)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ls_job_manifest_+3A_job">job</code></td>
+<td>
+<p>A [ls_job()] object.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A JSON-compatible manifest with an exact serialized-payload checksum.
+</p>
+
+<h2 id='ls_job_to_wire'>Convert a LibeR job to the non-executable JSON wire contract</h2><span id='topic+ls_job_to_wire'></span>
+
+<h3>Description</h3>
+
+<p>Convert a LibeR job to the non-executable JSON wire contract
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ls_job_to_wire(job)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ls_job_to_wire_+3A_job">job</code></td>
+<td>
+<p>A [ls_job()] object containing an 'nm_model'.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A JSON-compatible typed object.
+</p>
+
+<h2 id='ls_library_job'>Create a typed LibeRary literature job</h2><span id='topic+ls_library_job'></span>
+
+<h3>Description</h3>
+
+<p>Create a typed LibeRary literature job
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ls_library_job(
+  type = c("library_triage", "library_parse", "library_index", "library_dual_extract",
+    "library_assess", "library_adjudicate"),
+  payload,
+  arguments = list(),
+  label = NULL
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ls_library_job_+3A_type">type</code></td>
+<td>
+<p>A typed LibeRary pipeline task.</p>
+</td></tr>
+<tr><td><code id="ls_library_job_+3A_payload">payload</code></td>
+<td>
+<p>A data-only LibeRary payload.</p>
+</td></tr>
+<tr><td><code id="ls_library_job_+3A_arguments">arguments</code></td>
+<td>
+<p>Named worker controls, including sanitized provider config.</p>
+</td></tr>
+<tr><td><code id="ls_library_job_+3A_label">label</code></td>
+<td>
+<p>Optional label.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A serializable 'liber_job'.
+</p>
+
+<h2 id='ls_local_queue'>Create a local LibeR queue</h2><span id='topic+ls_local_queue'></span>
+
+<h3>Description</h3>
+
+<p>Create a local LibeR queue
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ls_local_queue(
+  root = .ls_default_root(),
+  user = "local",
+  max_workers = 1L,
+  limits = list(),
+  executor = NULL
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ls_local_queue_+3A_root">root</code></td>
+<td>
+<p>Persistent queue root.</p>
+</td></tr>
+<tr><td><code id="ls_local_queue_+3A_user">user</code></td>
+<td>
+<p>Isolated user namespace.</p>
+</td></tr>
+<tr><td><code id="ls_local_queue_+3A_max_workers">max_workers</code></td>
+<td>
+<p>Maximum simultaneous worker subprocesses for this queue.</p>
+</td></tr>
+<tr><td><code id="ls_local_queue_+3A_limits">limits</code></td>
+<td>
+<p>Named resource limits, including wall time, CPU time, memory,
+payload, result, and storage quotas.</p>
+</td></tr>
+<tr><td><code id="ls_local_queue_+3A_executor">executor</code></td>
+<td>
+<p>Optional [ls_systemd_executor()], [ls_slurm_executor()], or
+[ls_grid_engine_executor()] specification. 'NULL' uses the trusted-local
+subprocess backend.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A persistent 'LibeRQueue' object.
+</p>
+
+
+<h3>Examples</h3>
+
+<pre><code class='language-R'>queue &lt;- ls_local_queue(tempfile("liberties-queue-"), max_workers = 1L)
+queue$list()
+</code></pre>
+
+<h2 id='ls_process_supervisor'>Start and supervise an external command</h2><span id='topic+ls_process_supervisor'></span>
+
+<h3>Description</h3>
+
+<p>Start and supervise an external command
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ls_process_supervisor(
+  command,
+  args = character(),
+  wd = NULL,
+  stdout = "|",
+  stderr = "2&gt;&amp;1",
+  cleanup = TRUE,
+  windows_hide_window = TRUE,
+  label = NULL
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ls_process_supervisor_+3A_command">command</code></td>
+<td>
+<p>Executable path or command.</p>
+</td></tr>
+<tr><td><code id="ls_process_supervisor_+3A_args">args</code></td>
+<td>
+<p>Command arguments.</p>
+</td></tr>
+<tr><td><code id="ls_process_supervisor_+3A_wd">wd</code></td>
+<td>
+<p>Working directory.</p>
+</td></tr>
+<tr><td><code id="ls_process_supervisor_+3A_stdout">stdout</code>, <code id="ls_process_supervisor_+3A_stderr">stderr</code></td>
+<td>
+<p>Process stream configuration passed to 'processx'.</p>
+</td></tr>
+<tr><td><code id="ls_process_supervisor_+3A_cleanup">cleanup</code></td>
+<td>
+<p>Terminate the child if the supervising R session exits.</p>
+</td></tr>
+<tr><td><code id="ls_process_supervisor_+3A_windows_hide_window">windows_hide_window</code></td>
+<td>
+<p>Hide the process window on Windows.</p>
+</td></tr>
+<tr><td><code id="ls_process_supervisor_+3A_label">label</code></td>
+<td>
+<p>Optional human-readable label.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>An R6 process supervisor.
+</p>
+
+<h2 id='ls_queue_capabilities'>Report queue and remote-worker contract capabilities</h2><span id='topic+ls_queue_capabilities'></span>
+
+<h3>Description</h3>
+
+<p>Report queue and remote-worker contract capabilities
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ls_queue_capabilities()
+</code></pre>
+
+<h2 id='ls_remote'>Connect to a LibeRties remote server</h2><span id='topic+ls_remote'></span>
+
+<h3>Description</h3>
+
+<p>Connect to a LibeRties remote server
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ls_remote(url, token, timeout = 60)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ls_remote_+3A_url">url</code></td>
+<td>
+<p>Server base URL.</p>
+</td></tr>
+<tr><td><code id="ls_remote_+3A_token">token</code></td>
+<td>
+<p>Bearer token issued by [ls_user_create()].</p>
+</td></tr>
+<tr><td><code id="ls_remote_+3A_timeout">timeout</code></td>
+<td>
+<p>HTTP timeout in seconds.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A configured 'LibeRRemote' client.
+</p>
+
+
+<h3>Examples</h3>
+
+<pre><code class='language-R'>remote &lt;- ls_remote("https://liberties.example.org", "replace-with-token")
+remote$url
+</code></pre>
+
+<h2 id='ls_result_decode'>Decode a remote result object</h2><span id='topic+ls_result_decode'></span>
+
+<h3>Description</h3>
+
+<p>Decode a remote result object
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ls_result_decode(json, max_bytes = 500 * 1024^2)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ls_result_decode_+3A_json">json</code></td>
+<td>
+<p>UTF-8 result JSON.</p>
+</td></tr>
+<tr><td><code id="ls_result_decode_+3A_max_bytes">max_bytes</code></td>
+<td>
+<p>Maximum accepted result size.</p>
+</td></tr>
+</table>
+
+<h2 id='ls_result_from_wire'>Rebuild a result from its parsed wire representation</h2><span id='topic+ls_result_from_wire'></span>
+
+<h3>Description</h3>
+
+<p>Rebuild a result from its parsed wire representation
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ls_result_from_wire(payload)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ls_result_from_wire_+3A_payload">payload</code></td>
+<td>
+<p>Parsed result wire object.</p>
+</td></tr>
+</table>
+
+<h2 id='ls_result_to_wire'>Encode a safe result object for remote transport</h2><span id='topic+ls_result_to_wire'></span><span id='topic+ls_result_encode'></span>
+
+<h3>Description</h3>
+
+<p>Encode a safe result object for remote transport
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ls_result_to_wire(result)
+
+ls_result_encode(result)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ls_result_to_wire_+3A_result">result</code></td>
+<td>
+<p>Serializable result without executable or pointer-backed values.</p>
+</td></tr>
+</table>
+
+<h2 id='ls_run_admin'>Run the LibeRties server-administration application</h2><span id='topic+ls_run_admin'></span>
+
+<h3>Description</h3>
+
+<p>Run the LibeRties server-administration application
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ls_run_admin(
+  root = .ls_default_root(),
+  admin_token = Sys.getenv("LIBERTIES_ADMIN_TOKEN"),
+  executor = NULL,
+  host = "127.0.0.1",
+  port = NULL,
+  launch.browser = getOption("shiny.launch.browser", interactive()),
+  ...
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ls_run_admin_+3A_root">root</code></td>
+<td>
+<p>LibeRties server storage root.</p>
+</td></tr>
+<tr><td><code id="ls_run_admin_+3A_admin_token">admin_token</code></td>
+<td>
+<p>Administrator token.</p>
+</td></tr>
+<tr><td><code id="ls_run_admin_+3A_executor">executor</code></td>
+<td>
+<p>Executor used by the corresponding API service.</p>
+</td></tr>
+<tr><td><code id="ls_run_admin_+3A_host">host</code></td>
+<td>
+<p>Listening host. Loopback is the secure default.</p>
+</td></tr>
+<tr><td><code id="ls_run_admin_+3A_port">port</code></td>
+<td>
+<p>Listening port; 'NULL' selects a free port.</p>
+</td></tr>
+<tr><td><code id="ls_run_admin_+3A_launch.browser">launch.browser</code></td>
+<td>
+<p>Passed to [shiny::runApp()].</p>
+</td></tr>
+<tr><td><code id="ls_run_admin_+3A_...">...</code></td>
+<td>
+<p>Additional arguments passed to [shiny::runApp()].</p>
+</td></tr>
+</table>
+
+<h2 id='ls_run_api'>Run the LibeRties HTTP service</h2><span id='topic+ls_run_api'></span>
+
+<h3>Description</h3>
+
+<p>Bind to loopback by default and place a TLS reverse proxy in front of this
+service for remote deployment.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ls_run_api(
+  root = .ls_default_root(),
+  host = "127.0.0.1",
+  port = 8000L,
+  max_workers_per_user = 2L,
+  quiet = FALSE,
+  production = !.ls_loopback(host),
+  behind_tls_proxy = FALSE,
+  policy = ls_security_policy(production = production),
+  isolation_probe = NULL,
+  executor = if (isTRUE(production)) ls_systemd_executor() else NULL
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ls_run_api_+3A_root">root</code></td>
+<td>
+<p>Persistent server root.</p>
+</td></tr>
+<tr><td><code id="ls_run_api_+3A_host">host</code></td>
+<td>
+<p>Listen address.</p>
+</td></tr>
+<tr><td><code id="ls_run_api_+3A_port">port</code></td>
+<td>
+<p>TCP port.</p>
+</td></tr>
+<tr><td><code id="ls_run_api_+3A_max_workers_per_user">max_workers_per_user</code></td>
+<td>
+<p>Host-level per-user worker ceiling.</p>
+</td></tr>
+<tr><td><code id="ls_run_api_+3A_quiet">quiet</code></td>
+<td>
+<p>Suppress Plumber startup messages.</p>
+</td></tr>
+<tr><td><code id="ls_run_api_+3A_production">production</code></td>
+<td>
+<p>Enforce production preflight. Defaults to 'TRUE' for a
+non-loopback host.</p>
+</td></tr>
+<tr><td><code id="ls_run_api_+3A_behind_tls_proxy">behind_tls_proxy</code></td>
+<td>
+<p>Confirm that HTTPS is terminated by a maintained
+reverse proxy.</p>
+</td></tr>
+<tr><td><code id="ls_run_api_+3A_policy">policy</code></td>
+<td>
+<p>Optional security policy.</p>
+</td></tr>
+<tr><td><code id="ls_run_api_+3A_isolation_probe">isolation_probe</code></td>
+<td>
+<p>Deployment-integrated isolation verifier passed to
+[ls_server_preflight()].</p>
+</td></tr>
+<tr><td><code id="ls_run_api_+3A_executor">executor</code></td>
+<td>
+<p>Worker executor. Production defaults to
+[ls_systemd_executor()]; [ls_slurm_executor()] and
+[ls_grid_engine_executor()] are supported when the API runs on a scheduler
+submission host. Trusted loopback development defaults to subprocesses.</p>
+</td></tr>
+</table>
+
+<h2 id='ls_security_policy'>Define a LibeRties deployment-security policy</h2><span id='topic+ls_security_policy'></span>
+
+<h3>Description</h3>
+
+<p>Define a LibeRties deployment-security policy
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ls_security_policy(
+  production = FALSE,
+  requests_per_minute = if (production) 120L else 10000L,
+  max_rate_limit_keys = 10000L,
+  trusted_proxies = character(),
+  max_log_lines = 5000L,
+  max_log_bytes = 1024^2,
+  require_storage_encryption = production,
+  require_os_isolation = production
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ls_security_policy_+3A_production">production</code></td>
+<td>
+<p>Enable production requirements.</p>
+</td></tr>
+<tr><td><code id="ls_security_policy_+3A_requests_per_minute">requests_per_minute</code></td>
+<td>
+<p>Per-credential HTTP request ceiling.</p>
+</td></tr>
+<tr><td><code id="ls_security_policy_+3A_max_rate_limit_keys">max_rate_limit_keys</code></td>
+<td>
+<p>Maximum live credential/address buckets retained
+by one API process. Additional new identities share a bounded overflow
+bucket until the next minute.</p>
+</td></tr>
+<tr><td><code id="ls_security_policy_+3A_trusted_proxies">trusted_proxies</code></td>
+<td>
+<p>Exact proxy addresses or IPv4 CIDR ranges whose
+'X-Forwarded-For' header may be trusted. The default trusts none.</p>
+</td></tr>
+<tr><td><code id="ls_security_policy_+3A_max_log_lines">max_log_lines</code>, <code id="ls_security_policy_+3A_max_log_bytes">max_log_bytes</code></td>
+<td>
+<p>Response ceilings for remote worker logs.</p>
+</td></tr>
+<tr><td><code id="ls_security_policy_+3A_require_storage_encryption">require_storage_encryption</code></td>
+<td>
+<p>Require 'LIBERTIES_STORAGE_KEY'.</p>
+</td></tr>
+<tr><td><code id="ls_security_policy_+3A_require_os_isolation">require_os_isolation</code></td>
+<td>
+<p>Require independently probed container/cgroup or
+deployment-provided OS isolation evidence. A descriptive environment
+variable alone is not accepted as proof.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A validated 'liberties_security_policy'.
+</p>
+
+<h2 id='ls_server'>Create the authenticated LibeRties server core</h2><span id='topic+ls_server'></span>
+
+<h3>Description</h3>
+
+<p>Create the authenticated LibeRties server core
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ls_server(
+  root = .ls_default_root(),
+  max_workers_per_user = 2L,
+  executor = NULL
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ls_server_+3A_root">root</code></td>
+<td>
+<p>Persistent server storage root.</p>
+</td></tr>
+<tr><td><code id="ls_server_+3A_max_workers_per_user">max_workers_per_user</code></td>
+<td>
+<p>Host-level worker ceiling per tenant.</p>
+</td></tr>
+<tr><td><code id="ls_server_+3A_executor">executor</code></td>
+<td>
+<p>Optional [ls_systemd_executor()], [ls_slurm_executor()], or
+[ls_grid_engine_executor()] specification.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A 'LibeRServer' object.
+</p>
+
+
+<h3>Examples</h3>
+
+<pre><code class='language-R'>server &lt;- ls_server(tempfile("liberties-server-"))
+server$root
+</code></pre>
+
+<h2 id='ls_server_preflight'>Check whether a LibeRties deployment satisfies its security policy</h2><span id='topic+ls_server_preflight'></span>
+
+<h3>Description</h3>
+
+<p>Check whether a LibeRties deployment satisfies its security policy
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ls_server_preflight(
+  root = .ls_default_root(),
+  host = "127.0.0.1",
+  behind_tls_proxy = FALSE,
+  policy = ls_security_policy(production = !.ls_loopback(host)),
+  strict = FALSE,
+  isolation_probe = NULL,
+  executor = NULL
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ls_server_preflight_+3A_root">root</code></td>
+<td>
+<p>Server storage root.</p>
+</td></tr>
+<tr><td><code id="ls_server_preflight_+3A_host">host</code></td>
+<td>
+<p>Intended listen address.</p>
+</td></tr>
+<tr><td><code id="ls_server_preflight_+3A_behind_tls_proxy">behind_tls_proxy</code></td>
+<td>
+<p>Whether a maintained TLS reverse proxy terminates
+HTTPS before traffic reaches LibeRties.</p>
+</td></tr>
+<tr><td><code id="ls_server_preflight_+3A_policy">policy</code></td>
+<td>
+<p>A [ls_security_policy()] object.</p>
+</td></tr>
+<tr><td><code id="ls_server_preflight_+3A_strict">strict</code></td>
+<td>
+<p>Throw an error for unmet requirements.</p>
+</td></tr>
+<tr><td><code id="ls_server_preflight_+3A_isolation_probe">isolation_probe</code></td>
+<td>
+<p>Optional deployment-integrated function returning a
+list with logical 'active', 'provider', and 'evidence'. When omitted,
+LibeRties checks Linux container/cgroup evidence. This should be connected
+to the actual service manager or sandbox on other platforms.</p>
+</td></tr>
+<tr><td><code id="ls_server_preflight_+3A_executor">executor</code></td>
+<td>
+<p>Optional executor specification. A systemd executor performs
+binary, PID-1, cgroup-v2, service-account, and live transient-unit checks.
+Scheduler executors verify their commands and key delivery but require an
+independent 'isolation_probe' to attest hostile multi-tenant isolation.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A 'liberties_security_preflight' report.
+</p>
+
+<h2 id='ls_slurm_executor'>Configure a Slurm worker executor</h2><span id='topic+ls_slurm_executor'></span>
+
+<h3>Description</h3>
+
+<p>Each LibeRties job is submitted as one single-node Slurm allocation. The
+scheduler receives the job's core, memory, and wall-time limits. The queue
+root, R installation, and package libraries must be visible on compute
+nodes. 'prologue' and 'extra_submit_args' are trusted operator configuration,
+never values accepted from a remote job payload.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ls_slurm_executor(
+  partition = "",
+  account = "",
+  qos = "",
+  constraint = "",
+  max_cores_per_job = max(1L, parallel::detectCores(logical = TRUE), na.rm = TRUE),
+  job_name_prefix = "liber",
+  prologue = character(),
+  extra_submit_args = character(),
+  submit = unname(Sys.which("sbatch")),
+  query = unname(Sys.which("squeue")),
+  accounting = unname(Sys.which("sacct")),
+  control = unname(Sys.which("scontrol")),
+  cancel = unname(Sys.which("scancel")),
+  rscript = file.path(R.home("bin"), "Rscript"),
+  shell = "/bin/bash",
+  storage_key_file = Sys.getenv("LIBERTIES_SCHEDULER_STORAGE_KEY_FILE", unset = ""),
+  accounting_grace_seconds = 120,
+  command_timeout = 30
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ls_slurm_executor_+3A_partition">partition</code>, <code id="ls_slurm_executor_+3A_account">account</code>, <code id="ls_slurm_executor_+3A_qos">qos</code>, <code id="ls_slurm_executor_+3A_constraint">constraint</code></td>
+<td>
+<p>Optional Slurm routing values.</p>
+</td></tr>
+<tr><td><code id="ls_slurm_executor_+3A_max_cores_per_job">max_cores_per_job</code></td>
+<td>
+<p>Maximum 'n_cores' accepted for one job.</p>
+</td></tr>
+<tr><td><code id="ls_slurm_executor_+3A_job_name_prefix">job_name_prefix</code></td>
+<td>
+<p>Prefix used for scheduler-visible job names.</p>
+</td></tr>
+<tr><td><code id="ls_slurm_executor_+3A_prologue">prologue</code></td>
+<td>
+<p>Trusted shell statements run before the R worker.</p>
+</td></tr>
+<tr><td><code id="ls_slurm_executor_+3A_extra_submit_args">extra_submit_args</code></td>
+<td>
+<p>Additional trusted 'sbatch' arguments.</p>
+</td></tr>
+<tr><td><code id="ls_slurm_executor_+3A_submit">submit</code>, <code id="ls_slurm_executor_+3A_query">query</code>, <code id="ls_slurm_executor_+3A_accounting">accounting</code>, <code id="ls_slurm_executor_+3A_control">control</code>, <code id="ls_slurm_executor_+3A_cancel">cancel</code></td>
+<td>
+<p>Slurm command paths or names.</p>
+</td></tr>
+<tr><td><code id="ls_slurm_executor_+3A_rscript">rscript</code>, <code id="ls_slurm_executor_+3A_shell">shell</code></td>
+<td>
+<p>Compute-node Rscript and shell paths.</p>
+</td></tr>
+<tr><td><code id="ls_slurm_executor_+3A_storage_key_file">storage_key_file</code></td>
+<td>
+<p>Optional shared, mode-0600 file containing the
+hexadecimal LibeRties storage key.</p>
+</td></tr>
+<tr><td><code id="ls_slurm_executor_+3A_accounting_grace_seconds">accounting_grace_seconds</code></td>
+<td>
+<p>Time allowed for scheduler accounting to
+publish a completed job before an absent job is considered lost.</p>
+</td></tr>
+<tr><td><code id="ls_slurm_executor_+3A_command_timeout">command_timeout</code></td>
+<td>
+<p>Scheduler command timeout in seconds.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>A serializable 'liberties_slurm_executor' specification.
+</p>
+
+<h2 id='ls_supervise_process'>Normalize a background process for LibeR GUI consumers</h2><span id='topic+ls_supervise_process'></span>
+
+<h3>Description</h3>
+
+<p>The returned object exposes one lifecycle surface for 'processx' and 'callr'
+processes: polling, incremental logs, cancellation, exit status, and a
+serializable status snapshot. It does not broaden the worker's authority.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ls_supervise_process(process, label = NULL)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ls_supervise_process_+3A_process">process</code></td>
+<td>
+<p>A live 'processx::process' or 'callr::r_process'.</p>
+</td></tr>
+<tr><td><code id="ls_supervise_process_+3A_label">label</code></td>
+<td>
+<p>Optional human-readable label.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>An R6 process supervisor.
+</p>
+
+<h2 id='ls_systemd_executor'>Configure the native Linux systemd worker executor</h2><span id='topic+ls_systemd_executor'></span>
+
+<h3>Description</h3>
+
+<p>The executor creates one transient service for each active LibeRties job.
+Systemd applies filesystem and process namespaces, a non-root service
+identity, cgroup-v2 CPU/memory/task limits, and a wall-time limit before the
+R worker starts. 'CPUQuota' is set to '100
+PSOCK job remains multi-core; every child process stays in the same unit.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ls_systemd_executor(
+  service_user = Sys.getenv("LIBERTIES_SYSTEMD_USER", unset =
+    as.character(Sys.info()[["user"]] %||% "")),
+  max_cores_per_job = max(1L, as.integer(parallel::detectCores(logical = TRUE) %||%
+    1L), na.rm = TRUE),
+  tasks_per_core = 16L,
+  min_tasks = 64L,
+  unit_prefix = "liberties-job",
+  slice = "liberties-workers.slice",
+  networked_job_types = c("library_triage", "library_parse", "library_index",
+    "library_dual_extract", "library_assess", "library_adjudicate"),
+  systemd_run = unname(Sys.which("systemd-run")),
+  systemctl = unname(Sys.which("systemctl")),
+  storage_credential = Sys.getenv("LIBERTIES_SYSTEMD_STORAGE_CREDENTIAL", unset = ""),
+  external_read_paths = character(),
+  live_preflight = TRUE
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ls_systemd_executor_+3A_service_user">service_user</code></td>
+<td>
+<p>Non-root Linux account running both the LibeRties API
+user service and its transient worker services. Production operators
+should use a dedicated account with systemd lingering enabled.</p>
+</td></tr>
+<tr><td><code id="ls_systemd_executor_+3A_max_cores_per_job">max_cores_per_job</code></td>
+<td>
+<p>Hard ceiling for a job's requested 'n_cores'.</p>
+</td></tr>
+<tr><td><code id="ls_systemd_executor_+3A_tasks_per_core">tasks_per_core</code>, <code id="ls_systemd_executor_+3A_min_tasks">min_tasks</code></td>
+<td>
+<p>Cgroup task ceiling calculation. Tasks count
+R child processes and native threads, so this must exceed 'n_cores'.</p>
+</td></tr>
+<tr><td><code id="ls_systemd_executor_+3A_unit_prefix">unit_prefix</code></td>
+<td>
+<p>Safe prefix for transient systemd service names.</p>
+</td></tr>
+<tr><td><code id="ls_systemd_executor_+3A_slice">slice</code></td>
+<td>
+<p>Systemd user slice containing every worker unit. Operators can
+place aggregate host limits on this slice without reducing per-job
+multi-core quotas.</p>
+</td></tr>
+<tr><td><code id="ls_systemd_executor_+3A_networked_job_types">networked_job_types</code></td>
+<td>
+<p>Job types allowed to use the host network.
+Compute jobs receive 'PrivateNetwork=yes'; literature jobs require network
+for explicitly configured acquisition or model providers.</p>
+</td></tr>
+<tr><td><code id="ls_systemd_executor_+3A_systemd_run">systemd_run</code>, <code id="ls_systemd_executor_+3A_systemctl">systemctl</code></td>
+<td>
+<p>Paths to the systemd client programs.</p>
+</td></tr>
+<tr><td><code id="ls_systemd_executor_+3A_storage_credential">storage_credential</code></td>
+<td>
+<p>Optional systemd credential file containing the
+hexadecimal 'LIBERTIES_STORAGE_KEY'. It is loaded into workers without
+placing the secret in their command line or unit environment.</p>
+</td></tr>
+<tr><td><code id="ls_systemd_executor_+3A_external_read_paths">external_read_paths</code></td>
+<td>
+<p>Optional administrator-controlled absolute paths
+exposed read-only inside the worker namespace. Use this only when a
+licensed NONMEM/PsN installation is located below a home directory hidden
+by 'ProtectHome'; system locations such as '/opt' remain readable already.
+Submitted jobs cannot alter this list.</p>
+</td></tr>
+<tr><td><code id="ls_systemd_executor_+3A_live_preflight">live_preflight</code></td>
+<td>
+<p>Run a short sandboxed transient service during strict
+production preflight, rather than trusting binary and PID-1 detection.</p>
+</td></tr>
+</table>
+
+
+<h3>Details</h3>
+
+<p>This executor requires Linux with systemd as PID 1 and an active systemd
+user manager able to create transient services. On Windows it is intended
+to run inside WSL 2;
+on macOS it must run inside a user-provided Linux systemd environment.
+</p>
+
+
+<h3>Value</h3>
+
+<p>A serializable 'liberties_systemd_executor' specification.
+</p>
+
+<h2 id='ls_user_create'>Create a server user and one-time bearer token</h2><span id='topic+ls_user_create'></span>
+
+<h3>Description</h3>
+
+<p>Only the SHA-256 digest of the cryptographically random 256-bit token is
+persisted. The returned token is the only copy available to the caller.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ls_user_create(
+  root,
+  username,
+  limits = list(),
+  enabled = TRUE,
+  first_name = "",
+  last_name = "",
+  scopes = c("jobs:read", "jobs:write"),
+  expires = NULL
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ls_user_create_+3A_root">root</code></td>
+<td>
+<p>LibeRties server storage root.</p>
+</td></tr>
+<tr><td><code id="ls_user_create_+3A_username">username</code></td>
+<td>
+<p>Tenant identifier.</p>
+</td></tr>
+<tr><td><code id="ls_user_create_+3A_limits">limits</code></td>
+<td>
+<p>Named resource limits.</p>
+</td></tr>
+<tr><td><code id="ls_user_create_+3A_enabled">enabled</code></td>
+<td>
+<p>Whether the account may authenticate.</p>
+</td></tr>
+<tr><td><code id="ls_user_create_+3A_first_name">first_name</code>, <code id="ls_user_create_+3A_last_name">last_name</code></td>
+<td>
+<p>Optional human-readable user names used by the
+administration interface. Authentication continues to use 'username'.</p>
+</td></tr>
+<tr><td><code id="ls_user_create_+3A_scopes">scopes</code></td>
+<td>
+<p>API permissions assigned to the token.</p>
+</td></tr>
+<tr><td><code id="ls_user_create_+3A_expires">expires</code></td>
+<td>
+<p>Optional future expiry date-time. 'NULL' creates a non-expiring
+research token; production preflight reports it.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>User metadata plus the one-time token.
+</p>
+
+<h2 id='ls_user_delete'>Delete a server user</h2><span id='topic+ls_user_delete'></span>
+
+<h3>Description</h3>
+
+<p>Active jobs must be cancelled or allowed to finish first. Job storage is
+retained unless 'remove_jobs = TRUE' is explicitly requested.
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ls_user_delete(root, username, remove_jobs = FALSE)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ls_user_delete_+3A_root">root</code></td>
+<td>
+<p>LibeRties server storage root.</p>
+</td></tr>
+<tr><td><code id="ls_user_delete_+3A_username">username</code></td>
+<td>
+<p>Tenant identifier.</p>
+</td></tr>
+<tr><td><code id="ls_user_delete_+3A_remove_jobs">remove_jobs</code></td>
+<td>
+<p>Remove completed/cancelled/failed job storage as well.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>'TRUE', invisibly.
+</p>
+
+<h2 id='ls_user_list'>List server users without credential material</h2><span id='topic+ls_user_list'></span>
+
+<h3>Description</h3>
+
+<p>List server users without credential material
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ls_user_list(root)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ls_user_list_+3A_root">root</code></td>
+<td>
+<p>LibeRties server storage root.</p>
+</td></tr>
+</table>
+
+<h2 id='ls_user_rotate_token'>Rotate a server user's bearer token</h2><span id='topic+ls_user_rotate_token'></span>
+
+<h3>Description</h3>
+
+<p>Rotate a server user's bearer token
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ls_user_rotate_token(root, username, expires = NULL)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ls_user_rotate_token_+3A_root">root</code></td>
+<td>
+<p>LibeRties server storage root.</p>
+</td></tr>
+<tr><td><code id="ls_user_rotate_token_+3A_username">username</code></td>
+<td>
+<p>Tenant identifier.</p>
+</td></tr>
+<tr><td><code id="ls_user_rotate_token_+3A_expires">expires</code></td>
+<td>
+<p>Optional replacement expiry date-time; 'NULL' retains the
+current expiry.</p>
+</td></tr>
+</table>
+
+
+<h3>Value</h3>
+
+<p>New one-time bearer token.
+</p>
+
+<h2 id='ls_user_update'>Update server-user status and resource limits</h2><span id='topic+ls_user_update'></span>
+
+<h3>Description</h3>
+
+<p>Update server-user status and resource limits
+</p>
+
+
+<h3>Usage</h3>
+
+<pre><code class='language-R'>ls_user_update(
+  root,
+  username,
+  enabled = NULL,
+  limits = NULL,
+  first_name = NULL,
+  last_name = NULL,
+  scopes = NULL,
+  expires = NULL
+)
+</code></pre>
+
+
+<h3>Arguments</h3>
+
+<table role = "presentation">
+<tr><td><code id="ls_user_update_+3A_root">root</code></td>
+<td>
+<p>LibeRties server storage root.</p>
+</td></tr>
+<tr><td><code id="ls_user_update_+3A_username">username</code></td>
+<td>
+<p>Tenant identifier.</p>
+</td></tr>
+<tr><td><code id="ls_user_update_+3A_enabled">enabled</code></td>
+<td>
+<p>Optional account state.</p>
+</td></tr>
+<tr><td><code id="ls_user_update_+3A_limits">limits</code></td>
+<td>
+<p>Optional named limit overrides.</p>
+</td></tr>
+<tr><td><code id="ls_user_update_+3A_first_name">first_name</code>, <code id="ls_user_update_+3A_last_name">last_name</code></td>
+<td>
+<p>Optional human-readable names. Pass an empty
+string to clear a value and 'NULL' to leave it unchanged.</p>
+</td></tr>
+<tr><td><code id="ls_user_update_+3A_scopes">scopes</code>, <code id="ls_user_update_+3A_expires">expires</code></td>
+<td>
+<p>Optional token permissions and expiry.</p>
+</td></tr>
+</table>
+
+</body></html>

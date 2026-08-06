@@ -1,7 +1,7 @@
 Package: LibeRties
 Type: Package
 Title: Portable Job Execution for LibeR
-Version: 0.8.2
+Version: 0.8.3
 Authors@R: person("Sven C.", "van Dijkman",
     email = "svdijkman@users.noreply.github.com", role = c("aut", "cre"))
 Author: Sven C. van Dijkman [aut, cre]
@@ -16,7 +16,9 @@ Description: Executes serialized LibeR simulation and estimation jobs in
     recovery, per-tenant quotas, monitored resource limits, and result
     provenance are built into the contract. Production deployments use the
     native systemd isolation backend or an independently attested scheduler
-    sandbox and require TLS termination.
+    sandbox and require TLS termination. A fixed typed-JSON SSH entry point
+    also permits a desktop client to use a personal Slurm or Grid Engine
+    account directly, including through an SSH gateway, without an HTTP daemon.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Depends: R (>= 4.1.0)
@@ -43,5 +45,8 @@ Suggests:
     shinytest2,
     testthat (>= 3.0.0)
 VignetteBuilder: knitr
+SystemRequirements: Linux systemd for production systemd isolation; optional
+    Slurm or Grid Engine commands on scheduler submission hosts; optional
+    OpenSSH server access for daemon-free direct scheduler clients
 Config/testthat/edition: 3
 Config/roxygen2/version: 8.0.0

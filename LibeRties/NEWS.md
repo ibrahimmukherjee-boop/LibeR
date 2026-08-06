@@ -1,3 +1,16 @@
+# LibeRties 0.8.3
+
+- Adds a fixed non-interactive SSH entry point for personal Slurm and Grid
+  Engine accounts. It accepts only the checksummed typed JSON job contract,
+  reopens a durable encrypted queue and returns checksummed JSON responses.
+- Supports idempotent submission, restart-safe scheduler reconciliation,
+  status, logs, result download and cancellation without running the LibeRties
+  HTTP service. SSH authentication and optional gateway routing remain client
+  responsibilities.
+- Validates every scheduler and path field independently, derives safe defaults
+  below the remote user's home directory, and keeps storage keys out of worker
+  environments by using a mode-0600 shared credential file.
+
 # LibeRties 0.8.2
 
 - Adds an allow-listed execution-engine field to typed local and remote model

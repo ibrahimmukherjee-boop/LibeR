@@ -80,6 +80,24 @@ shared. Scheduler resource enforcement is not by itself a hostile multi-tenant
 sandbox. Production mode therefore requires an independent isolation probe for
 scheduler deployments. See [the scheduler deployment guide](../docs/SCHEDULERS.md).
 
+### Direct SSH scheduler clients
+
+LibeRation desktop users may also connect directly to a Slurm or Grid Engine
+login host from the Jobs tab. This does not start an API daemon. Each action
+opens a short-lived OpenSSH session (optionally through a gateway) and invokes
+the fixed `ls_direct_scheduler_cli()` entry point. The request and response are
+checksummed typed JSON; arbitrary R serialization and client-provided shell
+fragments are not accepted.
+
+The first connection creates a mode-0700 queue below
+`~/.local/share/LibeR/direct-queues/<name>` by default and a mode-0600 storage
+key file. Queue records and terminal logs are authenticated-encrypted. The
+scheduler and queue persist independently of the client connection, allowing
+later status reconciliation, log access, cancellation, and result retrieval.
+The SSH account itself is the OS security boundary; this personal-account path
+does not provide the multi-user API tenancy of a centrally operated LibeRties
+service.
+
 ## External estimation engines
 
 Typed simulation and estimation jobs may select `engine = "nonmem"` or
