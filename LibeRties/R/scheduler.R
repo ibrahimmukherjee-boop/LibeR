@@ -490,7 +490,7 @@ LibeRSchedulerProcess <- R6::R6Class(
   )
   script <- c(
     paste0("#!", executor$shell, " -l"), "set -eu", "umask 0077",
-    executor$prologue, exports,
+    exports, executor$prologue,
     paste(
       "exec", .ls_scheduler_shell_quote(rscript), "--vanilla",
       .ls_scheduler_shell_quote(worker), .ls_scheduler_shell_quote(job_dir)

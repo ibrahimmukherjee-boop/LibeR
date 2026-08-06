@@ -45,7 +45,8 @@
 
 .ls_worker_env <- function(job_dir) {
   keep <- c("PATH", "SystemRoot", "WINDIR", "TEMP", "TMP", "TMPDIR",
-            "HOME", "USERPROFILE", "R_LIBS_USER", "R_LIBS_SITE")
+            "HOME", "USERPROFILE", "R_LIBS_USER", "R_LIBS_SITE",
+            "LIBERATION_NONMEM_COMMAND", "PSN_CONF")
   current <- Sys.getenv(keep, unset = NA_character_)
   current <- current[!is.na(current) & nzchar(current)]
   c(

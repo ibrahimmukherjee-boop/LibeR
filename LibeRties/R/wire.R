@@ -216,6 +216,7 @@ ls_job_to_wire <- function(job) {
   }
   list(
     schema = "liber.job.wire", version = 2L, type = job$type,
+    engine = job$engine %||% "liber",
     label = job$label, created = job$created,
     model = .ls_wire_pack(.ls_model_contract(job$model)), data = .ls_wire_pack(job$data),
     arguments = .ls_wire_pack(job$arguments)
@@ -243,6 +244,14 @@ ls_job_from_wire <- function(payload) {
                "library_adjudicate")
   if (length(type) != 1L || !type %in% allowed) {
     .ls_stop("Unsupported wire job type.")
+  }
+  engine <- tolower(as.character(payload$engine %||% "liber"))
+  if (length(engine) != 1L || !engine %in% c("liber", "nonmem", "nlmixr2")) {
+    .ls_stop("Unsupported wire execution engine.")
+  }
+  if (!type %in% c("simulate", "estimate", "estimate_sequence") &&
+      !identical(engine, "liber")) {
+    .ls_stop("External engines are not valid for this wire job type.")
   }
   arguments <- .ls_wire_unpack(payload$arguments)
   if (!is.list(arguments) || (length(arguments) && is.null(names(arguments)))) {
@@ -284,7 +293,7 @@ ls_job_from_wire <- function(payload) {
       .ls_stop("Wire optimal-design payload must be a LibeRality design.")
     }
   } else if (!is.data.frame(data)) .ls_stop("Wire job data must be a data frame.")
-  job <- ls_job(type, model, data, arguments, label)
+  job <- ls_job(type, model, data, arguments, label, engine = engine)
   job$created <- created
   job
 }
@@ -333,6 +342,42 @@ ls_result_to_wire <- function(result) {
   )
 }
 
+.ls_result_audit_artifacts_validate <- function(bundle) {
+  if (is.null(bundle)) return(invisible(NULL))
+  if (!is.list(bundle) ||
+      !identical(as.character(bundle$schema %||% ""),
+                 "liberation.audit-artifacts") ||
+      !identical(as.integer(bundle$version %||% 0L), 1L) ||
+      !is.list(bundle$files)) {
+    .ls_stop("Remote result contains an invalid audit-artifact bundle.")
+  }
+  filenames <- vapply(bundle$files, function(file) {
+    as.character(file$name %||% "")
+  }, character(1))
+  if (any(!grepl("^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$", filenames)) ||
+      anyDuplicated(filenames)) {
+    .ls_stop("Remote audit artifacts contain an unsafe or duplicate filename.")
+  }
+  for (file in bundle$files) {
+    content <- file$content %||% NULL
+    bytes <- suppressWarnings(as.numeric(file$bytes %||% NA_real_))
+    sha256 <- tolower(as.character(file$sha256 %||% ""))
+    if (!is.character(content) || length(content) != 1L || is.na(content) ||
+        length(bytes) != 1L || !is.finite(bytes) || bytes < 0 ||
+        !grepl("^[a-f0-9]{64}$", sha256)) {
+      .ls_stop("Remote result contains malformed audit-artifact content.")
+    }
+    raw <- charToRaw(enc2utf8(content))
+    actual_sha256 <- unname(paste0(openssl::sha256(raw)))
+    if (!identical(bytes, as.numeric(length(raw))) ||
+        !identical(sha256, actual_sha256)) {
+      .ls_stop("Remote audit artifact failed its declared size or SHA-256 check: ",
+               file$name, ".")
+    }
+  }
+  invisible(bundle)
+}
+
 #' @rdname ls_result_to_wire
 #' @export
 ls_result_encode <- function(result) {
@@ -357,9 +402,10 @@ ls_result_from_wire <- function(payload) {
                                                               names = list(), values = list()))
   if (!is.list(attributes) || length(setdiff(names(attributes),
                                              c("class", "solver", "state_names", "id_levels",
-                                               "addl_materialized")))) {
+                                               "addl_materialized", "audit_artifacts")))) {
     .ls_stop("Remote result contains unsupported attributes.")
   }
+  .ls_result_audit_artifacts_validate(attributes$audit_artifacts %||% NULL)
   if (!is.null(attributes$addl_materialized) &&
       (!is.logical(attributes$addl_materialized) ||
        length(attributes$addl_materialized) != 1L ||

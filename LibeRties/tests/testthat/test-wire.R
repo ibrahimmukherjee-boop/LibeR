@@ -93,6 +93,42 @@ test_that("wire transport preserves sequential estimation stages and outputs", {
   )
 })
 
+test_that("wire transport preserves allow-listed external execution engines", {
+  skip_if_not_installed("LibeRation")
+  model <- LibeRation::nm_model(
+    INPUT = c("ID", "TIME", "EVID", "AMT"), ADVAN = 1,
+    PRED = "CL=THETA(1);V=THETA(2);S1=V", ERROR = "Y=F",
+    THETAS = data.frame(THETA = 1:2, Value = c(2, 20))
+  )
+  data <- data.frame(ID = 1, TIME = 0, EVID = 1L, AMT = 100)
+  job <- ls_job(
+    "estimate", model, data, engine = "nonmem",
+    arguments = list(method = "FOCEI", audit_artifacts = TRUE)
+  )
+  rebuilt <- ls_job_decode(ls_job_encode(job))
+  expect_identical(rebuilt$engine, "nonmem")
+  expect_identical(ls_job_manifest(rebuilt)$engine, "nonmem")
+  expect_true("NONMEM_PsN" %in% names(ls_job_manifest(rebuilt)$requirements))
+
+  expect_error(
+    ls_job("individualise", model, data, engine = "nlmixr2"),
+    "only valid for simulation and estimation"
+  )
+  expect_error(
+    ls_job_from_wire(utils::modifyList(
+      ls_job_to_wire(job), list(engine = "shell")
+    )),
+    "Unsupported wire execution engine"
+  )
+  expect_error(
+    ls_job(
+      "estimate_sequence", model, data,
+      arguments = list(stages = list()), engine = "nlmixr2"
+    ),
+    "Sequential estimation is not yet supported"
+  )
+})
+
 test_that("JSON wire preserves likelihood and mixture semantics", {
   skip_if_not_installed("LibeRation")
   model <- LibeRation::nm_model(
@@ -164,6 +200,35 @@ test_that("result wire retains supported result metadata", {
   expect_equal(attr(decoded, "solver"), "advan")
   expect_equal(attr(decoded, "state_names"), "CENTRAL")
   expect_true(attr(decoded, "addl_materialized"))
+})
+
+test_that("result wire carries optional bounded audit artifacts", {
+  content <- "Generated audit listing\n"
+  sha256 <- unname(paste0(openssl::sha256(charToRaw(content))))
+  bundle <- list(
+    schema = "liberation.audit-artifacts", version = 1L,
+    engine = "liber", source = "generated", operation = "simulate",
+    created = "2026-08-06T00:00:00Z", model_sha256 = strrep("a", 64),
+    data_sha256 = strrep("b", 64),
+    files = list(list(
+      name = "model.lst", media_type = "text/plain",
+      bytes = nchar(content, type = "bytes"), sha256 = sha256,
+      content = content
+    ))
+  )
+  result <- data.frame(IPRED = 1)
+  attr(result, "audit_artifacts") <- bundle
+  decoded <- ls_result_decode(ls_result_encode(result))
+  expect_identical(attr(decoded, "audit_artifacts"), bundle)
+
+  bundle$files[[1L]]$name <- "../escape.lst"
+  attr(result, "audit_artifacts") <- bundle
+  expect_error(ls_result_decode(ls_result_encode(result)), "unsafe or duplicate")
+
+  bundle$files[[1L]]$name <- "model.lst"
+  bundle$files[[1L]]$content <- paste0(content, "tampered")
+  attr(result, "audit_artifacts") <- bundle
+  expect_error(ls_result_decode(ls_result_encode(result)), "SHA-256")
 })
 
 test_that("LibeRality results round-trip through the result contract", {

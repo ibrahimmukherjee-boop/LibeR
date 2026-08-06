@@ -117,6 +117,31 @@ scheduler enforces resources but does not automatically prove tenant
 filesystem or network isolation; production use needs an independently
 attested sandbox.
 
+## NONMEM and nlmixr2 workers
+
+Simulation and estimation jobs can use an allow-listed external engine while
+retaining the same durable queue and result-retrieval path.
+
+```{r external-engine-job, eval=FALSE}
+job <- ls_job(
+  "estimate", model, data, engine = "nonmem",
+  arguments = list(
+    method = "FOCEI", maxit = 500L, covariance = TRUE,
+    audit_artifacts = TRUE
+  )
+)
+id <- queue$submit(job)
+```
+
+NONMEM/PsN and nlmixr2/rxode2 are installed and configured by the worker
+operator. No executable path, raw R function, shell fragment, module command,
+or scheduler option is accepted in the submitted job. `ls_queue_capabilities()`
+reports local engine discovery; `remote$capabilities()` reports the API host.
+When a systemd sandbox hides a licensed installation below a home directory,
+the operator may expose that path read-only through
+`ls_systemd_executor(external_read_paths = ...)`. Scheduler deployments load
+licensed software in their trusted `prologue`.
+
 ## Connect to a remote service
 
 ```{r remote, eval=FALSE}

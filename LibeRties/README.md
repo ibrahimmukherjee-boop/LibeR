@@ -80,6 +80,22 @@ shared. Scheduler resource enforcement is not by itself a hostile multi-tenant
 sandbox. Production mode therefore requires an independent isolation probe for
 scheduler deployments. See [the scheduler deployment guide](../docs/SCHEDULERS.md).
 
+## External estimation engines
+
+Typed simulation and estimation jobs may select `engine = "nonmem"` or
+`engine = "nlmixr2"` in addition to native `liber`. NONMEM is invoked only
+through the worker administrator's PsN `execute` configuration; nlmixr2 uses
+the installed `nlmixr2`, `nlmixr2est`, and `rxode2` packages. The remote job
+contract never accepts an executable path, shell fragment, module command, or
+raw model function. Use `remote$capabilities()` before submission to inspect
+the execution engines visible on the API host.
+
+For systemd, expose a NONMEM installation hidden below a home directory with
+the operator-only `external_read_paths` argument to `ls_systemd_executor()`.
+For Slurm or Grid Engine, load licensed software in the trusted executor
+`prologue`; the queue payload cannot alter that prologue. Licensing, node
+eligibility, and shared package-library access remain deployment concerns.
+
 Each job's `n_cores` becomes `CPUQuota = 100% * n_cores`, not a one-core cap.
 `TasksMax` is sized above the requested core count, and `KillMode=control-group`
 keeps every PSOCK/FORK child in the same job boundary. Consequently the current

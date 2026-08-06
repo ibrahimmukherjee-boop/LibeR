@@ -154,6 +154,10 @@ ls_api <- function(server = ls_server(), policy = ls_security_policy()) {
     auth <- server$authenticate(.ls_bearer_token(req))
     list(username = auth$username, limits = auth$limits)
   }, serializer = serializer)
+  api <- plumber::pr_get(api, "/v1/capabilities", function(req) {
+    server$authenticate(.ls_bearer_token(req), "jobs:read")
+    ls_queue_capabilities()
+  }, serializer = serializer)
   api <- plumber::pr_post(api, "/v1/jobs", function(req) {
     token <- .ls_bearer_token(req)
     auth <- server$authenticate(token, "jobs:write")
@@ -301,6 +305,13 @@ LibeRRemote <- R6::R6Class(
     #' Verify the bearer token and return the authenticated user metadata.
     #' @return Server authentication metadata.
     authenticate = function() .ls_remote_call(self, "GET", "/v1/auth"),
+
+    #' @description
+    #' Report the remote worker contracts and locally available execution
+    #' engines. Availability is evaluated on the API submission host; scheduler
+    #' prologues must make the same engines available on compute nodes.
+    #' @return Remote queue capability metadata.
+    capabilities = function() .ls_remote_call(self, "GET", "/v1/capabilities"),
 
     #' @description
     #' Submit a typed, non-executable job payload.

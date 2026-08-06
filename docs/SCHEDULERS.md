@@ -13,6 +13,9 @@ with the LibeRties API, directly or through LibeRation's SSH-tunnel connection.
 - The same R installation and LibeR package library must be visible from the
   compute nodes. `prologue` may contain trusted operator-controlled module
   commands when the cluster requires them.
+- NONMEM/PsN or nlmixr2/rxode2 must also be visible on compute nodes when those
+  execution engines are offered. Load licensed NONMEM modules in the trusted
+  executor `prologue`; clients cannot provide module or shell commands.
 - `sbatch`, `squeue`, `sacct`, `scontrol`, and `scancel` must be available for
   Slurm; Grid Engine requires `qsub`, `qstat`, `qacct`, and `qdel`.
 - The API process must remain available to accept and report jobs. Scheduler
@@ -50,7 +53,8 @@ executor <- ls_grid_engine_executor(
   runtime_resource = "h_rt",
   max_cores_per_job = 36L,
   storage_key_file = key_file,
-  # Add site-specific R module commands only when needed:
+  # Site-controlled modules, for example:
+  # prologue = c("module load R", "module load nonmem", "module load PsN")
   prologue = character()
 )
 

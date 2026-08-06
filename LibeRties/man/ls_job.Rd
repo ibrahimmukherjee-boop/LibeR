@@ -10,7 +10,8 @@ ls_job(
   model,
   data,
   arguments = list(),
-  label = NULL
+  label = NULL,
+  engine = c("liber", "nonmem", "nlmixr2")
 )
 }
 \arguments{
@@ -24,6 +25,10 @@ ls_job(
 \item{arguments}{Named arguments passed to the selected LibeRation entry point.}
 
 \item{label}{Optional human-readable label.}
+
+\item{engine}{Allow-listed execution engine: native `liber`, `nonmem`, or
+`nlmixr2`. External executable locations are server configuration and are
+never accepted in a submitted job.}
 }
 \value{
 A serializable `liber_job`.

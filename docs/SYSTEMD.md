@@ -98,7 +98,9 @@ The API calls the equivalent of:
 ```r
 executor <- ls_systemd_executor(
   max_cores_per_job = 16L,
-  storage_credential = "/srv/liberties-secrets/storage-key"
+  storage_credential = "/srv/liberties-secrets/storage-key",
+  # Only needed when a licensed installation is hidden below a home directory:
+  external_read_paths = c("/home/nonmem/installation")
 )
 ls_server_preflight(
   "/srv/liberties", host = "127.0.0.1", behind_tls_proxy = TRUE,
@@ -115,6 +117,12 @@ Inspect API logs with:
 ```sh
 journalctl --user -u liberties-api.service
 ```
+
+`external_read_paths` is trusted operator configuration, never a job field. It
+adds read-only bind mounts for licensed NONMEM/PsN files that would otherwise
+be hidden by `ProtectHome=tmpfs`. Prefer a system installation such as `/opt`,
+which remains readable without an extra mount. Set `LIBERATION_NONMEM_COMMAND`
+in the API service environment when `execute` is not on its normal PATH.
 
 ## Multi-core behaviour
 

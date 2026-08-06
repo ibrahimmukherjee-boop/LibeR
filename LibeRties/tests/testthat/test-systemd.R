@@ -38,6 +38,35 @@ test_that("systemd maps a multi-core job to a whole-cgroup quota", {
   )))
 })
 
+test_that("systemd external engine paths are operator-controlled read-only mounts", {
+  external <- tempfile("nonmem-install-")
+  dir.create(external)
+  on.exit(unlink(external, recursive = TRUE, force = TRUE), add = TRUE)
+  normalized <- normalizePath(external, winslash = "/", mustWork = TRUE)
+  local_mocked_bindings(
+    .ls_systemd_path = function(value, what) as.character(value),
+    .package = "LibeRties"
+  )
+  executor <- ls_systemd_executor(
+    service_user = "liberties", external_read_paths = normalized,
+    systemd_run = "/usr/bin/systemd-run", systemctl = "/usr/bin/systemctl",
+    live_preflight = FALSE
+  )
+  job <- structure(list(
+    type = "estimate", engine = "nonmem", arguments = list(n_cores = 1L)
+  ), class = "liber_job")
+  metadata <- list(
+    user = "alice", id = "external-1",
+    limits = list(max_runtime_seconds = 600, max_memory_mb = 2048)
+  )
+  profile <- LibeRties:::.ls_systemd_properties(
+    executor, job, metadata, "/srv/liberties/external-1",
+    "/opt/liber/library", "/opt/liber/liberties-systemd-worker.R"
+  )
+  expect_true(paste0("BindReadOnlyPaths=", normalized, ":", normalized) %in%
+                profile$properties)
+})
+
 test_that("only explicit literature tasks receive network access", {
   executor <- ls_systemd_executor(
     service_user = "liberties", max_cores_per_job = 2L,

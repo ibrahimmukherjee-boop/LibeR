@@ -43,13 +43,27 @@
       if (!requireNamespace("LibeRation", quietly = TRUE)) {
         .ls_stop("LibeRation is not installed in the worker library paths.")
       }
-      args <- c(list(model = job$model, data = job$data), job$arguments)
-      if (identical(job$type, "simulate")) {
-        do.call(LibeRation::nm_simulate, args)
+      engine <- as.character(job$engine %||% "liber")
+      if (!identical(engine, "liber")) {
+        if (!job$type %in% c("simulate", "estimate", "estimate_sequence")) {
+          .ls_stop("External engine is invalid for job type: ", job$type)
+        }
+        do.call(
+          LibeRation::nm_external_run,
+          c(
+            list(
+              model = job$model, data = job$data, engine = engine,
+              operation = if (identical(job$type, "simulate")) "simulate" else "estimate"
+            ),
+            job$arguments
+          )
+        )
+      } else if (identical(job$type, "simulate")) {
+        do.call(LibeRation::nm_simulate, c(list(model = job$model, data = job$data), job$arguments))
       } else if (identical(job$type, "estimate")) {
-        do.call(LibeRation::nm_est, args)
+        do.call(LibeRation::nm_est, c(list(model = job$model, data = job$data), job$arguments))
       } else if (identical(job$type, "estimate_sequence")) {
-        do.call(LibeRation::nm_est_sequence, args)
+        do.call(LibeRation::nm_est_sequence, c(list(model = job$model, data = job$data), job$arguments))
       } else {
         .ls_stop("Unsupported job type: ", job$type)
       }

@@ -1,5 +1,16 @@
-# LibeRties 0.8.1
+# LibeRties 0.8.2
 
+- Adds an allow-listed execution-engine field to typed local and remote model
+  jobs, plus authenticated capability discovery. Native, NONMEM/PsN, and
+  nlmixr2 workers use the same durable queue, SSH tunnel, scheduler, result
+  integrity, cancellation, recovery, and per-tenant isolation paths.
+- Systemd operators can expose licensed engine installations through trusted
+  read-only paths; scheduler prologues can load engine modules without their
+  resulting PATH being overwritten by the worker environment.
+- Carries optional LibeRation audit-artifact bundles through the existing typed
+  result contract, with strict filename/content-shape validation and the same
+  result-size quotas. Runs that do not request artifacts incur no added result
+  payload.
 - Adds first-class Slurm and Grid Engine executors with typed operator
   configuration, scheduler-native core/memory/wall-time requests, durable job
   identifiers, restart reattachment, accounting, logs, and cancellation.

@@ -6,11 +6,26 @@
 #' @param data A serializable NONMEM-style dataset.
 #' @param arguments Named arguments passed to the selected LibeRation entry point.
 #' @param label Optional human-readable label.
+#' @param engine Allow-listed execution engine: native `liber`, `nonmem`, or
+#'   `nlmixr2`. External executable locations are server configuration and are
+#'   never accepted in a submitted job.
 #' @return A serializable `liber_job`.
 #' @export
 ls_job <- function(type = c("simulate", "estimate", "estimate_sequence", "individualise", "regimen", "optimal_design"), model, data,
-                   arguments = list(), label = NULL) {
+                   arguments = list(), label = NULL,
+                   engine = c("liber", "nonmem", "nlmixr2")) {
   type <- match.arg(type)
+  engine <- match.arg(tolower(as.character(engine)), c("liber", "nonmem", "nlmixr2"))
+  if (!type %in% c("simulate", "estimate", "estimate_sequence") &&
+      !identical(engine, "liber")) {
+    .ls_stop("External execution engines are only valid for simulation and estimation jobs.")
+  }
+  if (identical(engine, "nlmixr2") && identical(type, "estimate_sequence")) {
+    .ls_stop(
+      "Sequential estimation is not yet supported by the nlmixr2 adapter; ",
+      "submit each stage as a separate estimation job."
+    )
+  }
   if (missing(model) || inherits(model, "NMEngine")) {
     .ls_stop("`model` must be a serializable nm_model, not a compiled pointer-backed engine.")
   }
@@ -23,6 +38,7 @@ ls_job <- function(type = c("simulate", "estimate", "estimate_sequence", "indivi
       schema = "liber.job",
       version = 1L,
       type = type,
+      engine = engine,
       model = model,
       data = data,
       arguments = arguments,
@@ -72,6 +88,7 @@ ls_library_job <- function(type = c("library_triage", "library_parse", "library_
 print.liber_job <- function(x, ...) {
   cat("LibeR execution job\n")
   cat("  type:", x$type, " schema:", x$schema, "v", x$version, "\n")
+  cat("  engine:", x$engine %||% "liber", "\n")
   if (nzchar(x$label)) cat("  label:", x$label, "\n")
   invisible(x)
 }
@@ -93,6 +110,7 @@ ls_job_manifest <- function(job) {
     job_schema = job$schema,
     job_version = job$version,
     type = job$type,
+    engine = job$engine %||% "liber",
     created = job$created,
     payload_bytes = length(raw),
     payload_md5 = .ls_md5(tmp),
@@ -104,13 +122,37 @@ ls_job_manifest <- function(job) {
       list(LibeRality = ">= 0.2.1", LibeRation = ">= 0.8.1", LibeRtAD = ">= 0.7.6")
     } else if (job$type %in% c("individualise", "regimen")) {
       list(LibeRator = ">= 0.2.4", LibeRation = ">= 0.8.1", LibeRtAD = ">= 0.7.6")
-    } else list(LibeRation = ">= 0.8.1", LibeRtAD = ">= 0.7.6")
+    } else {
+      requirements <- list(LibeRation = ">= 0.8.1", LibeRtAD = ">= 0.7.6")
+      if (identical(job$engine %||% "liber", "nlmixr2")) {
+        requirements <- c(requirements, list(
+          nlmixr2 = "installed", nlmixr2est = "installed", rxode2 = "installed"
+        ))
+      }
+      if (identical(job$engine %||% "liber", "nonmem")) {
+        requirements <- c(requirements, list(NONMEM_PsN = "administrator configured"))
+      }
+      requirements
+    }
   )
 }
 
 #' Report queue and remote-worker contract capabilities
 #' @export
 ls_queue_capabilities <- function() {
+  engine_status <- if (
+    requireNamespace("LibeRation", quietly = TRUE) &&
+    "nm_execution_engines" %in% getNamespaceExports("LibeRation")
+  ) {
+    LibeRation::nm_execution_engines()
+  } else {
+    data.frame(
+      id = c("liber", "nonmem", "nlmixr2"),
+      label = c("LibeR", "NONMEM", "nlmixr2"),
+      available = c(FALSE, FALSE, FALSE), version = "", location = "",
+      stringsAsFactors = FALSE
+    )
+  }
   list(
     contract = "liber.job/1",
     wire_contract = "liber.job.wire/2",
@@ -120,6 +162,12 @@ ls_queue_capabilities <- function() {
                   "library_triage", "library_parse",
                   "library_index", "library_dual_extract", "library_assess",
                   "library_adjudicate"),
+    execution_engines = c("liber", "nonmem", "nlmixr2"),
+    execution_engine_status = unname(lapply(
+      seq_len(nrow(engine_status)), function(index) {
+        as.list(engine_status[index, , drop = FALSE])
+      }
+    )),
     states = c("queued", "running", "completed", "failed", "cancelled"),
     worker = paste(
       "trusted-local restricted R subprocess, production transient systemd",

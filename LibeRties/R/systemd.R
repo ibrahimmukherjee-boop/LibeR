@@ -111,6 +111,11 @@
 #' @param storage_credential Optional systemd credential file containing the
 #'   hexadecimal `LIBERTIES_STORAGE_KEY`. It is loaded into workers without
 #'   placing the secret in their command line or unit environment.
+#' @param external_read_paths Optional administrator-controlled absolute paths
+#'   exposed read-only inside the worker namespace. Use this only when a
+#'   licensed NONMEM/PsN installation is located below a home directory hidden
+#'   by `ProtectHome`; system locations such as `/opt` remain readable already.
+#'   Submitted jobs cannot alter this list.
 #' @param live_preflight Run a short sandboxed transient service during strict
 #'   production preflight, rather than trusting binary and PID-1 detection.
 #' @return A serializable `liberties_systemd_executor` specification.
@@ -135,6 +140,7 @@ ls_systemd_executor <- function(
     storage_credential = Sys.getenv(
       "LIBERTIES_SYSTEMD_STORAGE_CREDENTIAL", unset = ""
     ),
+    external_read_paths = character(),
     live_preflight = TRUE) {
   service_user <- .ls_systemd_user(service_user)
   scalar_integer <- function(value, name, minimum = 1L) {
@@ -156,6 +162,10 @@ ls_systemd_executor <- function(
       length(storage_credential) != 1L) {
     .ls_stop("Systemd executable and credential paths must be scalar strings.")
   }
+  external_read_paths <- unique(vapply(
+    as.character(external_read_paths), .ls_systemd_path, character(1),
+    what = "external_read_paths"
+  ))
   structure(list(
     type = "systemd", manager = "user", service_user = service_user,
     max_cores_per_job = scalar_integer(max_cores_per_job, "max_cores_per_job"),
@@ -165,6 +175,7 @@ ls_systemd_executor <- function(
     networked_job_types = unique(as.character(networked_job_types)),
     systemd_run = systemd_run, systemctl = systemctl,
     storage_credential = storage_credential,
+    external_read_paths = external_read_paths,
     live_preflight = isTRUE(live_preflight)
   ), class = c("liberties_systemd_executor", "liberties_executor"))
 }
@@ -309,7 +320,7 @@ LibeRSystemdProcess <- R6::R6Class(
     paste0("StandardError=append:", file.path(job_dir, "stderr.log"))
   )
   visible <- unique(vapply(
-    c(library_paths, dirname(worker_script)), .ls_systemd_path,
+    c(library_paths, dirname(worker_script), executor$external_read_paths), .ls_systemd_path,
     character(1), what = "library path"
   ))
   properties <- c(properties, paste0("BindReadOnlyPaths=", visible, ":", visible))

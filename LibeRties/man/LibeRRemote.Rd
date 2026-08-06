@@ -22,6 +22,7 @@ LibeRties remote-server client
   \itemize{
     \item \href{#method-LibeRRemote-initialize}{\code{LibeRRemote$new()}}
     \item \href{#method-LibeRRemote-authenticate}{\code{LibeRRemote$authenticate()}}
+    \item \href{#method-LibeRRemote-capabilities}{\code{LibeRRemote$capabilities()}}
     \item \href{#method-LibeRRemote-submit}{\code{LibeRRemote$submit()}}
     \item \href{#method-LibeRRemote-list}{\code{LibeRRemote$list()}}
     \item \href{#method-LibeRRemote-status}{\code{LibeRRemote$status()}}
@@ -67,6 +68,23 @@ LibeRties remote-server client
   }
   \subsection{Returns}{
     Server authentication metadata.
+  }
+}
+
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-LibeRRemote-capabilities"></a>}}
+\if{latex}{\out{\hypertarget{method-LibeRRemote-capabilities}{}}}
+\subsection{\code{LibeRRemote$capabilities()}}{
+  Report the remote worker contracts and locally available execution
+engines. Availability is evaluated on the API submission host; scheduler
+prologues must make the same engines available on compute nodes.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{LibeRRemote$capabilities()}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    Remote queue capability metadata.
   }
 }
 

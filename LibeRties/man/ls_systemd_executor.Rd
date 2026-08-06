@@ -18,6 +18,7 @@ ls_systemd_executor(
   systemd_run = unname(Sys.which("systemd-run")),
   systemctl = unname(Sys.which("systemctl")),
   storage_credential = Sys.getenv("LIBERTIES_SYSTEMD_STORAGE_CREDENTIAL", unset = ""),
+  external_read_paths = character(),
   live_preflight = TRUE
 )
 }
@@ -46,6 +47,12 @@ for explicitly configured acquisition or model providers.}
 \item{storage_credential}{Optional systemd credential file containing the
 hexadecimal `LIBERTIES_STORAGE_KEY`. It is loaded into workers without
 placing the secret in their command line or unit environment.}
+
+\item{external_read_paths}{Optional administrator-controlled absolute paths
+exposed read-only inside the worker namespace. Use this only when a
+licensed NONMEM/PsN installation is located below a home directory hidden
+by `ProtectHome`; system locations such as `/opt` remain readable already.
+Submitted jobs cannot alter this list.}
 
 \item{live_preflight}{Run a short sandboxed transient service during strict
 production preflight, rather than trusting binary and PID-1 detection.}
