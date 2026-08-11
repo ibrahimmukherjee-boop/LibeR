@@ -3,258 +3,545 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>LibeRation — Redesigned Workbench</title>
-<meta name="description" content="A browser-native redesign concept of the LibeRation population PK workbench: monochrome, guided, and legible, with a real client-side PK simulator and curve fitter.">
+<title>LibeRation</title>
+<meta name="description" content="A browser-native redesign concept of the LibeRation population PK/PD workbench: Home, Jobs, and Data tabs with a working client-side simulator and fitter.">
 <link rel="icon" href="../assets/liber-dove.svg" type="image/svg+xml">
 <style>
-  :root {
+  :root, .theme-light {
     --bg: #e6e7e9;
     --ink: #1d1d1f;
     --muted: #5f6368;
     --faint: #8a8d91;
+    --line: #cfd0d2;
     --danger: #a62f39;
-    --radius: 24px;
-    --radius-sm: 14px;
-    --raise: 8px 8px 20px rgba(30,32,34,.15), -8px -8px 20px rgba(255,255,255,.92);
-    --raise-sm: 4px 4px 10px rgba(30,32,34,.14), -4px -4px 10px rgba(255,255,255,.9);
-    --press: inset 4px 4px 10px rgba(30,32,34,.11), inset -4px -4px 10px rgba(255,255,255,.85);
-    --press-sm: inset 2px 2px 6px rgba(30,32,34,.10), inset -2px -2px 6px rgba(255,255,255,.8);
+    --header: #1d1d1f;
+    --radius: 20px;
+    --radius-sm: 12px;
+    --raise: 7px 7px 16px rgba(30,32,34,.15), -7px -7px 16px rgba(255,255,255,.92);
+    --raise-sm: 3px 3px 8px rgba(30,32,34,.14), -3px -3px 8px rgba(255,255,255,.9);
+    --press: inset 4px 4px 9px rgba(30,32,34,.11), inset -4px -4px 9px rgba(255,255,255,.85);
+    --press-sm: inset 2px 2px 5px rgba(30,32,34,.10), inset -2px -2px 5px rgba(255,255,255,.8);
+    --plot-grid: #cfd0d2;
+    --plot-grid-2: #dcdde0;
+    --sim-line: #b9babd;
+  }
+  .theme-dark {
+    --bg: #1b1c1e;
+    --ink: #f0f0f2;
+    --muted: #a2a4a8;
+    --faint: #7c7f83;
+    --line: #333538;
+    --danger: #d98991;
+    --header: #0d0d0e;
+    --raise: 7px 7px 16px rgba(0,0,0,.55), -7px -7px 16px rgba(255,255,255,.05);
+    --raise-sm: 3px 3px 8px rgba(0,0,0,.5), -3px -3px 8px rgba(255,255,255,.05);
+    --press: inset 4px 4px 9px rgba(0,0,0,.5), inset -4px -4px 9px rgba(255,255,255,.04);
+    --press-sm: inset 2px 2px 5px rgba(0,0,0,.45), inset -2px -2px 5px rgba(255,255,255,.04);
+    --plot-grid: #37393c;
+    --plot-grid-2: #2b2d30;
+    --sim-line: #55575b;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     background: var(--bg); color: var(--ink);
-    font-size: 16px; line-height: 1.5;
+    font-size: 15px; line-height: 1.45;
     -webkit-font-smoothing: antialiased;
-    min-height: 100vh; display: flex; flex-direction: column;
+    display: flex; flex-direction: column; min-height: 100vh;
   }
   a { color: var(--ink); }
+  button { font: inherit; color: inherit; }
 
-  /* Header */
+  /* ---------- header ---------- */
   .app-header {
-    display: flex; align-items: center; justify-content: space-between; gap: 16px;
-    padding: 14px 26px; background: #1d1d1f; color: #fff;
+    display: flex; align-items: center; justify-content: space-between; gap: 14px;
+    padding: 10px 22px; background: var(--header); color: #fff; flex-wrap: wrap;
   }
-  .brand { display: flex; align-items: center; gap: 13px; min-width: 0; }
-  .brand img { width: 40px; height: 40px; filter: grayscale(1); }
-  .brand .t strong { display: block; font-size: 19px; font-weight: 800; letter-spacing: .01em; }
-  .brand .t span { display: block; font-size: 12px; opacity: .75; }
-  .pill {
-    font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
-    padding: 5px 12px; border-radius: 980px; border: 1px solid rgba(255,255,255,.35); white-space: nowrap;
-  }
-  .header-links { display: flex; align-items: center; gap: 14px; font-size: 13px; }
-  .header-links a { color: rgba(255,255,255,.85); }
-  @media (max-width: 680px) { .header-links { display: none; } }
+  .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .brand img { width: 38px; height: 38px; filter: grayscale(1); }
+  .brand .t strong { display: block; font-size: 18px; font-weight: 800; }
+  .brand .t span { display: block; font-size: 11.5px; opacity: .72; }
+  .header-right { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .hpill { font-size: 10.5px; font-weight: 800; letter-spacing: .07em; padding: 4px 11px; border-radius: 980px; border: 1px solid rgba(255,255,255,.35); white-space: nowrap; }
+  .hbtn { background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.28); color: #fff; border-radius: 980px; padding: 5px 13px; font-size: 12.5px; font-weight: 700; cursor: pointer; }
+  .hbtn:hover { background: rgba(255,255,255,.2); }
+  .switch { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; cursor: pointer; color: rgba(255,255,255,.85); }
+  .switch input { position: absolute; opacity: 0; }
+  .switch i { position: relative; width: 36px; height: 19px; border-radius: 10px; background: rgba(255,255,255,.28); }
+  .switch i::after { content: ""; position: absolute; left: 2px; top: 2px; width: 15px; height: 15px; border-radius: 50%; background: #fff; transition: transform .16s; }
+  .switch input:checked + i::after { transform: translateX(17px); }
+  .wpath { font-size: 11px; opacity: .6; max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-  /* Concept note */
-  .note {
-    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-    padding: 10px 26px; font-size: 13.5px; color: var(--muted);
-    background: var(--bg); box-shadow: 0 1px 0 rgba(30,32,34,.09);
+  /* ---------- ribbon tabs ---------- */
+  .ribbon { display: flex; gap: 6px; padding: 10px 22px 0; box-shadow: 0 1px 0 var(--line); }
+  .rtab {
+    border: 0; background: var(--bg); box-shadow: var(--raise-sm);
+    border-radius: 12px 12px 0 0; padding: 10px 26px 9px; font-weight: 800; font-size: 14px;
+    color: var(--muted); cursor: pointer;
   }
-  .note strong { color: var(--ink); }
+  .rtab.active { color: var(--ink); box-shadow: var(--press-sm); }
 
-  /* Layout */
-  main {
-    flex: 1; display: grid; gap: 26px; padding: 26px;
-    grid-template-columns: minmax(220px, 3fr) minmax(380px, 6fr) minmax(260px, 4fr);
-    max-width: 1440px; width: 100%; margin: 0 auto;
+  /* ---------- log banner ---------- */
+  .logbar { position: relative; display: flex; align-items: center; gap: 10px; padding: 8px 22px; font-size: 12.5px; color: var(--muted); box-shadow: 0 1px 0 var(--line); }
+  .logbar .grow { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .linkbtn { border: 0; background: none; color: var(--ink); font-size: 12.5px; font-weight: 700; cursor: pointer; text-decoration: underline; }
+  .log-history { position: absolute; top: 100%; left: 0; right: 0; z-index: 30; max-height: 170px; overflow: auto; background: var(--bg); box-shadow: var(--raise), 0 1px 0 var(--line); padding: 8px 22px; font: 12px ui-monospace, "SF Mono", Consolas, monospace; display: none; }
+  .log-history.open { display: block; }
+  .log-history div { padding: 2px 0; border-bottom: 1px dotted var(--line); }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--ink); flex: 0 0 8px; }
+  .dot.busy { background: var(--faint); animation: pulse 1.2s infinite; }
+  @keyframes pulse { 50% { opacity: .35; } }
+
+  /* ---------- layout ---------- */
+  .page { flex: 1; display: none; padding: 20px 22px; }
+  .page.active { display: block; }
+  .home-grid { display: grid; gap: 20px; grid-template-columns: minmax(235px, 2.6fr) minmax(430px, 6.4fr) minmax(260px, 3fr); max-width: 1560px; margin: 0 auto; }
+  @media (max-width: 1100px) { .home-grid { grid-template-columns: 1fr 1fr; } .sidebar { grid-column: 1 / -1; } }
+  @media (max-width: 760px) { .home-grid { grid-template-columns: 1fr; } }
+
+  .panel { background: var(--bg); border-radius: var(--radius); box-shadow: var(--raise); padding: 18px; min-width: 0; }
+  .ptitle { font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .11em; color: var(--faint); margin-bottom: 12px; }
+  .ptitle.mt { margin-top: 18px; }
+
+  /* ---------- sidebar ---------- */
+  .list { border-radius: var(--radius-sm); box-shadow: var(--press-sm); min-height: 64px; max-height: 170px; overflow: auto; padding: 6px; margin-bottom: 10px; }
+  .list .item { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 8px 10px; border-radius: 9px; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+  .list .item.sel { box-shadow: var(--press-sm); }
+  .list .item small { color: var(--muted); font-weight: 500; }
+  .list .sub { padding-left: 26px; font-weight: 500; font-size: 13px; color: var(--muted); }
+  .list .sub.sel { color: var(--ink); }
+  .list .empty-s { text-align: center; padding: 12px 8px; color: var(--muted); font-size: 12.5px; }
+  .list .empty-s strong { display: block; color: var(--ink); font-size: 13px; }
+
+  .sbtn {
+    display: flex; align-items: center; gap: 10px; width: 100%;
+    border: 0; border-radius: var(--radius-sm); background: var(--bg); box-shadow: var(--raise-sm);
+    padding: 9px 12px; font-size: 13.5px; font-weight: 700; cursor: pointer; margin-bottom: 9px; text-align: left;
   }
-  @media (max-width: 1080px) { main { grid-template-columns: 1fr 1fr; } .col-steps { grid-column: 1 / -1; } }
-  @media (max-width: 720px) { main { grid-template-columns: 1fr; } }
-
-  .panel { background: var(--bg); border-radius: var(--radius); box-shadow: var(--raise); padding: 24px; }
-  .panel h2 { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: .12em; color: var(--faint); margin-bottom: 16px; }
-
-  /* Steps rail */
-  .steps { display: grid; gap: 14px; }
-  .step {
-    display: flex; align-items: center; gap: 14px; padding: 14px 16px;
-    border-radius: var(--radius-sm); box-shadow: var(--raise-sm);
-    font-weight: 700; font-size: 15px; cursor: default;
+  .sbtn:hover { transform: translateY(-1px); }
+  .sbtn:active { box-shadow: var(--press-sm); transform: none; }
+  .sbtn:disabled { color: var(--faint); cursor: not-allowed; transform: none; }
+  .sbtn .g {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 30px; height: 30px; padding: 0 5px; border-radius: 9px; box-shadow: var(--press-sm);
+    font-size: 11px; font-weight: 800; color: var(--muted); flex: 0 0 auto;
   }
-  .step.done { box-shadow: var(--press-sm); color: var(--muted); }
-  .step .n {
-    display: inline-flex; align-items: center; justify-content: center; flex: 0 0 34px;
-    width: 34px; height: 34px; border-radius: 50%; background: var(--ink); color: #fff;
-    font-size: 15px; font-weight: 800;
-  }
-  .step.done .n { background: var(--faint); }
-  .step small { display: block; font-size: 12.5px; font-weight: 500; color: var(--muted); }
+  .sbtn.danger { color: var(--danger); }
+  .del-row { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+  .del-row .sbtn { margin-bottom: 0; justify-content: center; }
+  .del-row .wide { grid-column: 1 / -1; }
+  .inline-create { display: none; gap: 8px; margin-bottom: 9px; }
+  .inline-create.open { display: flex; }
+  .inline-create input { flex: 1; }
 
-  /* Controls */
-  .field { margin-bottom: 16px; }
-  .field label { display: block; font-size: 12.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 7px; }
-  .field .row { display: flex; align-items: center; gap: 12px; }
-  input[type="number"], select {
-    width: 100%; height: 42px; padding: 8px 14px; border: 0; border-radius: var(--radius-sm);
+  /* ---------- inputs ---------- */
+  input[type="text"], input[type="number"], select, textarea {
+    width: 100%; border: 0; border-radius: var(--radius-sm);
     background: var(--bg); box-shadow: var(--press-sm); color: var(--ink);
-    font: inherit; font-size: 16px; font-weight: 600; outline: none;
-    -moz-appearance: textfield; appearance: none;
+    font: inherit; font-size: 14px; font-weight: 600; outline: none; padding: 9px 12px;
   }
-  input[type="number"]:focus, select:focus { box-shadow: var(--press-sm), 0 0 0 2px rgba(29,29,31,.4); }
-  input[type="range"] { flex: 1; accent-color: var(--ink); height: 30px; }
-  .num { width: 96px !important; flex: 0 0 96px; text-align: right; }
-  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-
+  input:focus, select:focus, textarea:focus { box-shadow: var(--press-sm), 0 0 0 2px color-mix(in srgb, var(--ink) 40%, transparent); }
+  textarea { font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 13px; min-height: 92px; resize: vertical; font-weight: 500; }
+  label.f { display: block; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 12px 0 6px; }
+  label.f:first-child { margin-top: 0; }
   .btn {
-    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-    min-height: 46px; padding: 10px 22px; border: 0; border-radius: 980px;
-    background: var(--bg); box-shadow: var(--raise-sm); color: var(--ink);
-    font: inherit; font-size: 15.5px; font-weight: 800; cursor: pointer;
-    transition: transform .12s ease;
+    display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+    min-height: 38px; padding: 8px 18px; border: 0; border-radius: 980px;
+    background: var(--bg); box-shadow: var(--raise-sm); font-size: 13.5px; font-weight: 800; cursor: pointer;
   }
   .btn:hover { transform: translateY(-1px); }
-  .btn:active { box-shadow: var(--press-sm); transform: translateY(1px); }
+  .btn:active { box-shadow: var(--press-sm); transform: none; }
   .btn:disabled { color: var(--faint); cursor: not-allowed; transform: none; }
-  .btn-primary { background: var(--ink); color: #fff; }
-  .btn-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+  .btn-primary { background: var(--ink); color: var(--bg); }
+  .btn-sm { min-height: 32px; padding: 5px 13px; font-size: 12.5px; }
+  .btn-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 
-  /* Plot */
-  .plot-wrap { border-radius: var(--radius-sm); box-shadow: var(--press); padding: 14px; margin-top: 6px; }
+  /* ---------- center panel ---------- */
+  .mv-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+  .mv-head .l { display: flex; align-items: baseline; gap: 10px; }
+  .mv-head h3 { font-size: 16px; font-weight: 800; }
+  .badge { font-size: 10.5px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; padding: 3px 10px; border-radius: 980px; box-shadow: var(--press-sm); color: var(--muted); }
+  .subtabs { display: flex; gap: 8px; margin-bottom: 14px; }
+  .stab { border: 0; background: var(--bg); box-shadow: var(--raise-sm); border-radius: 980px; padding: 7px 18px; font-size: 13px; font-weight: 800; color: var(--muted); cursor: pointer; }
+  .stab.active { color: var(--ink); box-shadow: var(--press-sm); }
+  .subpage { display: none; }
+  .subpage.active { display: block; }
+
+  .radio-row { display: grid; gap: 8px; margin-bottom: 6px; }
+  .radio-row label { display: flex; align-items: center; gap: 9px; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+  .radio-row input { accent-color: var(--ink); width: 15px; height: 15px; }
+  .hint { font-size: 12px; color: var(--muted); margin: 4px 0 10px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid4 { display: grid; grid-template-columns: 2fr 1fr 1fr auto 2fr auto; gap: 10px; align-items: end; }
+  @media (max-width: 900px) { .grid4 { grid-template-columns: 1fr 1fr; } }
+  .qbtn { min-height: 38px; min-width: 38px; border-radius: var(--radius-sm); border: 0; background: var(--bg); box-shadow: var(--raise-sm); font-weight: 800; cursor: pointer; }
+  .qbtn:active { box-shadow: var(--press-sm); }
+
+  .param-block { border-radius: var(--radius-sm); box-shadow: var(--press-sm); padding: 12px; margin-top: 12px; }
+  .param-block .ph { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+  .param-block .ph strong { font-size: 12px; letter-spacing: .08em; color: var(--muted); }
+  .param-block .none { font-size: 13px; color: var(--faint); padding: 2px 2px 4px; }
+  .prow { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
+  .prow .tag { flex: 0 0 88px; font-size: 12px; font-weight: 800; color: var(--muted); }
+  .prow input { flex: 1; }
+  .prow .x { flex: 0 0 30px; min-width: 30px; height: 30px; border-radius: 9px; border: 0; background: var(--bg); box-shadow: var(--raise-sm); color: var(--danger); font-weight: 800; cursor: pointer; }
+  .chk { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; cursor: pointer; margin-top: 4px; }
+  .chk input { accent-color: var(--ink); width: 15px; height: 15px; }
+
+  /* sliders (visual model) */
+  .vfield { margin-bottom: 13px; }
+  .vfield label { display: block; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-bottom: 6px; }
+  .vfield .row { display: flex; align-items: center; gap: 12px; }
+  input[type="range"] { flex: 1; accent-color: var(--ink); box-shadow: none; padding: 0; background: none; }
+  .vnum { width: 92px !important; flex: 0 0 92px; text-align: right; }
+
+  .plot-wrap { border-radius: var(--radius-sm); box-shadow: var(--press); padding: 12px; margin-top: 12px; }
   svg { display: block; width: 100%; height: auto; }
-  .plot-tools { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; font-size: 13px; color: var(--muted); }
-  .toggle { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 700; color: var(--ink); }
+  .plot-tools { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; font-size: 12.5px; color: var(--muted); flex-wrap: wrap; }
 
-  /* Results */
-  .empty { text-align: center; padding: 26px 12px; color: var(--muted); }
-  .empty strong { display: block; color: var(--ink); font-size: 17px; margin-bottom: 6px; }
-  .empty .btn { margin-top: 16px; }
-  table { width: 100%; border-collapse: collapse; font-size: 15px; }
-  th { text-align: left; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--faint); padding: 8px 10px; }
-  td { padding: 10px; border-radius: 10px; font-variant-numeric: tabular-nums; }
-  tbody tr { box-shadow: none; }
-  tbody tr td:first-child { font-weight: 700; }
-  .stat {
-    display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
-    padding: 14px 18px; border-radius: var(--radius-sm); box-shadow: var(--press-sm);
-    margin-bottom: 12px;
-  }
-  .stat span { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
-  .stat strong { font-size: 22px; font-variant-numeric: tabular-nums; }
-  .msg { margin-top: 14px; font-size: 14px; color: var(--muted); min-height: 22px; }
+  /* ---------- results ---------- */
+  .empty { text-align: center; padding: 22px 10px; color: var(--muted); font-size: 13.5px; }
+  .empty strong { display: block; color: var(--ink); font-size: 15px; margin-bottom: 4px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th { text-align: left; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; color: var(--faint); padding: 6px 8px; }
+  td { padding: 7px 8px; font-variant-numeric: tabular-nums; }
+  td:first-child { font-weight: 700; }
+  .stat { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 10px 14px; border-radius: var(--radius-sm); box-shadow: var(--press-sm); margin-bottom: 10px; }
+  .stat span { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+  .stat strong { font-size: 18px; font-variant-numeric: tabular-nums; }
+  .help-text { font-size: 13.5px; color: var(--muted); }
+  .help-text h4 { color: var(--ink); font-size: 13.5px; margin: 10px 0 4px; }
+  .report-pre { font: 12px/1.6 ui-monospace, "SF Mono", Consolas, monospace; white-space: pre-wrap; border-radius: var(--radius-sm); box-shadow: var(--press-sm); padding: 12px; max-height: 380px; overflow: auto; }
 
-  /* Status bar */
-  .statusbar {
-    display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    padding: 10px 26px; font-size: 13px; color: var(--muted);
-    box-shadow: 0 -1px 0 rgba(30,32,34,.09);
-  }
-  .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--ink); margin-right: 7px; vertical-align: baseline; }
-  .dot.busy { animation: pulse 1.2s infinite; background: var(--faint); }
-  @keyframes pulse { 50% { opacity: .35; } }
+  /* ---------- jobs page ---------- */
+  .jobs-grid { display: grid; gap: 20px; grid-template-columns: minmax(300px, 4fr) minmax(320px, 6fr); max-width: 1560px; margin: 0 auto; }
+  @media (max-width: 900px) { .jobs-grid { grid-template-columns: 1fr; } }
+  .queue-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; margin-bottom: 12px; }
+  .queue-row > div { min-width: 170px; flex: 1; }
+  .job-item { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 9px 11px; border-radius: 10px; font-size: 13px; cursor: pointer; }
+  .job-item.sel { box-shadow: var(--press-sm); }
+  .job-item .st { font-size: 10.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; padding: 2px 9px; border-radius: 980px; box-shadow: var(--press-sm); color: var(--muted); }
+  .worker-log { font: 12px/1.65 ui-monospace, "SF Mono", Consolas, monospace; border-radius: var(--radius-sm); box-shadow: var(--press); padding: 12px; min-height: 220px; max-height: 420px; overflow: auto; white-space: pre-wrap; color: var(--muted); }
+  .meta { font-size: 12px; color: var(--faint); margin-top: 10px; }
+
+  /* ---------- data page ---------- */
+  .data-grid { display: grid; gap: 20px; grid-template-columns: minmax(260px, 3fr) minmax(380px, 7fr); max-width: 1560px; margin: 0 auto; }
+  @media (max-width: 900px) { .data-grid { grid-template-columns: 1fr; } }
+  .dtable-wrap { max-height: 300px; overflow: auto; border-radius: var(--radius-sm); box-shadow: var(--press-sm); margin-top: 10px; display: none; }
+  .dtable-wrap.open { display: block; }
+  .dtable-wrap table { font-size: 12.5px; }
+  .dtable-wrap th { position: sticky; top: 0; background: var(--bg); }
+
+  /* ---------- status bar ---------- */
+  .statusbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 22px; font-size: 12.5px; color: var(--muted); box-shadow: 0 -1px 0 var(--line); }
+  .statusbar .l { display: inline-flex; align-items: center; gap: 8px; }
+
+  .concept-note { font-size: 12px; color: var(--faint); padding: 6px 22px; box-shadow: 0 1px 0 var(--line); }
+  .concept-note a { color: var(--muted); }
 </style>
 </head>
-<body>
+<body class="theme-light" id="body">
 
 <header class="app-header">
   <div class="brand">
     <img src="../assets/liber-dove.svg" alt="">
-    <div class="t">
-      <strong>LibeRation</strong>
-      <span>Redesigned workbench — UI concept</span>
-    </div>
+    <div class="t"><strong>LibeRation</strong><span>Population PK/PD modelling</span></div>
   </div>
-  <span class="pill">Runs in your browser</span>
-  <div class="header-links">
-    <a href="../">LibeR home</a>
-    <a href="https://svdijkman.shinyapps.io/liberation/">Original app</a>
-    <a href="https://github.com/ibrahimmukherjee-boop/LibeR">Source</a>
+  <div class="header-right">
+    <label class="switch" title="AI assistance"><span>Activate AI</span><input type="checkbox" id="aiToggle"><i></i></label>
+    <button class="hbtn" id="btnMore" title="More">...</button>
+    <a class="hbtn" href="https://github.com/ibrahimmukherjee-boop/LibeR/issues" style="text-decoration:none">Support</a>
+    <span class="hpill">v0.10.9 · UI concept</span>
+    <label class="switch"><span id="themeLabel">Light</span><input type="checkbox" id="themeToggle"><i></i></label>
+    <span class="wpath" id="wpath">session: in-browser · no server</span>
   </div>
 </header>
 
-<div class="note">
-  <strong>What is this?</strong>
-  <span>A redesign concept of the LibeRation workbench following the LibeR Mono philosophy: monochrome, guided, large type, one clear next action. The pharmacokinetic simulator and least-squares fitter below run entirely in your browser; the production engine (FOCE/SAEM/Bayesian estimation, ODE solvers, exact automatic differentiation) lives in the <a href="https://github.com/ibrahimmukherjee-boop/LibeR">R packages</a>.</span>
+<div class="concept-note">Redesign concept of the <a href="https://svdijkman.shinyapps.io/liberation/">original LibeRation app</a> on the LibeR Mono philosophy. The simulator and fitter run client-side; the production engine lives in the <a href="https://github.com/ibrahimmukherjee-boop/LibeR">R packages</a>. <a href="../">Back to LibeR home</a>.</div>
+
+<div class="ribbon">
+  <button class="rtab active" data-page="home">Home</button>
+  <button class="rtab" data-page="jobs">Jobs</button>
+  <button class="rtab" data-page="data">Data</button>
 </div>
 
-<main>
-  <section class="panel col-steps">
-    <h2>Workflow</h2>
-    <div class="steps">
-      <div class="step" id="step1"><span class="n">1</span><span>Load the example<small>Synthetic oral-dose study, 12 subjects</small></span></div>
-      <div class="step" id="step2"><span class="n">2</span><span>Adjust the model<small>Route, dose, CL, V, ka, variability</small></span></div>
-      <div class="step" id="step3"><span class="n">3</span><span>Simulate<small>Population curves against the data</small></span></div>
-      <div class="step" id="step4"><span class="n">4</span><span>Fit<small>Nelder&#8211;Mead least squares, live</small></span></div>
-    </div>
-  </section>
+<div class="logbar">
+  <span class="dot" id="logDot"></span>
+  <span class="grow" id="logText">Workbench ready</span>
+  <button class="linkbtn" id="btnHistory">Show history</button>
+  <button class="linkbtn" id="btnClearLog">Clear log</button>
+  <div class="log-history" id="logHistory"></div>
+</div>
 
-  <section class="panel">
-    <h2>Model &amp; simulation</h2>
+<!-- ============================ HOME ============================ -->
+<div class="page active" id="page-home">
+  <div class="home-grid">
 
-    <div class="two">
-      <div class="field">
-        <label for="route">Route</label>
-        <select id="route">
-          <option value="oral" selected>Oral (1-compartment)</option>
-          <option value="iv">IV bolus (1-compartment)</option>
-        </select>
+    <!-- sidebar -->
+    <section class="panel sidebar">
+      <div class="ptitle">Projects</div>
+      <div class="list" id="projList"></div>
+      <div class="inline-create" id="projCreate">
+        <input type="text" id="projName" placeholder="Project name">
+        <button class="btn btn-sm btn-primary" id="projCreateOk">Create</button>
       </div>
-      <div class="field">
-        <label for="dose">Dose (mg)</label>
-        <input type="number" id="dose" value="100" min="1" step="10">
-      </div>
-    </div>
+      <button class="sbtn" id="btnNewProject"><span class="g">+</span>New project</button>
+      <button class="sbtn" id="btnLoadCtl"><span class="g">NM</span>Load .ctl</button>
+      <input type="file" id="ctlFile" accept=".ctl,.mod,.txt" style="display:none">
+      <button class="sbtn" id="btnLibrary"><span class="g">L</span>Model library</button>
 
-    <div class="field">
-      <label for="cl">CL — clearance (L/h): <span id="clv">3.0</span></label>
-      <div class="row"><input type="range" id="cl" min="0.5" max="12" step="0.1" value="3.0"><input type="number" class="num" id="cln" value="3.0" step="0.1" min="0.1"></div>
-    </div>
-    <div class="field">
-      <label for="v">V — volume (L): <span id="vv">30</span></label>
-      <div class="row"><input type="range" id="v" min="5" max="120" step="1" value="30"><input type="number" class="num" id="vn" value="30" step="1" min="1"></div>
-    </div>
-    <div class="field" id="kaField">
-      <label for="ka">ka — absorption (1/h): <span id="kav">1.2</span></label>
-      <div class="row"><input type="range" id="ka" min="0.1" max="4" step="0.05" value="1.2"><input type="number" class="num" id="kan" value="1.2" step="0.05" min="0.05"></div>
-    </div>
-    <div class="two">
-      <div class="field">
-        <label for="nsub">Subjects</label>
-        <input type="number" id="nsub" value="24" min="1" max="200" step="1">
-      </div>
-      <div class="field">
-        <label for="iiv">Between-subject variability (CV%)</label>
-        <input type="number" id="iiv" value="25" min="0" max="80" step="5">
-      </div>
-    </div>
+      <div class="ptitle mt">Model versions</div>
+      <div class="list" id="verList"></div>
+      <button class="sbtn" id="btnCompare"><span class="g">=</span>Compare runs</button>
 
-    <div class="btn-row">
-      <button class="btn btn-primary" id="btnSim">Simulate</button>
-      <button class="btn" id="btnFit" disabled>Fit to data</button>
-      <button class="btn" id="btnReset">Reset</button>
-    </div>
+      <div class="ptitle mt">Model workflow</div>
+      <button class="sbtn" id="btnCopyVer"><span class="g">C</span>Copy version</button>
+      <button class="sbtn" id="btnTemplate"><span class="g">{}</span>From template</button>
+      <button class="sbtn" id="btnEstimate"><span class="g">&gt;</span>Estimate</button>
+      <button class="sbtn" id="btnDiag"><span class="g">D</span>Diagnostics</button>
+      <button class="sbtn" id="btnUncert"><span class="g">U</span>Uncertainty</button>
+      <button class="sbtn" id="btnSCM"><span class="g">SCM</span>Covariates</button>
+      <button class="sbtn" id="btnExportCtl"><span class="g">.ctl</span>Export .ctl</button>
+      <button class="sbtn" id="btnSimulate"><span class="g">~</span>Simulate</button>
 
-    <div class="plot-wrap"><svg id="plot" viewBox="0 0 680 400" role="img" aria-label="Concentration-time plot"></svg></div>
-    <div class="plot-tools">
-      <span id="plotCaption">Concentration vs time</span>
-      <label class="toggle"><input type="checkbox" id="logY"> Log scale</label>
-    </div>
-  </section>
-
-  <section class="panel">
-    <h2>Results</h2>
-    <div id="results">
-      <div class="empty">
-        <strong>Nothing here yet.</strong>
-        Load the example study to see observed data, then simulate or fit.
-        <br><button class="btn btn-primary" id="btnExample">Load example study</button>
+      <div class="ptitle mt">Delete</div>
+      <div class="del-row">
+        <button class="sbtn danger" id="btnDelProject">Project</button>
+        <button class="sbtn danger" id="btnDelVersion">Version</button>
+        <button class="sbtn danger wide" id="btnDelRun">Selected run</button>
       </div>
-    </div>
-    <div class="msg" id="msg"></div>
-  </section>
-</main>
+    </section>
+
+    <!-- model panel -->
+    <section class="panel">
+      <div class="mv-head">
+        <div class="l"><h3>Model version</h3><span class="badge" id="mvBadge">Unsaved</span></div>
+        <div class="btn-row">
+          <button class="btn btn-sm" id="btnReload">Reload</button>
+          <button class="btn btn-sm" id="btnSaveVer">Save new version</button>
+          <button class="btn btn-sm" id="btnSaveAs">Save as new</button>
+        </div>
+      </div>
+
+      <div class="subtabs">
+        <button class="stab" data-sub="visual">Visual model</button>
+        <button class="stab active" data-sub="code">Code</button>
+        <button class="stab" data-sub="gof">GOF</button>
+      </div>
+
+      <!-- CODE -->
+      <div class="subpage active" id="sub-code">
+        <div class="ptitle">Model definition</div>
+        <div class="radio-row">
+          <label><input type="radio" name="mdef" value="pk" checked> PREDPP / ADVAN ($PK)</label>
+          <label><input type="radio" name="mdef" value="pred"> Direct prediction ($PRED)</label>
+          <label><input type="radio" name="mdef" value="both"> ADVAN + prediction layer ($PK + $PRED)</label>
+        </div>
+        <p class="hint">$PK defines individual parameters for the selected ADVAN/TRANS route.</p>
+
+        <div class="grid4">
+          <div><label class="f">$PROBLEM</label><input type="text" id="probName" value="Untitled model"></div>
+          <div><label class="f">ADVAN</label><select id="advan"><option value="1">1</option><option value="2" selected>2</option></select></div>
+          <div><label class="f">TRANS</label><select id="trans"><option>1</option><option selected>2</option></select></div>
+          <button class="qbtn" id="btnAdvanHelp" title="ADVAN help">?</button>
+          <div><label class="f">Dataset</label><select id="dsSelect"><option value="">No dataset</option></select></div>
+          <button class="qbtn" id="btnColumns" style="min-width:auto;padding:0 14px">Columns...</button>
+        </div>
+
+        <label class="f">$PK</label>
+        <textarea id="pkCode" spellcheck="false"># Define a model to begin
+CL = THETA(1) * EXP(ETA(1))
+V  = THETA(2) * EXP(ETA(2))
+KA = THETA(3)
+S2 = V</textarea>
+        <label class="f">$ERROR</label>
+        <textarea id="errCode" spellcheck="false" style="min-height:56px">Y = F</textarea>
+
+        <div class="param-block">
+          <div class="ph"><strong>THETA</strong><span class="btn-row"><button class="qbtn" style="min-height:30px;min-width:30px" id="thMinus">−</button><button class="btn btn-sm" id="thPlus">+ Add THETA</button></span></div>
+          <div id="thRows"><div class="none">None</div></div>
+        </div>
+        <div class="param-block">
+          <div class="ph"><strong>OMEGA</strong><span class="btn-row"><button class="qbtn" style="min-height:30px;min-width:30px" id="omMinus">−</button><button class="btn btn-sm" id="omPlus">+ Add OMEGA</button></span></div>
+          <div id="omRows"><div class="none">None</div></div>
+          <label class="chk"><input type="checkbox" id="omMatrix"> OMEGA matrix</label>
+        </div>
+        <div class="param-block">
+          <div class="ph"><strong>SIGMA</strong><span class="btn-row"><button class="qbtn" style="min-height:30px;min-width:30px" id="sgMinus">−</button><button class="btn btn-sm" id="sgPlus">+ Add SIGMA</button></span></div>
+          <div id="sgRows"><div class="none">None</div></div>
+        </div>
+
+        <div class="param-block">
+          <div class="ph"><strong>ESTIMATION PRIORS</strong><button class="btn btn-sm" id="prPlus">+ Add prior</button></div>
+          <p class="hint" style="margin:0 0 8px">Saved with the model version and applied to every estimation method.</p>
+          <div id="prRows"><div class="none">No priors: estimation uses the likelihood only.</div></div>
+        </div>
+
+        <div class="btn-row" style="margin-top:16px;justify-content:flex-end">
+          <button class="btn" id="btnValidate">Validate</button>
+          <button class="btn btn-primary" id="btnApply">Apply changes</button>
+        </div>
+      </div>
+
+      <!-- VISUAL -->
+      <div class="subpage" id="sub-visual">
+        <div class="grid2" style="margin-bottom:12px">
+          <div><label class="f">Route</label>
+            <select id="route"><option value="iv">IV bolus — ADVAN1</option><option value="oral" selected>Oral — ADVAN2</option></select></div>
+          <div><label class="f">Dose (mg)</label><input type="number" id="dose" value="100" min="1" step="10"></div>
+        </div>
+        <div class="vfield"><label>CL — clearance (L/h)</label><div class="row"><input type="range" id="cl" min="0.5" max="12" step="0.05" value="3.0"><input type="number" class="vnum" id="cln" value="3.0" step="0.1"></div></div>
+        <div class="vfield"><label>V — volume (L)</label><div class="row"><input type="range" id="v" min="5" max="120" step="0.5" value="30"><input type="number" class="vnum" id="vn" value="30" step="1"></div></div>
+        <div class="vfield" id="kaField"><label>ka — absorption (1/h)</label><div class="row"><input type="range" id="ka" min="0.1" max="4" step="0.05" value="1.2"><input type="number" class="vnum" id="kan" value="1.2" step="0.05"></div></div>
+        <div class="grid2">
+          <div><label class="f">Subjects</label><input type="number" id="nsub" value="24" min="1" max="200"></div>
+          <div><label class="f">Between-subject variability (CV%)</label><input type="number" id="iiv" value="25" min="0" max="80" step="5"></div>
+        </div>
+        <div class="plot-wrap"><svg id="plot" viewBox="0 0 660 360"></svg></div>
+        <div class="plot-tools"><span id="plotCaption">Concentration vs time</span><label class="chk" style="margin:0"><input type="checkbox" id="logY"> Log scale</label></div>
+      </div>
+
+      <!-- GOF -->
+      <div class="subpage" id="sub-gof">
+        <div id="gofEmpty" class="empty"><strong>No goodness-of-fit data.</strong>Run an estimation, then Diagnostics.</div>
+        <div id="gofPlots" style="display:none">
+          <div class="ptitle">Observed vs population predicted</div>
+          <div class="plot-wrap" style="margin-top:0"><svg id="gof1" viewBox="0 0 660 330"></svg></div>
+          <div class="ptitle" style="margin-top:14px">Residuals vs time</div>
+          <div class="plot-wrap" style="margin-top:0"><svg id="gof2" viewBox="0 0 660 330"></svg></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- results -->
+    <section class="panel">
+      <div class="ptitle">Results</div>
+      <div class="subtabs" style="flex-wrap:wrap">
+        <button class="stab active" data-res="parameters">Parameters</button>
+        <button class="stab" data-res="runinfo">Run info</button>
+        <button class="stab" data-res="help">Help</button>
+        <button class="stab" data-res="report">Report</button>
+      </div>
+      <div class="subpage active" id="res-parameters">
+        <div class="empty"><strong>No estimates</strong>Open or run an estimation.</div>
+      </div>
+      <div class="subpage" id="res-runinfo">
+        <div class="empty"><strong>No runs yet.</strong>Estimation and simulation runs will be listed here.</div>
+      </div>
+      <div class="subpage" id="res-help">
+        <div class="help-text">
+          <h4>Quick start</h4>
+          <p>1. Open the <strong>Data</strong> tab and load the example study (or import a CSV with ID, TIME, EVID, AMT, DV columns).</p>
+          <p>2. Adjust the model in <strong>Code</strong> or <strong>Visual model</strong>.</p>
+          <p>3. Press <strong>Estimate</strong> in the workflow rail, then <strong>Diagnostics</strong> for GOF plots and <strong>Uncertainty</strong> for bootstrap standard errors.</p>
+          <h4>ADVAN routes</h4>
+          <p>ADVAN1 — one-compartment IV bolus. ADVAN2 — one-compartment first-order absorption. THETA(1)=CL, THETA(2)=V, THETA(3)=ka.</p>
+          <h4>About this concept</h4>
+          <p>Estimation here is Nelder&#8211;Mead least squares on log concentrations with a &#8722;2LL report. The production engine (FOCE/SAEM/Bayesian, ODE/DDE solvers, exact AD) lives in the R packages.</p>
+        </div>
+      </div>
+      <div class="subpage" id="res-report">
+        <div class="empty" id="repEmpty"><strong>No report.</strong>Fit a model to generate a run report.</div>
+        <div id="repBody" style="display:none">
+          <div class="report-pre" id="repPre"></div>
+          <div class="btn-row" style="margin-top:10px"><button class="btn btn-sm" id="btnDlReport">Download report</button></div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- ============================ JOBS ============================ -->
+<div class="page" id="page-jobs">
+  <div class="jobs-grid">
+    <section class="panel">
+      <div class="ptitle">Queue</div>
+      <div class="queue-row">
+        <div><label class="f">Queue</label><select id="queueSel"><option>in-process | current R session</option></select></div>
+        <div><label class="f">Hub poll interval (seconds)</label><input type="number" id="pollInt" value="5" min="1" max="120"></div>
+      </div>
+      <div class="btn-row" style="margin-bottom:12px">
+        <button class="btn btn-sm" id="btnRefresh">Refresh</button>
+        <button class="btn btn-sm" id="btnCancelJob">Cancel selected</button>
+        <button class="btn btn-sm" id="btnClearFinished">Clear finished</button>
+      </div>
+      <div class="btn-row" style="margin-bottom:12px">
+        <button class="btn btn-sm" id="btnAddTarget">Add target</button>
+        <button class="btn btn-sm" id="btnEditTarget">Edit target</button>
+        <button class="btn btn-sm" id="btnRemoveTarget">Remove target</button>
+      </div>
+      <div class="meta" id="queueMeta">Last refreshed — | LibeRation 0.10.9</div>
+
+      <div class="ptitle mt">Jobs <span id="jobCount" style="letter-spacing:0;text-transform:none;font-weight:600">· 0 jobs</span></div>
+      <div class="list" style="max-height:280px" id="jobList">
+        <div class="empty-s"><strong>No jobs</strong>Run an estimation or simulation to populate the queue.</div>
+      </div>
+    </section>
+    <section class="panel">
+      <div class="ptitle">Worker log</div>
+      <div class="worker-log" id="workerLog">Select a job to view its worker log.</div>
+      <div class="meta">in-process | current browser session · LibeRation UI concept</div>
+    </section>
+  </div>
+</div>
+
+<!-- ============================ DATA ============================ -->
+<div class="page" id="page-data">
+  <div class="data-grid">
+    <section class="panel">
+      <div class="ptitle">Dataset</div>
+      <div id="dsEmpty" class="empty"><strong>No dataset</strong>Load a CSV to begin</div>
+      <div id="dsInfo" style="display:none">
+        <div class="stat"><span>Dataset</span><strong id="dsName" style="font-size:14px"></strong></div>
+        <div class="stat"><span>Rows × cols</span><strong id="dsDims" style="font-size:14px"></strong></div>
+      </div>
+      <div class="btn-row" style="margin-top:10px">
+        <button class="btn btn-sm btn-primary" id="btnImport">Import dataset</button>
+        <button class="btn btn-sm" id="btnExampleDs">Load example study</button>
+        <button class="btn btn-sm" id="btnShowTable">Show dataset table</button>
+      </div>
+      <input type="file" id="csvFile" accept=".csv,.txt" style="display:none">
+      <div class="dtable-wrap" id="dsTableWrap"></div>
+    </section>
+    <section class="panel">
+      <div class="ptitle">Plot</div>
+      <div class="grid2">
+        <div><label class="f">X axis</label><select id="pX"></select></div>
+        <div><label class="f">Y axis</label><select id="pY"></select></div>
+        <div><label class="f">Stratify / colour by</label><select id="pStrat"><option value="">—</option></select></div>
+        <div><label class="f">Split by (facets)</label><select id="pFacet"><option value="">—</option></select></div>
+      </div>
+      <div class="btn-row" style="margin:12px 0">
+        <label class="chk" style="margin:0"><input type="checkbox" id="pBinX"> Bin X (continuous)</label>
+        <label class="chk" style="margin:0"><input type="checkbox" id="pBinY"> Bin Y (continuous)</label>
+        <div style="min-width:170px"><select id="pType"><option value="scatter">Scatter</option><option value="line">Line (by subject)</option><option value="both">Scatter + line</option></select></div>
+        <button class="btn btn-sm" id="btnPlotOpts">Adjust plot options</button>
+      </div>
+      <div id="plotOpts" style="display:none;margin-bottom:12px" class="btn-row">
+        <label class="chk" style="margin:0"><input type="checkbox" id="pLogY"> Log Y</label>
+        <label class="chk" style="margin:0"><input type="checkbox" id="pBigPts"> Large points</label>
+      </div>
+      <div id="dataPlotEmpty" class="empty"><strong>No plottable records</strong>Choose numeric axes or run the required diagnostic.</div>
+      <div class="plot-wrap" id="dataPlotWrap" style="display:none"><svg id="dataPlot" viewBox="0 0 720 420"></svg></div>
+    </section>
+  </div>
+</div>
 
 <div class="statusbar">
-  <span><i class="dot" id="statusDot"></i><span id="statusText">Ready</span></span>
-  <span>client-side · analytical 1-compartment · Nelder&#8211;Mead</span>
+  <span class="l"><span class="dot" id="statusDot"></span><span id="statusText">Ready</span></span>
+  <span>local | C++17 | Exact AD — <em>concept: client-side JS engine</em></span>
 </div>
 
 <script>
 "use strict";
+/* =============================================================
+   LibeRation redesigned workbench — full client-side concept.
+   ============================================================= */
 
-/* ---------- deterministic PRNG so the example is reproducible ---------- */
+const $ = (id) => document.getElementById(id);
+
+/* ---------- utilities ---------- */
 function mulberry32(seed) {
   let a = seed >>> 0;
   return function () {
@@ -270,35 +557,32 @@ function gauss(rng) {
   while (v === 0) v = rng();
   return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
 }
+function nowHMS() { return new Date().toTimeString().slice(0, 8); }
+function download(name, text) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([text], { type: "text/plain" }));
+  a.download = name;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
 
-/* ---------- one-compartment analytical models ---------- */
+/* ---------- PK engine ---------- */
 function concOral(t, dose, cl, v, ka) {
   const ke = cl / v;
-  if (Math.abs(ka - ke) < 1e-9) {
-    return (dose / v) * ke * t * Math.exp(-ke * t); // flip-flop limit
-  }
+  if (Math.abs(ka - ke) < 1e-9) return (dose / v) * ke * t * Math.exp(-ke * t);
   return (dose * ka) / (v * (ka - ke)) * (Math.exp(-ke * t) - Math.exp(-ka * t));
 }
-function concIV(t, dose, cl, v) {
-  return (dose / v) * Math.exp(-(cl / v) * t);
-}
-function conc(route, t, dose, p) {
-  return route === "oral" ? concOral(t, dose, p.cl, p.v, p.ka) : concIV(t, dose, p.cl, p.v);
-}
+function concIV(t, dose, cl, v) { return (dose / v) * Math.exp(-(cl / v) * t); }
+function conc(route, t, dose, p) { return route === "oral" ? concOral(t, dose, p.cl, p.v, p.ka) : concIV(t, dose, p.cl, p.v); }
 
-/* ---------- Nelder-Mead in log-parameter space ---------- */
 function nelderMead(f, x0, maxIter) {
   const n = x0.length, alpha = 1, gamma = 2, rho = 0.5, sigma = 0.5;
   let simplex = [x0.slice()];
-  for (let i = 0; i < n; i++) {
-    const p = x0.slice(); p[i] += 0.25;
-    simplex.push(p);
-  }
+  for (let i = 0; i < n; i++) { const p = x0.slice(); p[i] += 0.25; simplex.push(p); }
   let fx = simplex.map(f);
   for (let iter = 0; iter < maxIter; iter++) {
     const order = fx.map((v, i) => i).sort((a, b) => fx[a] - fx[b]);
-    simplex = order.map(i => simplex[i]);
-    fx = order.map(i => fx[i]);
+    simplex = order.map(i => simplex[i]); fx = order.map(i => fx[i]);
     if (Math.abs(fx[n] - fx[0]) < 1e-10) break;
     const centroid = new Array(n).fill(0);
     for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) centroid[j] += simplex[i][j] / n;
@@ -306,21 +590,15 @@ function nelderMead(f, x0, maxIter) {
     const refl = centroid.map((c, j) => c + alpha * (c - worst[j]));
     const fr = f(refl);
     if (fr < fx[0]) {
-      const exp_ = centroid.map((c, j) => c + gamma * (refl[j] - c));
-      const fe = f(exp_);
-      if (fe < fr) { simplex[n] = exp_; fx[n] = fe; } else { simplex[n] = refl; fx[n] = fr; }
-    } else if (fr < fx[n - 1]) {
-      simplex[n] = refl; fx[n] = fr;
-    } else {
+      const ex = centroid.map((c, j) => c + gamma * (refl[j] - c));
+      const fe = f(ex);
+      if (fe < fr) { simplex[n] = ex; fx[n] = fe; } else { simplex[n] = refl; fx[n] = fr; }
+    } else if (fr < fx[n - 1]) { simplex[n] = refl; fx[n] = fr; }
+    else {
       const con = centroid.map((c, j) => c + rho * (worst[j] - c));
       const fc = f(con);
       if (fc < fx[n]) { simplex[n] = con; fx[n] = fc; }
-      else {
-        for (let i = 1; i <= n; i++) {
-          simplex[i] = simplex[i].map((x, j) => simplex[0][j] + sigma * (x - simplex[0][j]));
-          fx[i] = f(simplex[i]);
-        }
-      }
+      else for (let i = 1; i <= n; i++) { simplex[i] = simplex[i].map((x, j) => simplex[0][j] + sigma * (x - simplex[0][j])); fx[i] = f(simplex[i]); }
     }
   }
   const best = fx.indexOf(Math.min(...fx));
@@ -329,105 +607,528 @@ function nelderMead(f, x0, maxIter) {
 
 /* ---------- state ---------- */
 const S = {
-  data: null,          // [{id, t, c}]
-  trueParams: { cl: 3.2, v: 28, ka: 1.1, dose: 100 },
-  fit: null,           // {cl, v, ka, ofv}
-  sims: null,          // array of {t[], c[]} curves + median
-  logY: false
+  projects: [], selProject: null,
+  versions: [], selVersion: null, verSeq: 1,
+  runs: [], selRun: null, runSeq: 1,
+  jobs: [], selJob: null, jobSeq: 1,
+  dataset: null,
+  fit: null, sims: null, gof: null, boot: null,
+  log: [], logOpen: false,
+  unsaved: true
 };
+window.S = S; // exposed for debugging and UI tests
 
-const $ = (id) => document.getElementById(id);
-const routeEl = $("route"), doseEl = $("dose");
-const sliders = { cl: [$("cl"), $("cln"), $("clv")], v: [$("v"), $("vn"), $("vv")], ka: [$("ka"), $("kan"), $("kav")] };
-
-function params() {
-  return {
-    cl: parseFloat(sliders.cl[1].value),
-    v: parseFloat(sliders.v[1].value),
-    ka: parseFloat(sliders.ka[1].value)
-  };
-}
-function setParams(p) {
-  for (const k of ["cl", "v", "ka"]) {
-    if (p[k] === undefined) continue;
-    const val = k === "v" ? p[k].toFixed(0) : p[k].toFixed(2);
-    sliders[k][0].value = p[k];
-    sliders[k][1].value = val;
-    sliders[k][2].textContent = val;
-  }
+/* ---------- logging & status ---------- */
+function log(msg) {
+  S.log.unshift(nowHMS() + "  " + msg);
+  $("logText").textContent = msg;
+  $("logHistory").innerHTML = S.log.map(l => "<div>" + l + "</div>").join("");
 }
 function status(text, busy) {
   $("statusText").textContent = text;
   $("statusDot").className = "dot" + (busy ? " busy" : "");
+  $("logDot").className = "dot" + (busy ? " busy" : "");
 }
-function stepDone(i) { $("step" + i).classList.add("done"); }
+$("btnHistory").addEventListener("click", () => {
+  S.logOpen = !S.logOpen;
+  $("logHistory").classList.toggle("open", S.logOpen);
+  $("btnHistory").textContent = S.logOpen ? "Hide history" : "Show history";
+});
+$("btnClearLog").addEventListener("click", () => {
+  S.log = [];
+  $("logHistory").innerHTML = "";
+  $("logText").textContent = "Workbench ready";
+  log("Log cleared");
+  $("logText").textContent = "Workbench ready";
+});
 
-/* ---------- example data ---------- */
-function loadExample() {
+/* ---------- theme ---------- */
+function applyTheme(t) {
+  document.body.className = "theme-" + t;
+  $("themeLabel").textContent = t === "dark" ? "Dark" : "Light";
+  $("themeToggle").checked = t === "dark";
+  try { localStorage.setItem("liber.theme", t); } catch (e) {}
+  drawModelPlot(); drawGof(); drawDataPlot();
+}
+$("themeToggle").addEventListener("change", (e) => applyTheme(e.target.checked ? "dark" : "light"));
+let savedTheme = "light";
+try { savedTheme = localStorage.getItem("liber.theme") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"); } catch (e) {}
+
+/* ---------- header extras ---------- */
+$("aiToggle").addEventListener("change", (e) => {
+  log(e.target.checked
+    ? "AI assistance: no LLM endpoint is bundled with this UI concept. In the R packages, connect a provider via the AI settings."
+    : "AI assistance deactivated");
+});
+$("btnMore").addEventListener("click", () => log("Menu: Support, source, and documentation links are in the header."));
+
+/* ---------- ribbon tabs ---------- */
+document.querySelectorAll(".rtab").forEach(b => b.addEventListener("click", () => {
+  document.querySelectorAll(".rtab").forEach(x => x.classList.toggle("active", x === b));
+  document.querySelectorAll(".page").forEach(p => p.classList.toggle("active", p.id === "page-" + b.dataset.page));
+}));
+
+/* ---------- sub tabs (model + results) ---------- */
+document.querySelectorAll(".stab[data-sub]").forEach(b => b.addEventListener("click", () => {
+  document.querySelectorAll(".stab[data-sub]").forEach(x => x.classList.toggle("active", x === b));
+  document.querySelectorAll("#sub-code, #sub-visual, #sub-gof").forEach(p => p.classList.toggle("active", p.id === "sub-" + b.dataset.sub));
+  if (b.dataset.sub === "visual") drawModelPlot();
+  if (b.dataset.sub === "gof") drawGof();
+}));
+document.querySelectorAll(".stab[data-res]").forEach(b => b.addEventListener("click", () => {
+  document.querySelectorAll(".stab[data-res]").forEach(x => x.classList.toggle("active", x === b));
+  ["parameters", "runinfo", "help", "report"].forEach(k => $("res-" + k).classList.toggle("active", k === b.dataset.res));
+}));
+function openModelSub(name) { document.querySelector('.stab[data-sub="' + name + '"]').click(); }
+function openResTab(name) { document.querySelector('.stab[data-res="' + name + '"]').click(); }
+
+/* ---------- projects ---------- */
+function renderProjects() {
+  const el = $("projList");
+  if (!S.projects.length) {
+    el.innerHTML = '<div class="empty-s"><strong>No projects</strong>Create a project below.</div>';
+    return;
+  }
+  el.innerHTML = S.projects.map((p, i) =>
+    `<div class="item ${i === S.selProject ? "sel" : ""}" data-i="${i}"><span>${p.name}</span><small>${p.versions} ver</small></div>`).join("");
+  el.querySelectorAll(".item").forEach(it => it.addEventListener("click", () => {
+    S.selProject = +it.dataset.i; renderProjects();
+    log('Project "' + S.projects[S.selProject].name + '" selected');
+  }));
+}
+$("btnNewProject").addEventListener("click", () => {
+  $("projCreate").classList.add("open"); $("projName").focus();
+});
+$("projCreateOk").addEventListener("click", () => {
+  const name = $("projName").value.trim() || "Project " + (S.projects.length + 1);
+  S.projects.push({ name, versions: 0 });
+  S.selProject = S.projects.length - 1;
+  $("projName").value = ""; $("projCreate").classList.remove("open");
+  renderProjects(); log('Project "' + name + '" created');
+});
+$("btnDelProject").addEventListener("click", () => {
+  if (S.selProject === null) return log("No project selected to delete");
+  const name = S.projects[S.selProject].name;
+  S.projects.splice(S.selProject, 1); S.selProject = S.projects.length ? 0 : null;
+  renderProjects(); log('Project "' + name + '" deleted');
+});
+
+/* ---------- model versions & runs ---------- */
+function renderVersions() {
+  const el = $("verList");
+  if (!S.versions.length) {
+    el.innerHTML = '<div class="empty-s"><strong>No versions</strong>Create from a template or save the current model.</div>';
+    return;
+  }
+  let html = "";
+  S.versions.forEach((v, i) => {
+    html += `<div class="item ${S.selVersion === i && S.selRun === null ? "sel" : ""}" data-v="${i}"><span>${v.name}</span><small>${v.runs.length} runs</small></div>`;
+    v.runs.forEach((r, j) => {
+      html += `<div class="item sub ${S.selVersion === i && S.selRun === j ? "sel" : ""}" data-v="${i}" data-r="${j}">${r.label} · OFV ${r.ofv.toFixed(1)}</div>`;
+    });
+  });
+  el.innerHTML = html;
+  el.querySelectorAll(".item").forEach(it => it.addEventListener("click", () => {
+    S.selVersion = +it.dataset.v;
+    S.selRun = it.dataset.r !== undefined ? +it.dataset.r : null;
+    renderVersions();
+    log(S.selRun === null
+      ? 'Version "' + S.versions[S.selVersion].name + '" selected'
+      : 'Run "' + S.versions[S.selVersion].runs[S.selRun].label + '" selected');
+  }));
+}
+function snapshotModel() {
+  return {
+    prob: $("probName").value, advan: $("advan").value, trans: $("trans").value,
+    pk: $("pkCode").value, err: $("errCode").value,
+    thetas: readRows("thRows"), omegas: readRows("omRows"), sigmas: readRows("sgRows"),
+    route: $("route").value, dose: $("dose").value,
+    cl: $("cln").value, v: $("vn").value, ka: $("kan").value
+  };
+}
+function restoreModel(m) {
+  $("probName").value = m.prob; $("advan").value = m.advan; $("trans").value = m.trans;
+  $("pkCode").value = m.pk; $("errCode").value = m.err;
+  writeRows("thRows", "THETA", m.thetas); writeRows("omRows", "OMEGA", m.omegas); writeRows("sgRows", "SIGMA", m.sigmas);
+  $("route").value = m.route; $("dose").value = m.dose;
+  setSlider("cl", m.cl); setSlider("v", m.v); setSlider("ka", m.ka);
+  syncRouteUI();
+}
+function saveVersion(label) {
+  const name = label || "v" + (S.verSeq++);
+  S.versions.push({ name, model: snapshotModel(), runs: [] });
+  S.selVersion = S.versions.length - 1; S.selRun = null;
+  if (S.selProject !== null) { S.projects[S.selProject].versions++; renderProjects(); }
+  setUnsaved(false); renderVersions();
+  log('Model saved as version "' + name + '"');
+}
+$("btnSaveVer").addEventListener("click", () => saveVersion());
+$("btnSaveAs").addEventListener("click", () => saveVersion($("probName").value + " v" + S.verSeq++));
+$("btnCopyVer").addEventListener("click", () => {
+  if (S.selVersion === null) return log("Select a version to copy");
+  const src = S.versions[S.selVersion];
+  S.versions.push({ name: src.name + " (copy)", model: JSON.parse(JSON.stringify(src.model)), runs: [] });
+  S.selVersion = S.versions.length - 1; renderVersions();
+  log('Version "' + src.name + '" copied');
+});
+$("btnReload").addEventListener("click", () => {
+  if (S.selVersion === null) return log("No saved version to reload");
+  restoreModel(S.versions[S.selVersion].model);
+  setUnsaved(false);
+  log('Reloaded version "' + S.versions[S.selVersion].name + '"');
+});
+$("btnDelVersion").addEventListener("click", () => {
+  if (S.selVersion === null) return log("No version selected to delete");
+  const name = S.versions[S.selVersion].name;
+  S.versions.splice(S.selVersion, 1);
+  S.selVersion = S.versions.length ? 0 : null; S.selRun = null;
+  renderVersions(); log('Version "' + name + '" deleted');
+});
+$("btnDelRun").addEventListener("click", () => {
+  if (S.selVersion === null || S.selRun === null) return log("No run selected to delete");
+  const r = S.versions[S.selVersion].runs.splice(S.selRun, 1)[0];
+  S.selRun = null; renderVersions(); renderRunInfo();
+  log('Run "' + r.label + '" deleted');
+});
+$("btnCompare").addEventListener("click", () => {
+  const all = S.versions.flatMap(v => v.runs.map(r => ({ ver: v.name, ...r })));
+  if (all.length < 2) return log("Need at least two runs to compare");
+  let html = "<table><thead><tr><th>Run</th><th>Version</th><th>Method</th><th>OFV</th><th>ΔOFV</th></tr></thead><tbody>";
+  const best = Math.min(...all.map(r => r.ofv));
+  for (const r of all) html += `<tr><td>${r.label}</td><td>${r.ver}</td><td>${r.method}</td><td>${r.ofv.toFixed(1)}</td><td>${(r.ofv - best).toFixed(1)}</td></tr>`;
+  html += "</tbody></table>";
+  $("repEmpty").style.display = "none"; $("repBody").style.display = "";
+  $("repPre").innerHTML = html;
+  openResTab("report");
+  log("Run comparison written to the Report tab");
+});
+function setUnsaved(u) { S.unsaved = u; $("mvBadge").textContent = u ? "Unsaved" : "Saved"; }
+["probName", "pkCode", "errCode"].forEach(id => $(id).addEventListener("input", () => setUnsaved(true)));
+
+/* ---------- THETA/OMEGA/SIGMA/prior editors ---------- */
+function readRows(id) {
+  return [...$(id).querySelectorAll("input")].map(i => parseFloat(i.value) || 0);
+}
+function writeRows(id, tag, vals) {
+  const el = $(id);
+  if (!vals || !vals.length) { el.innerHTML = '<div class="none">None</div>'; return; }
+  el.innerHTML = vals.map((v, i) =>
+    `<div class="prow"><span class="tag">${tag}(${i + 1})</span><input type="number" step="0.05" value="${v}"><button class="x" data-i="${i}">×</button></div>`).join("");
+  el.querySelectorAll("input").forEach(inp => inp.addEventListener("input", () => { setUnsaved(true); }));
+  el.querySelectorAll(".x").forEach(b => b.addEventListener("click", () => {
+    const vals2 = readRows(id); vals2.splice(+b.dataset.i, 1); writeRows(id, tag, vals2); setUnsaved(true);
+  }));
+}
+function addRow(id, tag, def) { const v = readRows(id); v.push(def); writeRows(id, tag, v); setUnsaved(true); }
+function popRow(id, tag) { const v = readRows(id); v.pop(); writeRows(id, tag, v); setUnsaved(true); }
+$("thPlus").addEventListener("click", () => addRow("thRows", "THETA", 1));
+$("thMinus").addEventListener("click", () => popRow("thRows", "THETA"));
+$("omPlus").addEventListener("click", () => addRow("omRows", "OMEGA", 0.1));
+$("omMinus").addEventListener("click", () => popRow("omRows", "OMEGA"));
+$("sgPlus").addEventListener("click", () => addRow("sgRows", "SIGMA", 0.02));
+$("sgMinus").addEventListener("click", () => popRow("sgRows", "SIGMA"));
+$("omMatrix").addEventListener("change", (e) => log("OMEGA matrix (correlated random effects): " + (e.target.checked ? "on — full block estimated in the R engine" : "off — diagonal")));
+let priors = [];
+function renderPriors() {
+  const el = $("prRows");
+  if (!priors.length) { el.innerHTML = '<div class="none">No priors: estimation uses the likelihood only.</div>'; return; }
+  el.innerHTML = priors.map((p, i) =>
+    `<div class="prow"><span class="tag">${p.on}</span><input type="number" step="0.1" value="${p.mean}" title="mean"><input type="number" step="0.1" value="${p.sd}" title="sd"><button class="x" data-i="${i}">×</button></div>`).join("");
+  el.querySelectorAll(".x").forEach(b => b.addEventListener("click", () => { priors.splice(+b.dataset.i, 1); renderPriors(); setUnsaved(true); }));
+}
+$("prPlus").addEventListener("click", () => {
+  priors.push({ on: "THETA(" + (priors.length + 1) + ")", mean: 1, sd: 1 });
+  renderPriors(); setUnsaved(true);
+  log("Prior added — saved with the model version and applied to every estimation method");
+});
+
+/* ---------- ADVAN/route sync, help, columns ---------- */
+function syncRouteUI() {
+  const oral = $("advan").value === "2";
+  $("route").value = oral ? "oral" : "iv";
+  $("kaField").style.display = oral ? "" : "none";
+}
+$("advan").addEventListener("change", () => { syncRouteUI(); setUnsaved(true); drawModelPlot(); });
+$("route").addEventListener("change", () => {
+  $("advan").value = $("route").value === "oral" ? "2" : "1";
+  syncRouteUI(); setUnsaved(true); S.sims = null; drawModelPlot();
+});
+$("btnAdvanHelp").addEventListener("click", () => { openResTab("help"); log("ADVAN help opened in the Results panel"); });
+$("btnColumns").addEventListener("click", () => {
+  if (!S.dataset) return log("No dataset loaded — import one on the Data tab");
+  log("Dataset columns: " + S.dataset.cols.join(", "));
+});
+
+/* ---------- radio model definition ---------- */
+document.querySelectorAll('input[name="mdef"]').forEach(r => r.addEventListener("change", () => {
+  setUnsaved(true);
+  log({ pk: "PREDPP / ADVAN ($PK) selected", pred: "Direct prediction ($PRED) selected — write Y as a closed form of THETA and TIME", both: "ADVAN + prediction layer selected ($PK + $PRED)" }[r.value]);
+}));
+
+/* ---------- sliders ---------- */
+const sliderPairs = { cl: "cln", v: "vn", ka: "kan" };
+function setSlider(k, val) { $(k).value = val; $(sliderPairs[k]).value = val; }
+for (const k of Object.keys(sliderPairs)) {
+  $(k).addEventListener("input", () => { $(sliderPairs[k]).value = $(k).value; setUnsaved(true); });
+  $(sliderPairs[k]).addEventListener("input", () => { $(k).value = $(sliderPairs[k]).value; setUnsaved(true); });
+}
+function engineParams() {
+  const th = readRows("thRows");
+  return {
+    cl: th[0] !== undefined ? th[0] : parseFloat($("cln").value),
+    v: th[1] !== undefined ? th[1] : parseFloat($("vn").value),
+    ka: th[2] !== undefined ? th[2] : parseFloat($("kan").value)
+  };
+}
+
+/* ---------- validate / apply ---------- */
+$("btnValidate").addEventListener("click", () => {
+  const problems = [];
+  const th = readRows("thRows");
+  const oral = $("advan").value === "2";
+  if (!$("pkCode").value.trim()) problems.push("$PK block is empty");
+  if (th.length < (oral ? 3 : 2)) problems.push("Need " + (oral ? 3 : 2) + " THETAs for ADVAN" + $("advan").value + " (CL, V" + (oral ? ", ka" : "") + ")");
+  if (th.some(v => v <= 0)) problems.push("THETA initial values must be positive");
+  if (!$("errCode").value.trim()) problems.push("$ERROR block is empty");
+  if (S.dataset) {
+    const need = ["TIME", "DV"];
+    for (const c of need) if (!S.dataset.cols.includes(c)) problems.push("Dataset lacks required column " + c);
+  }
+  log(problems.length ? "Validation: " + problems.join(" · ") : "Validation passed — model is consistent" + (S.dataset ? " with dataset " + S.dataset.name : " (no dataset attached)"));
+});
+$("btnApply").addEventListener("click", () => {
+  const th = readRows("thRows");
+  if (th[0]) setSlider("cl", th[0]);
+  if (th[1]) setSlider("v", th[1]);
+  if (th[2]) setSlider("ka", th[2]);
+  setUnsaved(true);
+  log("Changes applied — THETAs mapped to the engine (CL=" + engineParams().cl + ", V=" + engineParams().v + ($("advan").value === "2" ? ", ka=" + engineParams().ka : "") + ")");
+  drawModelPlot();
+});
+
+/* ---------- templates / library / .ctl ---------- */
+const TEMPLATES = {
+  "Oral 1-cpt teaching (ADVAN2)": { advan: "2", thetas: [3.0, 30, 1.2], omegas: [0.09, 0.09], sigmas: [0.014], pk: "CL = THETA(1) * EXP(ETA(1))\nV  = THETA(2) * EXP(ETA(2))\nKA = THETA(3)\nS2 = V", err: "Y = F * (1 + ERR(1))" },
+  "IV bolus 1-cpt teaching (ADVAN1)": { advan: "1", thetas: [4.5, 35], omegas: [0.09], sigmas: [0.014], pk: "CL = THETA(1) * EXP(ETA(1))\nV  = THETA(2) * EXP(ETA(2))\nS1 = V", err: "Y = F * (1 + ERR(1))" }
+};
+function applyTemplate(name) {
+  const t = TEMPLATES[name];
+  $("probName").value = name;
+  $("advan").value = t.advan; syncRouteUI();
+  $("pkCode").value = t.pk; $("errCode").value = t.err;
+  writeRows("thRows", "THETA", t.thetas); writeRows("omRows", "OMEGA", t.omegas); writeRows("sgRows", "SIGMA", t.sigmas);
+  setSlider("cl", t.thetas[0]); setSlider("v", t.thetas[1]); if (t.thetas[2]) setSlider("ka", t.thetas[2]);
+  setUnsaved(true); drawModelPlot();
+  log('Template "' + name + '" loaded');
+}
+let tplIdx = 0;
+$("btnTemplate").addEventListener("click", () => {
+  const names = Object.keys(TEMPLATES);
+  applyTemplate(names[tplIdx % names.length]); tplIdx++;
+});
+$("btnLibrary").addEventListener("click", () => {
+  log("Model library (concept): " + Object.keys(TEMPLATES).join(" · ") + " — press From template to cycle through them. The full LibeRary catalogue lives in the R packages.");
+});
+$("btnExportCtl").addEventListener("click", () => {
+  const th = readRows("thRows"), om = readRows("omRows"), sg = readRows("sgRows");
+  const ctl = [
+    "$PROBLEM " + $("probName").value,
+    "$INPUT ID TIME EVID AMT CMT DV MDV",
+    "$DATA data.csv IGNORE=@",
+    "$SUBROUTINES ADVAN" + $("advan").value + " TRANS" + $("trans").value,
+    "$PK", $("pkCode").value,
+    "$ERROR", $("errCode").value,
+    "$THETA", ...th.map((v, i) => "(0, " + v + ") ; THETA" + (i + 1)),
+    "$OMEGA " + (om.length ? om.join(" ") : "0 FIX"),
+    "$SIGMA " + (sg.length ? sg.join(" ") : "0 FIX"),
+    "$ESTIMATION METHOD=1 INTER MAXEVAL=9999 PRINT=5"
+  ].join("\n");
+  download(($("probName").value || "model").replace(/\s+/g, "-") + ".ctl", ctl);
+  log("Control stream exported (" + ctl.split("\n").length + " records)");
+});
+$("btnLoadCtl").addEventListener("click", () => $("ctlFile").click());
+$("ctlFile").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  file.text().then(text => {
+    const grab = (rec) => {
+      const m = text.match(new RegExp("\\$" + rec + "([\\s\\S]*?)(?=\\$[A-Z]|$)"));
+      return m ? m[1].trim() : null;
+    };
+    const prob = grab("PROBLEM"); if (prob) $("probName").value = prob.split("\n")[0];
+    const pk = grab("PK"); if (pk) $("pkCode").value = pk;
+    const err = grab("ERROR"); if (err) $("errCode").value = err;
+    const sub = text.match(/ADVAN(\d+)/); if (sub && ["1", "2"].includes(sub[1])) { $("advan").value = sub[1]; syncRouteUI(); }
+    const thBlock = grab("THETA");
+    if (thBlock) {
+      const vals = [...thBlock.matchAll(/\(?\s*(?:0\s*,)?\s*([0-9.]+)\s*\)?/g)].map(m => parseFloat(m[1])).filter(v => v > 0);
+      if (vals.length) writeRows("thRows", "THETA", vals.slice(0, 4));
+    }
+    setUnsaved(true);
+    log('Control stream "' + file.name + '" imported ($PROBLEM, $PK, $ERROR, $THETA parsed; unknown records preserved conceptually)');
+  });
+  e.target.value = "";
+});
+
+/* ---------- jobs ---------- */
+function addJob(name, type, work) {
+  const job = { id: S.jobSeq++, name, type, status: "running", started: nowHMS(), lines: ["[" + nowHMS() + "] job " + name + " queued (in-process)", "[" + nowHMS() + "] worker started"] };
+  S.jobs.unshift(job); renderJobs();
+  status(name + "…", true);
+  setTimeout(() => {
+    const t0 = performance.now();
+    let result;
+    try { result = work(job); job.status = "finished"; }
+    catch (err) { job.status = "error"; job.lines.push("[" + nowHMS() + "] ERROR " + err.message); }
+    job.elapsed = ((performance.now() - t0) / 1000).toFixed(2) + " s";
+    job.lines.push("[" + nowHMS() + "] " + job.status + " in " + job.elapsed);
+    renderJobs(); renderWorkerLog();
+    status("Ready", false);
+    if (result && result.after) result.after();
+  }, 60);
+  return job;
+}
+function renderJobs() {
+  $("jobCount").textContent = "· " + S.jobs.length + " job" + (S.jobs.length === 1 ? "" : "s");
+  const el = $("jobList");
+  if (!S.jobs.length) {
+    el.innerHTML = '<div class="empty-s"><strong>No jobs</strong>Run an estimation or simulation to populate the queue.</div>';
+    return;
+  }
+  el.innerHTML = S.jobs.map(j =>
+    `<div class="job-item ${S.selJob === j.id ? "sel" : ""}" data-id="${j.id}"><span>#${j.id} ${j.name}</span><span class="st">${j.status}</span></div>`).join("");
+  el.querySelectorAll(".job-item").forEach(it => it.addEventListener("click", () => {
+    S.selJob = +it.dataset.id; renderJobs(); renderWorkerLog();
+  }));
+}
+function renderWorkerLog() {
+  const j = S.jobs.find(x => x.id === S.selJob);
+  $("workerLog").textContent = j ? j.lines.join("\n") : "Select a job to view its worker log.";
+}
+function refreshQueue() {
+  $("queueMeta").textContent = "Last refreshed " + nowHMS() + " | LibeRation 0.10.9";
+  renderJobs();
+  log("Queue refreshed (poll interval " + $("pollInt").value + " s)");
+}
+$("btnRefresh").addEventListener("click", refreshQueue);
+$("btnCancelJob").addEventListener("click", () => {
+  const j = S.jobs.find(x => x.id === S.selJob);
+  if (!j) return log("No job selected");
+  if (j.status !== "running") return log("Job #" + j.id + " is already " + j.status);
+  j.status = "cancelled"; j.lines.push("[" + nowHMS() + "] cancelled by user");
+  renderJobs(); renderWorkerLog(); log("Job #" + j.id + " cancelled");
+});
+$("btnClearFinished").addEventListener("click", () => {
+  const n = S.jobs.length;
+  S.jobs = S.jobs.filter(j => j.status === "running");
+  if (S.jobs.every(j => j.id !== S.selJob)) S.selJob = null;
+  renderJobs(); renderWorkerLog();
+  log((n - S.jobs.length) + " finished job(s) cleared");
+});
+let targets = [];
+$("btnAddTarget").addEventListener("click", () => {
+  targets.push("remote-" + (targets.length + 1));
+  const sel = $("queueSel");
+  sel.innerHTML = ["in-process | current R session", ...targets.map(t => t + " | LibeRties remote (concept)")].map(o => "<option>" + o + "</option>").join("");
+  log('Remote target "' + targets[targets.length - 1] + '" added (concept — real targets need a LibeRties server with scoped credentials)');
+});
+$("btnEditTarget").addEventListener("click", () => log(targets.length ? "Target editing: connection details live in the LibeRties admin app in the R packages" : "No remote targets to edit"));
+$("btnRemoveTarget").addEventListener("click", () => {
+  if (!targets.length) return log("No remote targets to remove");
+  const t = targets.pop();
+  const sel = $("queueSel");
+  sel.innerHTML = ["in-process | current R session", ...targets.map(x => x + " | LibeRties remote (concept)")].map(o => "<option>" + o + "</option>").join("");
+  log('Target "' + t + '" removed');
+});
+
+/* ---------- dataset ---------- */
+function setDataset(name, cols, rows) {
+  S.dataset = { name, cols, rows };
+  $("dsEmpty").style.display = "none"; $("dsInfo").style.display = "";
+  $("dsName").textContent = name;
+  $("dsDims").textContent = rows.length + " × " + cols.length;
+  $("dsSelect").innerHTML = '<option value="' + name + '" selected>' + name + "</option>";
+  const numCols = cols.filter(c => rows.some(r => Number.isFinite(r[c])));
+  const opt = (arr, none) => (none ? '<option value="">—</option>' : "") + arr.map(c => "<option>" + c + "</option>").join("");
+  $("pX").innerHTML = opt(numCols); $("pY").innerHTML = opt(numCols);
+  $("pStrat").innerHTML = opt(cols, true); $("pFacet").innerHTML = opt(cols, true);
+  if (numCols.includes("TIME")) $("pX").value = "TIME";
+  if (numCols.includes("DV")) $("pY").value = "DV";
+  renderDataTable(); drawDataPlot();
+  log('Dataset "' + name + '" loaded — ' + rows.length + " rows, " + cols.length + " columns");
+}
+function exampleDataset() {
   const rng = mulberry32(20260811);
+  const truth = { cl: 3.2, v: 28, ka: 1.1, dose: 100 };
   const times = [0.5, 1, 2, 3, 4, 6, 8, 12, 16, 24];
-  const tp = S.trueParams;
-  const data = [];
+  const rows = [];
   for (let id = 1; id <= 12; id++) {
-    const cl_i = tp.cl * Math.exp(0.22 * gauss(rng));
-    const v_i = tp.v * Math.exp(0.18 * gauss(rng));
-    const ka_i = tp.ka * Math.exp(0.25 * gauss(rng));
+    const cl = truth.cl * Math.exp(0.22 * gauss(rng));
+    const v = truth.v * Math.exp(0.18 * gauss(rng));
+    const ka = truth.ka * Math.exp(0.25 * gauss(rng));
+    rows.push({ ID: id, TIME: 0, EVID: 1, AMT: truth.dose, CMT: 1, DV: NaN, MDV: 1 });
     for (const t of times) {
-      const c = concOral(t, tp.dose, cl_i, v_i, ka_i) * (1 + 0.12 * gauss(rng));
-      if (c > 0.05) data.push({ id, t, c });
+      const c = concOral(t, truth.dose, cl, v, ka) * (1 + 0.12 * gauss(rng));
+      if (c > 0.05) rows.push({ ID: id, TIME: t, EVID: 0, AMT: 0, CMT: 2, DV: +c.toFixed(4), MDV: 0 });
     }
   }
-  S.data = data;
-  S.fit = null;
-  routeEl.value = "oral";
-  doseEl.value = tp.dose;
-  $("btnFit").disabled = false;
-  stepDone(1);
-  status("Example loaded — " + data.length + " observations, 12 subjects");
-  $("msg").textContent = "Observed points are drawn on the plot. Try Simulate, or Fit to recover the parameters.";
-  renderResults();
-  draw();
+  S.truth = truth;
+  setDataset("example-oral-pk.csv", ["ID", "TIME", "EVID", "AMT", "CMT", "DV", "MDV"], rows);
+}
+$("btnExampleDs").addEventListener("click", exampleDataset);
+$("btnImport").addEventListener("click", () => $("csvFile").click());
+$("csvFile").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  file.text().then(text => {
+    const lines = text.trim().split(/\r?\n/);
+    const cols = lines[0].split(",").map(s => s.trim());
+    const rows = lines.slice(1).map(l => {
+      const parts = l.split(",");
+      const r = {};
+      cols.forEach((c, i) => { const x = parseFloat(parts[i]); r[c] = Number.isFinite(x) ? x : (parts[i] || "").trim(); });
+      return r;
+    });
+    setDataset(file.name, cols, rows);
+  }).catch(err => log("CSV import failed: " + err.message));
+  e.target.value = "";
+});
+function renderDataTable() {
+  const w = $("dsTableWrap");
+  if (!S.dataset) { w.innerHTML = ""; return; }
+  const { cols, rows } = S.dataset;
+  const head = "<tr>" + cols.map(c => "<th>" + c + "</th>").join("") + "</tr>";
+  const body = rows.slice(0, 400).map(r => "<tr>" + cols.map(c => "<td>" + (Number.isFinite(r[c]) ? r[c] : (r[c] === undefined || Number.isNaN(r[c]) ? "." : r[c])) + "</td>").join("") + "</tr>").join("");
+  w.innerHTML = "<table><thead>" + head + "</thead><tbody>" + body + "</tbody></table>";
+}
+$("btnShowTable").addEventListener("click", () => {
+  if (!S.dataset) return log("No dataset — load a CSV to begin");
+  $("dsTableWrap").classList.toggle("open");
+});
+$("btnPlotOpts").addEventListener("click", () => {
+  const o = $("plotOpts");
+  o.style.display = o.style.display === "none" ? "flex" : "none";
+});
+["pX", "pY", "pStrat", "pFacet", "pType", "pBinX", "pBinY", "pLogY", "pBigPts"].forEach(id => $(id).addEventListener("change", drawDataPlot));
+
+/* ---------- observation extraction for fitting ---------- */
+function observations() {
+  if (!S.dataset) return null;
+  const { rows, cols } = S.dataset;
+  if (!cols.includes("TIME") || !cols.includes("DV")) return null;
+  const hasEvid = cols.includes("EVID");
+  const obs = rows.filter(r => Number.isFinite(r.DV) && r.DV > 0 && (!hasEvid || r.EVID === 0))
+    .map(r => ({ id: r.ID !== undefined ? r.ID : 1, t: r.TIME, c: r.DV }));
+  return obs.length ? obs : null;
+}
+function datasetDose() {
+  if (!S.dataset) return parseFloat($("dose").value) || 100;
+  const doseRow = S.dataset.rows.find(r => r.EVID === 1 && Number.isFinite(r.AMT) && r.AMT > 0);
+  return doseRow ? doseRow.AMT : (parseFloat($("dose").value) || 100);
 }
 
-/* ---------- simulate ---------- */
-function simulate() {
-  const p = params();
-  const route = routeEl.value;
-  const dose = parseFloat(doseEl.value) || 100;
-  const n = Math.min(200, Math.max(1, parseInt($("nsub").value) || 24));
-  const cv = Math.max(0, parseFloat($("iiv").value) || 0) / 100;
-  const omega = Math.sqrt(Math.log(1 + cv * cv));
-  const rng = mulberry32(42);
-  const tmax = 24, steps = 121;
-  const ts = Array.from({ length: steps }, (_, i) => i * tmax / (steps - 1));
-  const curves = [];
-  for (let i = 0; i < n; i++) {
-    const pi = {
-      cl: p.cl * Math.exp(omega * gauss(rng)),
-      v: p.v * Math.exp(omega * gauss(rng)),
-      ka: p.ka * Math.exp(omega * gauss(rng))
-    };
-    curves.push(ts.map(t => conc(route, t, dose, pi)));
-  }
-  const median = ts.map((_, j) => {
-    const col = curves.map(c => c[j]).sort((a, b) => a - b);
-    return col[Math.floor(col.length / 2)];
-  });
-  S.sims = { ts, curves, median };
-  stepDone(2); stepDone(3);
-  status("Simulated " + n + " subjects");
-  draw();
-}
-
-/* ---------- fit ---------- */
-function fitToData() {
-  if (!S.data) return;
-  status("Fitting…", true);
-  $("msg").textContent = "";
-  const route = routeEl.value;
-  const dose = parseFloat(doseEl.value) || 100;
-  // least squares on log concentrations, log-parameterised
-  const obs = S.data;
+/* ---------- estimation / simulation / diagnostics / uncertainty ---------- */
+function fitCore(obs, dose, route, p0) {
   const objective = (x) => {
     const p = { cl: Math.exp(x[0]), v: Math.exp(x[1]), ka: route === "oral" ? Math.exp(x[2]) : 1 };
     let sse = 0;
@@ -439,144 +1140,333 @@ function fitToData() {
     }
     return sse;
   };
-  const p0 = params();
-  const x0 = route === "oral"
-    ? [Math.log(p0.cl), Math.log(p0.v), Math.log(p0.ka)]
-    : [Math.log(p0.cl), Math.log(p0.v)];
-  const res = nelderMead(objective, x0, 400);
-  const est = {
-    cl: Math.exp(res.x[0]),
-    v: Math.exp(res.x[1]),
-    ka: route === "oral" ? Math.exp(res.x[2]) : null
-  };
-  // -2 log-likelihood for lognormal residuals with MLE sigma^2 = SSE/n
-  const nobs = obs.length;
-  const sigma2 = res.f / nobs;
-  const ofv = nobs * Math.log(2 * Math.PI * sigma2) + nobs + 2 * obs.reduce((s, o) => s + Math.log(o.c), 0);
-  S.fit = { ...est, ofv, sse: res.f, nobs };
-  setParams(est);
-  stepDone(4);
-  status("Fit converged");
-  $("msg").textContent = "Parameters updated to the estimates. Simulate again to see the fitted population.";
-  renderResults();
-  simulate();
+  const x0 = route === "oral" ? [Math.log(p0.cl), Math.log(p0.v), Math.log(p0.ka)] : [Math.log(p0.cl), Math.log(p0.v)];
+  const res = nelderMead(objective, x0, 500);
+  const est = { cl: Math.exp(res.x[0]), v: Math.exp(res.x[1]), ka: route === "oral" ? Math.exp(res.x[2]) : null };
+  const n = obs.length, sigma2 = res.f / n;
+  const ofv = n * Math.log(2 * Math.PI * sigma2) + n + 2 * obs.reduce((s, o) => s + Math.log(o.c), 0);
+  return { est, ofv, sse: res.f, n };
 }
+$("btnEstimate").addEventListener("click", () => {
+  const obs = observations();
+  if (!obs) return log("Estimation needs a dataset with TIME and DV — load the example on the Data tab");
+  addJob("Estimate " + $("probName").value, "estimation", (job) => {
+    const route = $("advan").value === "2" ? "oral" : "iv";
+    const dose = datasetDose();
+    job.lines.push("[" + nowHMS() + "] Nelder-Mead log-LS · " + obs.length + " observations · dose " + dose + " mg · route " + route);
+    const r = fitCore(obs, dose, route, engineParams());
+    S.fit = { ...r.est, ofv: r.ofv, sse: r.sse, nobs: r.n, method: "Nelder-Mead log-LS", when: nowHMS() };
+    S.gof = null; S.boot = null;
+    job.lines.push("[" + nowHMS() + "] converged: CL=" + r.est.cl.toFixed(3) + " V=" + r.est.v.toFixed(2) + (r.est.ka ? " ka=" + r.est.ka.toFixed(3) : "") + " OFV=" + r.ofv.toFixed(2));
+    // record run
+    if (S.selVersion === null) saveVersion();
+    const run = { label: "est-" + (S.runSeq++), method: S.fit.method, ofv: r.ofv, when: nowHMS(), params: { ...r.est } };
+    S.versions[S.selVersion].runs.push(run);
+    return { after: () => {
+      const th = [r.est.cl, r.est.v]; if (r.est.ka) th.push(r.est.ka);
+      writeRows("thRows", "THETA", th.map(v => +v.toFixed(3)));
+      setSlider("cl", +r.est.cl.toFixed(2)); setSlider("v", +r.est.v.toFixed(1)); if (r.est.ka) setSlider("ka", +r.est.ka.toFixed(2));
+      renderVersions(); renderParameters(); renderRunInfo(); renderReport();
+      openResTab("parameters");
+      log("Estimation finished — OFV " + r.ofv.toFixed(1) + " (run recorded under the current model version)");
+      simulateCore();
+    }};
+  });
+});
+function simulateCore() {
+  const p = engineParams();
+  const route = $("advan").value === "2" ? "oral" : "iv";
+  const dose = S.dataset ? datasetDose() : (parseFloat($("dose").value) || 100);
+  const n = Math.min(200, Math.max(1, parseInt($("nsub").value) || 24));
+  const cv = Math.max(0, parseFloat($("iiv").value) || 0) / 100;
+  const omega = Math.sqrt(Math.log(1 + cv * cv));
+  const rng = mulberry32(42);
+  const tmax = 24, steps = 121;
+  const ts = Array.from({ length: steps }, (_, i) => i * tmax / (steps - 1));
+  const curves = [];
+  for (let i = 0; i < n; i++) {
+    const pi = { cl: p.cl * Math.exp(omega * gauss(rng)), v: p.v * Math.exp(omega * gauss(rng)), ka: p.ka * Math.exp(omega * gauss(rng)) };
+    curves.push(ts.map(t => conc(route, t, dose, pi)));
+  }
+  const median = ts.map((_, j) => { const col = curves.map(c => c[j]).sort((a, b) => a - b); return col[Math.floor(col.length / 2)]; });
+  S.sims = { ts, curves, median };
+  drawModelPlot();
+}
+$("btnSimulate").addEventListener("click", () => {
+  addJob("Simulate " + $("probName").value, "simulation", (job) => {
+    job.lines.push("[" + nowHMS() + "] " + ($("nsub").value || 24) + " subjects · CV " + $("iiv").value + "%");
+    simulateCore();
+    if (S.selVersion !== null) {
+      S.versions[S.selVersion].runs.push({ label: "sim-" + (S.runSeq++), method: "MC simulation", ofv: S.fit ? S.fit.ofv : 0, when: nowHMS(), params: engineParams() });
+    }
+    return { after: () => { renderVersions(); renderRunInfo(); openModelSub("visual"); log("Simulation finished — median and individual curves drawn"); } };
+  });
+});
+$("btnDiag").addEventListener("click", () => {
+  if (!S.fit) return log("Diagnostics need an estimation first");
+  const obs = observations();
+  if (!obs) return log("Diagnostics need the fitted dataset");
+  addJob("Diagnostics " + $("probName").value, "diagnostics", (job) => {
+    const route = $("advan").value === "2" ? "oral" : "iv";
+    const dose = datasetDose();
+    const p = { cl: S.fit.cl, v: S.fit.v, ka: S.fit.ka || 1 };
+    S.gof = obs.map(o => {
+      const pred = conc(route, o.t, dose, p);
+      return { t: o.t, obs: o.c, pred, res: Math.log(o.c) - Math.log(pred) };
+    });
+    job.lines.push("[" + nowHMS() + "] GOF computed for " + S.gof.length + " records");
+    return { after: () => { openModelSub("gof"); log("GOF ready — observed vs predicted and residuals vs time"); } };
+  });
+});
+$("btnUncert").addEventListener("click", () => {
+  if (!S.fit) return log("Uncertainty needs an estimation first");
+  const obs = observations();
+  if (!obs) return log("Uncertainty needs the fitted dataset");
+  addJob("Bootstrap " + $("probName").value, "uncertainty", (job) => {
+    const route = $("advan").value === "2" ? "oral" : "iv";
+    const dose = datasetDose();
+    const B = 30, rng = mulberry32(7);
+    const ests = [];
+    for (let b = 0; b < B; b++) {
+      const res = Array.from({ length: obs.length }, () => obs[Math.floor(rng() * obs.length)]);
+      ests.push(fitCore(res, dose, route, { cl: S.fit.cl, v: S.fit.v, ka: S.fit.ka || 1 }).est);
+    }
+    const sd = (key) => {
+      const vals = ests.map(e => e[key]).filter(v => v !== null);
+      const m = vals.reduce((a, b) => a + b, 0) / vals.length;
+      return Math.sqrt(vals.reduce((a, b) => a + (b - m) * (b - m), 0) / (vals.length - 1));
+    };
+    S.boot = { B, se: { cl: sd("cl"), v: sd("v"), ka: route === "oral" ? sd("ka") : null } };
+    job.lines.push("[" + nowHMS() + "] " + B + " bootstrap resamples fitted");
+    return { after: () => { renderParameters(); renderReport(); openResTab("parameters"); log("Bootstrap finished — standard errors added to the Parameters tab"); } };
+  });
+});
+$("btnSCM").addEventListener("click", () => {
+  log("Stepwise covariate modelling requires the population engine (FOCE + covariate search) in the R packages — not part of this browser concept");
+});
 
-/* ---------- results panel ---------- */
-function fmt(x, d) { return x === null || x === undefined ? "—" : x.toFixed(d); }
-function renderResults() {
-  const el = $("results");
-  if (!S.data) {
-    el.innerHTML = '<div class="empty"><strong>Nothing here yet.</strong>Load the example study to see observed data, then simulate or fit.<br><button class="btn btn-primary" id="btnExample">Load example study</button></div>';
-    $("btnExample").addEventListener("click", loadExample);
-    return;
-  }
-  const tp = S.trueParams;
-  let html = '<div class="stat"><span>Observations</span><strong>' + S.data.length + "</strong></div>";
-  if (S.fit) {
-    html += '<div class="stat"><span>−2 log likelihood</span><strong>' + fmt(S.fit.ofv, 1) + "</strong></div>";
-    html += "<table><thead><tr><th>Param</th><th>Estimate</th><th>Truth</th></tr></thead><tbody>" +
-      "<tr><td>CL (L/h)</td><td>" + fmt(S.fit.cl, 2) + "</td><td>" + tp.cl.toFixed(2) + "</td></tr>" +
-      "<tr><td>V (L)</td><td>" + fmt(S.fit.v, 1) + "</td><td>" + tp.v.toFixed(1) + "</td></tr>" +
-      (S.fit.ka !== null ? "<tr><td>ka (1/h)</td><td>" + fmt(S.fit.ka, 2) + "</td><td>" + tp.ka.toFixed(2) + "</td></tr>" : "") +
-      "</tbody></table>";
-    html += '<p style="margin-top:12px;font-size:13px;color:var(--muted)">"Truth" = the parameters that generated the synthetic study. A close match means the fitter recovered them from noisy data.</p>';
-  } else {
-    html += '<div class="empty"><strong>Data loaded.</strong>Press <em>Fit to data</em> to estimate CL, V, and ka from the observations, or <em>Simulate</em> to overlay population predictions.</div>';
-  }
+/* ---------- results rendering ---------- */
+function fmt(x, d) { return x === null || x === undefined ? "—" : (+x).toFixed(d); }
+function renderParameters() {
+  const el = $("res-parameters");
+  if (!S.fit) { el.innerHTML = '<div class="empty"><strong>No estimates</strong>Open or run an estimation.</div>'; return; }
+  const truth = S.truth || null;
+  const seRow = (k, d) => S.boot ? "<td>" + fmt(S.boot.se[k], d) + "</td>" : "";
+  let html = '<div class="stat"><span>−2 log likelihood</span><strong>' + fmt(S.fit.ofv, 1) + "</strong></div>";
+  html += "<table><thead><tr><th>Param</th><th>Estimate</th>" + (S.boot ? "<th>SE (boot)</th>" : "") + (truth ? "<th>Truth</th>" : "") + "</tr></thead><tbody>";
+  html += "<tr><td>CL (L/h)</td><td>" + fmt(S.fit.cl, 2) + "</td>" + seRow("cl", 2) + (truth ? "<td>" + truth.cl.toFixed(2) + "</td>" : "") + "</tr>";
+  html += "<tr><td>V (L)</td><td>" + fmt(S.fit.v, 1) + "</td>" + seRow("v", 1) + (truth ? "<td>" + truth.v.toFixed(1) + "</td>" : "") + "</tr>";
+  if (S.fit.ka !== null) html += "<tr><td>ka (1/h)</td><td>" + fmt(S.fit.ka, 2) + "</td>" + seRow("ka", 2) + (truth ? "<td>" + truth.ka.toFixed(2) + "</td>" : "") + "</tr>";
+  html += "</tbody></table>";
+  if (truth) html += '<p style="margin-top:10px;font-size:12px;color:var(--muted)">"Truth" = parameters that generated the synthetic example.</p>';
   el.innerHTML = html;
 }
+function renderRunInfo() {
+  const el = $("res-runinfo");
+  const all = S.versions.flatMap(v => v.runs.map(r => ({ ver: v.name, ...r })));
+  if (!all.length) { el.innerHTML = '<div class="empty"><strong>No runs yet.</strong>Estimation and simulation runs will be listed here.</div>'; return; }
+  let html = "";
+  if (S.fit) {
+    html += '<div class="stat"><span>Method</span><strong style="font-size:13px">' + S.fit.method + "</strong></div>";
+    html += '<div class="stat"><span>Observations</span><strong>' + S.fit.nobs + "</strong></div>";
+    html += '<div class="stat"><span>Finished</span><strong style="font-size:13px">' + S.fit.when + "</strong></div>";
+  }
+  html += "<table><thead><tr><th>Run</th><th>Version</th><th>OFV</th><th>When</th></tr></thead><tbody>" +
+    all.map(r => "<tr><td>" + r.label + "</td><td>" + r.ver + "</td><td>" + fmt(r.ofv, 1) + "</td><td>" + r.when + "</td></tr>").join("") + "</tbody></table>";
+  el.innerHTML = html;
+}
+function renderReport() {
+  if (!S.fit) return;
+  const lines = [
+    "LibeRation run report (UI concept)",
+    "Generated " + new Date().toISOString(),
+    "",
+    "$PROBLEM " + $("probName").value,
+    "Route ADVAN" + $("advan").value + " TRANS" + $("trans").value,
+    "Dataset " + (S.dataset ? S.dataset.name + " (" + S.fit.nobs + " observations)" : "none"),
+    "",
+    "Method   " + S.fit.method,
+    "-2LL     " + S.fit.ofv.toFixed(3),
+    "",
+    "Estimates" + (S.boot ? " (SE from " + S.boot.B + " bootstrap resamples)" : ""),
+    "  CL  " + S.fit.cl.toFixed(3) + " L/h" + (S.boot ? "   SE " + S.boot.se.cl.toFixed(3) : ""),
+    "  V   " + S.fit.v.toFixed(2) + " L" + (S.boot ? "     SE " + S.boot.se.v.toFixed(2) : ""),
+    ...(S.fit.ka !== null ? ["  ka  " + S.fit.ka.toFixed(3) + " 1/h" + (S.boot && S.boot.se.ka ? "  SE " + S.boot.se.ka.toFixed(3) : "")] : []),
+    "",
+    "Note: browser concept engine (Nelder-Mead log-least-squares).",
+    "Production estimation (FOCE/SAEM/Bayesian) lives in the LibeR R packages."
+  ];
+  $("repEmpty").style.display = "none"; $("repBody").style.display = "";
+  $("repPre").textContent = lines.join("\n");
+}
+$("btnDlReport").addEventListener("click", () => download("liberation-report.txt", $("repPre").textContent));
 
-/* ---------- plot ---------- */
-function draw() {
+/* ---------- model plot ---------- */
+function cssVar(name) { return getComputedStyle(document.body).getPropertyValue(name).trim(); }
+function drawModelPlot() {
   const svg = $("plot");
-  const W = 680, H = 400, mL = 62, mR = 16, mT = 16, mB = 46;
+  if (!svg) return;
+  const W = 660, H = 360, mL = 56, mR = 12, mT = 12, mB = 42;
   const iw = W - mL - mR, ih = H - mT - mB;
-  const log = S.logY;
-
+  const log_ = $("logY").checked;
+  const obs = observations();
   let cmax = 0.1;
-  if (S.data) cmax = Math.max(cmax, ...S.data.map(o => o.c));
-  if (S.sims) cmax = Math.max(cmax, ...S.sims.median, ...S.sims.curves.flat().filter(Number.isFinite));
-  cmax *= 1.08;
-  const cmin = log ? 0.05 : 0;
-  const tmax = 24;
-
-  const X = t => mL + (t / tmax) * iw;
-  const Y = c => {
-    if (log) {
-      const lo = Math.log(cmin), hi = Math.log(cmax);
-      return mT + ih - ((Math.log(Math.max(c, cmin)) - lo) / (hi - lo)) * ih;
-    }
-    return mT + ih - (c / cmax) * ih;
-  };
-
+  if (obs) cmax = Math.max(cmax, ...obs.map(o => o.c));
+  if (S.sims) cmax = Math.max(cmax, ...S.sims.median);
+  cmax *= 1.1;
+  const cmin = 0.05;
+  const X = t => mL + (t / 24) * iw;
+  const Y = c => log_
+    ? mT + ih - ((Math.log(Math.max(c, cmin)) - Math.log(cmin)) / (Math.log(cmax) - Math.log(cmin))) * ih
+    : mT + ih - (c / cmax) * ih;
+  const ink = cssVar("--ink"), mut = cssVar("--muted"), grid = cssVar("--plot-grid"), grid2 = cssVar("--plot-grid-2"), sim = cssVar("--sim-line");
   let out = "";
-  // gridlines + axis labels
-  const yticks = log ? [0.1, 0.3, 1, 3].filter(v => v < cmax).concat([cmax / 1.08]) : [0, .25, .5, .75, 1].map(f => f * cmax);
-  for (const v of yticks) {
-    const y = Y(v);
-    out += `<line x1="${mL}" y1="${y}" x2="${W - mR}" y2="${y}" stroke="#cfd0d2" stroke-width="1"/>`;
-    out += `<text x="${mL - 9}" y="${y + 4}" text-anchor="end" font-size="12" fill="#5f6368">${v >= 10 ? v.toFixed(0) : v.toFixed(v >= 1 ? 1 : 2)}</text>`;
-  }
-  for (const t of [0, 4, 8, 12, 16, 20, 24]) {
-    const x = X(t);
-    out += `<line x1="${x}" y1="${mT}" x2="${x}" y2="${mT + ih}" stroke="#dcdde0" stroke-width="1"/>`;
-    out += `<text x="${x}" y="${H - 22}" text-anchor="middle" font-size="12" fill="#5f6368">${t}</text>`;
-  }
-  out += `<text x="${mL + iw / 2}" y="${H - 4}" text-anchor="middle" font-size="12.5" font-weight="700" fill="#5f6368">Time (h)</text>`;
-  out += `<text x="14" y="${mT + ih / 2}" text-anchor="middle" font-size="12.5" font-weight="700" fill="#5f6368" transform="rotate(-90 14 ${mT + ih / 2})">Concentration (mg/L)</text>`;
-
-  // simulated individual curves (light) + median (bold)
+  const yticks = log_ ? [0.1, 0.3, 1, 3, 10].filter(v => v < cmax) : [0, .25, .5, .75, 1].map(f => f * cmax);
+  for (const v of yticks) out += `<line x1="${mL}" y1="${Y(v)}" x2="${W - mR}" y2="${Y(v)}" stroke="${grid}"/><text x="${mL - 8}" y="${Y(v) + 4}" text-anchor="end" font-size="11" fill="${mut}">${v >= 10 ? v.toFixed(0) : v.toFixed(v >= 1 ? 1 : 2)}</text>`;
+  for (const t of [0, 4, 8, 12, 16, 20, 24]) out += `<line x1="${X(t)}" y1="${mT}" x2="${X(t)}" y2="${mT + ih}" stroke="${grid2}"/><text x="${X(t)}" y="${H - 20}" text-anchor="middle" font-size="11" fill="${mut}">${t}</text>`;
+  out += `<text x="${mL + iw / 2}" y="${H - 4}" text-anchor="middle" font-size="11.5" font-weight="700" fill="${mut}">Time (h)</text>`;
   if (S.sims) {
-    const { ts, curves, median } = S.sims;
-    const shown = curves.slice(0, 60);
-    for (const c of shown) {
-      out += `<polyline fill="none" stroke="#b9babd" stroke-width="1" points="${ts.map((t, i) => X(t) + "," + Y(c[i])).join(" ")}"/>`;
-    }
-    out += `<polyline fill="none" stroke="#1d1d1f" stroke-width="3" points="${ts.map((t, i) => X(t) + "," + Y(median[i])).join(" ")}"/>`;
+    for (const c of S.sims.curves.slice(0, 60)) out += `<polyline fill="none" stroke="${sim}" stroke-width="1" points="${S.sims.ts.map((t, i) => X(t) + "," + Y(c[i])).join(" ")}"/>`;
+    out += `<polyline fill="none" stroke="${ink}" stroke-width="2.6" points="${S.sims.ts.map((t, i) => X(t) + "," + Y(S.sims.median[i])).join(" ")}"/>`;
   }
-
-  // observed points
-  if (S.data) {
-    for (const o of S.data) {
-      out += `<circle cx="${X(o.t)}" cy="${Y(o.c)}" r="3.4" fill="#1d1d1f" fill-opacity="0.78"/>`;
-    }
-  }
-
-  if (!S.data && !S.sims) {
-    out += `<text x="${mL + iw / 2}" y="${mT + ih / 2}" text-anchor="middle" font-size="15" fill="#8a8d91">Load the example or press Simulate to draw curves</text>`;
-  }
-
+  if (obs) for (const o of obs) out += `<circle cx="${X(o.t)}" cy="${Y(o.c)}" r="3.1" fill="${ink}" fill-opacity="0.72"/>`;
+  if (!obs && !S.sims) out += `<text x="${mL + iw / 2}" y="${mT + ih / 2}" text-anchor="middle" font-size="14" fill="${mut}">Load a dataset or press Simulate to draw curves</text>`;
   svg.innerHTML = out;
-  $("plotCaption").textContent = (S.sims ? "Median (bold) and individual predictions" : "Concentration vs time") + (S.data ? " · observed data (dots)" : "");
+  $("plotCaption").textContent = (S.sims ? "Median (bold) and individual predictions" : "Concentration vs time") + (obs ? " · observed data (dots)" : "");
+}
+$("logY").addEventListener("change", drawModelPlot);
+["dose", "nsub", "iiv"].forEach(id => $(id).addEventListener("input", () => setUnsaved(true)));
+
+/* ---------- GOF plots ---------- */
+function drawGof() {
+  if (!S.gof) { $("gofEmpty").style.display = ""; $("gofPlots").style.display = "none"; return; }
+  $("gofEmpty").style.display = "none"; $("gofPlots").style.display = "";
+  const ink = cssVar("--ink"), mut = cssVar("--muted"), grid = cssVar("--plot-grid");
+  // obs vs pred
+  {
+    const svg = $("gof1"), W = 660, H = 330, m = 50;
+    const vmax = Math.max(...S.gof.map(g => Math.max(g.obs, g.pred))) * 1.06;
+    const X = v => m + (v / vmax) * (W - m - 12), Y = v => H - 40 - (v / vmax) * (H - 52);
+    let out = "";
+    for (const f of [.25, .5, .75, 1]) {
+      out += `<line x1="${X(f * vmax)}" y1="${Y(0)}" x2="${X(f * vmax)}" y2="${Y(vmax)}" stroke="${grid}"/>`;
+      out += `<line x1="${X(0)}" y1="${Y(f * vmax)}" x2="${X(vmax)}" y2="${Y(f * vmax)}" stroke="${grid}"/>`;
+      out += `<text x="${X(f * vmax)}" y="${H - 22}" text-anchor="middle" font-size="11" fill="${mut}">${(f * vmax).toFixed(1)}</text>`;
+      out += `<text x="${m - 8}" y="${Y(f * vmax) + 4}" text-anchor="end" font-size="11" fill="${mut}">${(f * vmax).toFixed(1)}</text>`;
+    }
+    out += `<line x1="${X(0)}" y1="${Y(0)}" x2="${X(vmax)}" y2="${Y(vmax)}" stroke="${ink}" stroke-width="1.8" stroke-dasharray="6 4"/>`;
+    for (const g of S.gof) out += `<circle cx="${X(g.pred)}" cy="${Y(g.obs)}" r="3.2" fill="${ink}" fill-opacity=".7"/>`;
+    out += `<text x="${(W + m) / 2}" y="${H - 4}" text-anchor="middle" font-size="11.5" font-weight="700" fill="${mut}">Population predicted (mg/L)</text>`;
+    svg.innerHTML = out;
+  }
+  // residuals vs time
+  {
+    const svg = $("gof2"), W = 660, H = 330, m = 50;
+    const rmax = Math.max(0.2, ...S.gof.map(g => Math.abs(g.res))) * 1.15;
+    const X = t => m + (t / 24) * (W - m - 12), Y = v => H / 2 - 14 - (v / rmax) * (H / 2 - 40);
+    let out = `<line x1="${X(0)}" y1="${Y(0)}" x2="${X(24)}" y2="${Y(0)}" stroke="${ink}" stroke-width="1.6" stroke-dasharray="6 4"/>`;
+    for (const t of [0, 4, 8, 12, 16, 20, 24]) out += `<line x1="${X(t)}" y1="${Y(rmax)}" x2="${X(t)}" y2="${Y(-rmax)}" stroke="${grid}"/><text x="${X(t)}" y="${H - 22}" text-anchor="middle" font-size="11" fill="${mut}">${t}</text>`;
+    for (const v of [-rmax * .66, rmax * .66]) out += `<text x="${m - 8}" y="${Y(v) + 4}" text-anchor="end" font-size="11" fill="${mut}">${v.toFixed(2)}</text>`;
+    for (const g of S.gof) out += `<circle cx="${X(g.t)}" cy="${Y(g.res)}" r="3.2" fill="${ink}" fill-opacity=".7"/>`;
+    out += `<text x="${(W + m) / 2}" y="${H - 4}" text-anchor="middle" font-size="11.5" font-weight="700" fill="${mut}">Time (h) — log residual</text>`;
+    svg.innerHTML = out;
+  }
 }
 
-/* ---------- wiring ---------- */
-for (const k of Object.keys(sliders)) {
-  const [range, num, lab] = sliders[k];
-  range.addEventListener("input", () => { num.value = range.value; lab.textContent = range.value; });
-  num.addEventListener("input", () => { range.value = num.value; lab.textContent = num.value; });
-}
-routeEl.addEventListener("change", () => {
-  $("kaField").style.display = routeEl.value === "oral" ? "" : "none";
-  S.sims = null; draw();
-});
-$("btnSim").addEventListener("click", simulate);
-$("btnFit").addEventListener("click", () => setTimeout(fitToData, 30));
-$("btnReset").addEventListener("click", () => {
-  setParams({ cl: 3.0, v: 30, ka: 1.2 });
-  $("nsub").value = 24; $("iiv").value = 25; doseEl.value = 100;
-  S.sims = null; S.fit = null; S.data = null;
-  $("btnFit").disabled = true;
-  for (const i of [1, 2, 3, 4]) $("step" + i).classList.remove("done");
-  status("Ready");
-  $("msg").textContent = "";
-  renderResults(); draw();
-});
-$("logY").addEventListener("change", (e) => { S.logY = e.target.checked; draw(); });
-$("btnExample").addEventListener("click", loadExample);
+/* ---------- data plot ---------- */
+function drawDataPlot() {
+  const svg = $("dataPlot");
+  if (!svg) return;
+  if (!S.dataset) { $("dataPlotEmpty").style.display = ""; $("dataPlotWrap").style.display = "none"; return; }
+  const xc = $("pX").value, yc = $("pY").value;
+  const rows = S.dataset.rows.filter(r => Number.isFinite(r[xc]) && Number.isFinite(r[yc]));
+  if (!xc || !yc || !rows.length) { $("dataPlotEmpty").style.display = ""; $("dataPlotWrap").style.display = "none"; return; }
+  $("dataPlotEmpty").style.display = "none"; $("dataPlotWrap").style.display = "";
 
-draw();
+  const strat = $("pStrat").value, facet = $("pFacet").value, type = $("pType").value;
+  const binX = $("pBinX").checked, binY = $("pBinY").checked;
+  const logY_ = $("pLogY") && $("pLogY").checked;
+  const R = ($("pBigPts") && $("pBigPts").checked) ? 4.4 : 3;
+  const ink = cssVar("--ink"), mut = cssVar("--muted"), grid = cssVar("--plot-grid");
+  const shades = [ink, "#77797d", "#a4a6aa", "#55575b", "#8f9195", "#3c3e42"];
+
+  const facets = facet ? [...new Set(rows.map(r => r[facet]))].slice(0, 4) : [null];
+  const W = 720, H = 420;
+  const cols_ = facets.length > 1 ? 2 : 1, rws = Math.ceil(facets.length / cols_);
+  const fw = W / cols_, fh = H / rws;
+  let out = "";
+
+  facets.forEach((fv, fi) => {
+    const fx = (fi % cols_) * fw, fy = Math.floor(fi / cols_) * fh;
+    const m = { l: 52, r: 12, t: fv !== null ? 26 : 12, b: 40 };
+    let data = fv === null ? rows : rows.filter(r => r[facet] === fv);
+    if (binX && data.length > 8) {
+      const groups = new Map();
+      const xmin = Math.min(...data.map(r => r[xc])), xmax = Math.max(...data.map(r => r[xc]));
+      const nb = 8, bw = (xmax - xmin) / nb || 1;
+      for (const r of data) {
+        const b = Math.min(nb - 1, Math.floor((r[xc] - xmin) / bw));
+        if (!groups.has(b)) groups.set(b, []);
+        groups.get(b).push(r);
+      }
+      data = [...groups.entries()].map(([b, rs]) => ({
+        [xc]: xmin + (b + 0.5) * bw,
+        [yc]: rs.reduce((s, r) => s + r[yc], 0) / rs.length,
+        [strat || "_"]: "binned", ID: "bin"
+      }));
+    }
+    if (binY && data.length > 8) {
+      data = data.map(r => ({ ...r, [yc]: Math.round(r[yc] * 2) / 2 }));
+    }
+    const xs = data.map(r => r[xc]), ys = data.map(r => r[yc]).filter(v => !logY_ || v > 0);
+    if (!ys.length) return;
+    const xmin = Math.min(...xs), xmax = Math.max(...xs) || 1;
+    const ymin = logY_ ? Math.min(...ys) : 0, ymax = Math.max(...ys) * 1.06 || 1;
+    const X = v => fx + m.l + ((v - xmin) / (xmax - xmin || 1)) * (fw - m.l - m.r);
+    const Y = v => {
+      if (logY_) return fy + m.t + (fh - m.t - m.b) - ((Math.log(v) - Math.log(ymin)) / (Math.log(ymax) - Math.log(ymin) || 1)) * (fh - m.t - m.b);
+      return fy + m.t + (fh - m.t - m.b) - ((v - ymin) / (ymax - ymin || 1)) * (fh - m.t - m.b);
+    };
+    for (const f of [0, .5, 1]) {
+      const xv = xmin + f * (xmax - xmin), yv = ymin + f * (ymax - ymin);
+      out += `<line x1="${X(xv)}" y1="${fy + m.t}" x2="${X(xv)}" y2="${fy + fh - m.b}" stroke="${grid}"/>`;
+      out += `<text x="${X(xv)}" y="${fy + fh - 22}" text-anchor="middle" font-size="10.5" fill="${mut}">${xv.toFixed(1)}</text>`;
+      if (!logY_) out += `<text x="${fx + m.l - 7}" y="${Y(yv) + 4}" text-anchor="end" font-size="10.5" fill="${mut}">${yv.toFixed(1)}</text>`;
+    }
+    if (fv !== null) out += `<text x="${fx + fw / 2}" y="${fy + 16}" text-anchor="middle" font-size="11.5" font-weight="800" fill="${mut}">${facet} = ${fv}</text>`;
+    const stratVals = strat ? [...new Set(data.map(r => r[strat]))] : [null];
+    stratVals.forEach((sv, si) => {
+      const sub = sv === null ? data : data.filter(r => r[strat] === sv);
+      const colr = shades[si % shades.length];
+      if (type !== "scatter") {
+        const ids = [...new Set(sub.map(r => r.ID))];
+        for (const id of ids) {
+          const line = sub.filter(r => r.ID === id).sort((a, b) => a[xc] - b[xc]);
+          if (line.length > 1) out += `<polyline fill="none" stroke="${colr}" stroke-width="1.3" opacity=".7" points="${line.map(r => X(r[xc]) + "," + Y(r[yc])).join(" ")}"/>`;
+        }
+      }
+      if (type !== "line") for (const r of sub) { if (!logY_ || r[yc] > 0) out += `<circle cx="${X(r[xc])}" cy="${Y(r[yc])}" r="${R}" fill="${colr}" fill-opacity=".72"/>`; }
+    });
+    out += `<text x="${fx + m.l + (fw - m.l - m.r) / 2}" y="${fy + fh - 5}" text-anchor="middle" font-size="11" font-weight="700" fill="${mut}">${xc}</text>`;
+  });
+  out += `<text x="12" y="${H / 2}" text-anchor="middle" font-size="11" font-weight="700" fill="${mut}" transform="rotate(-90 12 ${H / 2})">${yc}</text>`;
+  svg.innerHTML = out;
+}
+
+/* ---------- boot ---------- */
+renderProjects();
+renderVersions();
+renderJobs();
+writeRows("thRows", "THETA", [3.0, 30, 1.2]);
+writeRows("omRows", "OMEGA", [0.09, 0.09]);
+writeRows("sgRows", "SIGMA", [0.014]);
+renderPriors();
+syncRouteUI();
+applyTheme(savedTheme);
+refreshQueue();
+drawModelPlot();
+log("Workbench ready");
+$("logText").textContent = "Workbench ready";
 </script>
 
 </body>
