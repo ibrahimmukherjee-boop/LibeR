@@ -32,8 +32,9 @@ items for 1.1.
 
 ### LibeRation: propagation and model specification
 
-- ADVAN1-14, analytical compartmental kernels, matrix exponentials, explicit
-  and stiff ODEs, Michaelis-Menten elimination, and equilibrium DAE paths;
+- ADVAN1-18, analytical compartmental kernels, matrix exponentials, explicit
+  and stiff ODEs, Michaelis-Menten elimination, equilibrium DAE, delay DDE,
+  and combined delayed-equilibrium paths;
 - bolus, oral, infusion, modelled rate/duration, multiple dosing, and analytical
   or nonlinear periodic steady state;
 - editable `$PK/$PRED`, `$DES`, `$ERROR`, and likelihood configuration;
@@ -285,7 +286,8 @@ Several important remaining items are not missing algorithms:
 - broad simulation-estimation bias and coverage studies;
 - large-state, large-ETA, thousands-of-subject scaling;
 - full external qualification of verified and experimental families;
-- ADVAN14 comparison with a NONMEM version that provides ADVAN14;
+- direct ADVAN16/17 comparison on a NONMEM installation licensed for the
+  optional RADAR5NM extension (equivalent ADVAN18 controls already pass);
 - formal stationarity diagnostics for SAEM;
 - boundary-aware variance-component inference;
 - complete per-phase optimizer timing and telemetry;

@@ -208,11 +208,103 @@
   score
 }
 
+.lity_reweight_information <- function(template, per_subject, sizes,
+                                       prior = NULL, tolerance = 1e-10) {
+  contributions <- Map(
+    function(matrix, size) as.numeric(size) * matrix,
+    per_subject, as.list(sizes)
+  )
+  prior <- prior %||% matrix(0, nrow(template$matrix), ncol(template$matrix))
+  metrics <- lity_weighted_information_cpp(
+    unname(contributions), rep(1, length(contributions)), prior, tolerance
+  )
+  information <- template
+  information$matrix <- metrics$information
+  dimnames(information$matrix) <- dimnames(template$matrix)
+  information$covariance <- metrics$covariance
+  dimnames(information$covariance) <- dimnames(template$matrix)
+  information$eigenvalues <- metrics$eigenvalues
+  information$rank <- metrics$rank
+  information$condition_number <- metrics$condition_number
+  information$log_determinant <- metrics$log_determinant
+  information$trace_covariance <- metrics$trace_covariance
+  information$minimum_eigenvalue <- metrics$minimum_eigenvalue
+  information$arm_contributions <- contributions
+  se <- sqrt(pmax(diag(information$covariance), 0))
+  values <- information$parameters$value
+  information$se <- stats::setNames(se, information$parameters$name)
+  information$rse <- stats::setNames(
+    ifelse(abs(values) > 1e-15, 100 * se / abs(values), NA_real_),
+    information$parameters$name
+  )
+  information
+}
+
+.lity_allocation_evaluation <- function(design, criterion, information) {
+  names(information) <- names(design$scenarios)
+  evaluated <- .lity_evaluate_criterion(
+    criterion, design = design, information = information
+  )
+  result <- structure(list(
+    schema = "liberality.evaluation", version = 1L,
+    id = .lity_id("evaluation"), design_id = design$id,
+    design_hash = .lity_hash(design), design = design,
+    criteria = data.frame(
+      name = criterion$name, type = criterion$type,
+      direction = criterion$direction,
+      value = as.numeric(evaluated$value %||% NA_real_)[[1L]],
+      mc_error = as.numeric(evaluated$mc_error %||% NA_real_)[[1L]],
+      stringsAsFactors = FALSE
+    ),
+    criterion_definitions = list(criterion),
+    criterion_details = list(evaluated), information = information,
+    constraints = data.frame(), elapsed_seconds = 0,
+    created_at = .lity_now()
+  ), class = "lity_evaluation")
+  result$constraints <- lity_constraint_check(design, result)
+  result
+}
+
 .lity_allocation_optimise <- function(design, criterion, method, control, progress, cancel) {
   total <- sum(vapply(design$arms, `[[`, numeric(1), "size"))
   if (total < 1L) .lity_stop("Allocation optimisation requires at least one subject.")
   weight <- .lity_normalize_weights(vapply(design$arms, `[[`, numeric(1), "allocation"))
   trace <- list(); maxit <- as.integer(control$maxit %||% 100L)
+  # Sampling schedules, model parameters, and endpoint definitions are fixed
+  # during pure allocation optimisation. Record/evaluate each arm once per
+  # scenario, then reweight its information matrices natively at every update.
+  templates <- lapply(
+    seq_along(design$scenarios),
+    function(scenario) lity_information(design, scenario)
+  )
+  original_sizes <- vapply(design$arms, `[[`, numeric(1), "size")
+  # A declared arm may legitimately start with no subjects. Its unit
+  # contribution cannot be recovered by division, so evaluate that arm once
+  # at size one while keeping every other arm at zero. This remains a setup
+  # cost; no model or information calculation is repeated in the optimiser.
+  zero_size <- which(original_sizes <= 0)
+  zero_unit <- if (length(zero_size)) {
+    lapply(seq_along(design$scenarios), function(scenario) {
+      lapply(zero_size, function(arm_index) {
+        unit_design <- design
+        for (index in seq_along(unit_design$arms)) {
+          unit_design$arms[[index]]$size <- as.numeric(index == arm_index)
+        }
+        lity_information(unit_design, scenario)$arm_contributions[[arm_index]]
+      })
+    })
+  } else NULL
+  per_scenario <- lapply(seq_along(templates), function(scenario) {
+    information <- templates[[scenario]]
+    lapply(seq_along(information$arm_contributions), function(arm_index) {
+      if (original_sizes[[arm_index]] > 0) {
+        information$arm_contributions[[arm_index]] / original_sizes[[arm_index]]
+      } else {
+        zero_unit[[scenario]][[match(arm_index, zero_size)]]
+      }
+    })
+  })
+  prior <- design$prior_fim
   for (iteration in seq_len(maxit)) {
     if (is.function(cancel) && isTRUE(cancel())) .lity_stop("Optimisation cancelled.")
     candidate <- design
@@ -222,15 +314,13 @@
     for (i in seq_along(candidate$arms)) {
       candidate$arms[[i]]$size <- sizes[[i]]; candidate$arms[[i]]$allocation <- weight[[i]]
     }
-    info <- lity_information(candidate)
-    per_subject <- lapply(seq_along(candidate$arms), function(i) {
-      contribution <- info$arm_contributions[[i]]
-      if (sizes[[i]] > 0) contribution / sizes[[i]] else {
-        one <- candidate; one$arms[[i]]$size <- 1L
-        others <- setdiff(seq_along(one$arms), i); for (j in others) one$arms[[j]]$size <- 0L
-        lity_information(one)$matrix
-      }
-    })
+    information <- Map(
+      function(template, unit) .lity_reweight_information(
+        template, unit, sizes, prior = prior
+      ), templates, per_scenario
+    )
+    info <- information[[1L]]
+    per_subject <- per_scenario[[1L]]
     directional <- .lity_allocation_sensitivity(info, per_subject, criterion)
     old <- weight
     if (method == "multiplicative") weight <- .lity_normalize_weights(weight * pmax(directional, 1e-12))
@@ -238,7 +328,9 @@
       best <- which.max(directional); step <- 2 / (iteration + 2)
       weight <- (1 - step) * weight; weight[[best]] <- weight[[best]] + step
     }
-    evaluation <- lity_evaluate(candidate, criterion)
+    evaluation <- .lity_allocation_evaluation(
+      candidate, criterion, information
+    )
     trace[[iteration]] <- list(iteration = iteration, values = weight,
                                criterion = evaluation$criteria$value[[1L]], objective = directional,
                                feasible = all(evaluation$constraints$feasible %||% TRUE), error = "")

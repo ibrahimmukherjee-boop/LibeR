@@ -466,6 +466,163 @@ ingest_adjudicate_extractions <- function(metadata, text, vision, comparison, bu
   ) else result
 }
 
+#' Reconcile independently computed text and vision extraction lanes
+#'
+#' This stage-oriented entry point is equivalent to the reconciliation portion
+#' of [ingest_dual_extract()], but accepts lane results that were produced by
+#' separate workers. It is intended for resumable batch and scheduler-backed
+#' pipelines where document parsing, text inference, and vision inference do not
+#' necessarily finish in the same order.
+#'
+#' @param metadata Publication metadata.
+#' @param bundle Document bundle or path to one.
+#' @param text Result from [ingest_extract_text_lane()].
+#' @param vision Result from [ingest_extract_vision_lane()].
+#' @param cfg LibeRary configuration.
+#' @param adjudicate Automatically adjudicate discrepancies.
+#' @param progress Optional callback accepting `value`, `message`, and `stage`.
+#' @return Reconciled extraction, status, lane outputs, and audit data.
+#' @export
+ingest_reconcile_extractions <- function(metadata, bundle, text, vision, cfg = NULL,
+                                         adjudicate = TRUE, progress = NULL) {
+  cfg <- if (is.null(cfg)) ingest_load_config() else ingest_validate_config(cfg)
+  if (is.character(bundle) && length(bundle) == 1L) bundle <- ingest_read_document_bundle(bundle)
+  stage <- function(value, message, name) {
+    if (!is.null(progress)) progress(value, message, name)
+  }
+  endpoint_label <- function(role) {
+    endpoint <- .library_llm_role(cfg, role)
+    paste(endpoint$provider, endpoint$model %||% "automatic model", sep = "/")
+  }
+  runtime_label <- function(lane) {
+    processor <- lane$audit$runtime$processor %||% ""
+    if (nzchar(processor)) paste0(" — ", processor) else ""
+  }
+
+  stage(0.05, "Comparing text and vision claims (CPU)", "reconciliation")
+  comparison <- ingest_compare_extractions(text, vision)
+  text_endpoint <- .library_llm_role(cfg, "indexing")
+  vision_endpoint <- .library_llm_role(cfg, "vision")
+  independent_models <- !identical(
+    paste(text_endpoint$provider, text_endpoint$model, sep = "|"),
+    paste(vision_endpoint$provider, vision_endpoint$model, sep = "|")
+  )
+  independence_policy <- cfg$llm$extraction_independence %||% "required"
+  if (identical(independence_policy, "required") && !independent_models) {
+    stop("Text and vision extraction roles must use different provider/model combinations.", call. = FALSE)
+  }
+  warning <- if (independent_models) "" else
+    "Text and vision lanes use the same provider/model; input modalities are independent but model errors may be correlated."
+  if (isTRUE(adjudicate) && nzchar(warning)) {
+    .library_warn_correlated_extraction_lanes(warning)
+  }
+
+  best <- .library_best_lane(text, vision)
+  if (is.null(best)) {
+    stage(1, "No valid extraction lane; article requires review", "complete")
+    return(list(status = "needs_review", model_present = NA, extraction = NULL,
+                text = text, vision = vision, comparison = comparison,
+                adjudication = NULL, independent_models = independent_models,
+                independence_policy = independence_policy,
+                independence_gate_passed = independent_models ||
+                  identical(independence_policy, "off"),
+                warning = warning,
+                audit = list(
+                  schema_version = LIBRARY_SCHEMA_VERSION,
+                  prompt_version = LIBRARY_PROMPT_VERSION,
+                  source_sha256 = bundle$source$sha256 %||% "",
+                  text = text$audit %||% list(error = text$error %||% ""),
+                  vision = vision$audit %||% list(error = vision$error %||% ""),
+                  comparison = comparison,
+                  adjudication = list(error = "No valid extraction lane was available."),
+                  independent_models = independent_models,
+                  independence_policy = independence_policy,
+                  independence_gate_passed = independent_models ||
+                    identical(independence_policy, "off"),
+                  warning = warning
+                )))
+  }
+  extraction <- best$result$extraction
+  text_present <- if (isTRUE(text$available)) isTRUE(text$result$model_present) else NA
+  vision_present <- if (isTRUE(vision$available)) isTRUE(vision$result$model_present) else NA
+  model_present <- if (!is.na(text_present) && !is.na(vision_present) &&
+                       identical(text_present, vision_present)) text_present else
+    if (isTRUE(best$result$model_present)) TRUE else NA
+  status <- "needs_review"
+  adjudication <- NULL
+  if (isTRUE(comparison$comparable) && !text_present && !vision_present) {
+    status <- "machine_consistent"
+    model_present <- FALSE
+  } else if (isTRUE(comparison$comparable) && isTRUE(comparison$consistent)) {
+    status <- "machine_consistent"
+    model_present <- isTRUE(text$result$model_present) && isTRUE(vision$result$model_present)
+  } else if (isTRUE(adjudicate) && isTRUE(comparison$comparable)) {
+    stage(0.2, paste0("Discrepancy adjudication: ", endpoint_label("adjudication"),
+                      " (LLM inference)"), "adjudication")
+    adjudication <- ingest_adjudicate_extractions(metadata, text, vision, comparison, bundle, cfg)
+    if (isTRUE(adjudication$available)) {
+      extraction <- adjudication$result$resolved_extraction
+      model_present <- isTRUE(adjudication$result$model_present)
+      unresolved <- adjudication$result$unresolved_fields %||% list()
+      major_unresolved <- any(vapply(unresolved, function(x) identical(x$impact, "major"), logical(1)))
+      status <- if (major_unresolved) "needs_review" else "machine_adjudicated"
+    }
+    stage(0.9, paste0("Adjudication complete", runtime_label(adjudication)), "adjudication")
+  }
+  checks <- text$audit$deterministic_checks %||% text$checks %||% NULL
+  binding_checks <- text$audit$synthesis_binding_checks %||% NULL
+  if (isTRUE(cfg$deliberative$enabled) && isTRUE(model_present) &&
+      ((is.list(checks) && !isTRUE(checks$ready)) ||
+       isTRUE(text$audit$synthesis_quarantined) ||
+       (is.list(binding_checks) && !isTRUE(binding_checks$ready)))) {
+    status <- "needs_review"
+    warning <- paste(Filter(nzchar, c(
+      warning,
+      "The evidence-led investigation did not pass all deterministic completeness, consistency, and ledger-binding gates."
+    )), collapse = " ")
+  }
+  if (!independent_models && identical(independence_policy, "preferred") &&
+      status %in% c("machine_consistent", "machine_adjudicated")) {
+    status <- "needs_review"
+    warning <- paste(Filter(nzchar, c(
+      warning,
+      paste(
+        "Correlated extraction lanes are retained as exploratory evidence",
+        "and cannot receive a machine-consistent publication status."
+      )
+    )), collapse = " ")
+  }
+  stage(1, "Extraction and reconciliation complete", "complete")
+  list(
+    status = status,
+    model_present = model_present,
+    extraction = extraction,
+    text = text,
+    vision = vision,
+    comparison = comparison,
+    adjudication = adjudication,
+    independent_models = independent_models,
+    independence_policy = independence_policy,
+    independence_gate_passed = independent_models ||
+      identical(independence_policy, "off"),
+    warning = warning,
+    audit = list(
+      schema_version = LIBRARY_SCHEMA_VERSION,
+      prompt_version = LIBRARY_PROMPT_VERSION,
+      source_sha256 = bundle$source$sha256 %||% "",
+      text = text$audit %||% list(error = text$error %||% ""),
+      vision = vision$audit %||% list(error = vision$error %||% ""),
+      comparison = comparison,
+      adjudication = adjudication$audit %||% list(error = adjudication$error %||% ""),
+      independent_models = independent_models,
+      independence_policy = independence_policy,
+      independence_gate_passed = independent_models ||
+        identical(independence_policy, "off"),
+      warning = warning
+    )
+  )
+}
+
 #' Run independent text and vision extraction with automated reconciliation
 #'
 #' Consistent records are labelled `machine_consistent`. Conflicts are sent to
@@ -558,123 +715,10 @@ ingest_dual_extract <- function(metadata, bundle, cfg = NULL, adjudicate = TRUE,
   stage(0.59, paste0("PDF vision extraction: ", endpoint_label("vision"), " (LLM inference)"), "vision_extraction")
   vision <- ingest_extract_vision_lane(metadata, bundle, cfg)
   stage(0.76, paste0("PDF vision extraction complete", runtime_label(vision)), "vision_extraction")
-  stage(0.78, "Comparing text and vision claims (CPU)", "reconciliation")
-  comparison <- ingest_compare_extractions(text, vision)
-  text_endpoint <- .library_llm_role(cfg, "indexing")
-  vision_endpoint <- .library_llm_role(cfg, "vision")
-  independent_models <- !identical(
-    paste(text_endpoint$provider, text_endpoint$model, sep = "|"),
-    paste(vision_endpoint$provider, vision_endpoint$model, sep = "|")
-  )
-  independence_policy <- cfg$llm$extraction_independence %||% "required"
-  if (identical(independence_policy, "required") && !independent_models) {
-    stop("Text and vision extraction roles must use different provider/model combinations.", call. = FALSE)
-  }
-  warning <- if (independent_models) "" else
-    "Text and vision lanes use the same provider/model; input modalities are independent but model errors may be correlated."
-  if (isTRUE(adjudicate) && nzchar(warning)) {
-    .library_warn_correlated_extraction_lanes(warning)
-  }
-
-  best <- .library_best_lane(text, vision)
-  if (is.null(best)) {
-    stage(1, "No valid extraction lane; article requires review", "complete")
-    return(list(status = "needs_review", model_present = NA, extraction = NULL,
-                text = text, vision = vision, comparison = comparison,
-                adjudication = NULL, independent_models = independent_models,
-                warning = warning,
-                audit = list(
-                  schema_version = LIBRARY_SCHEMA_VERSION,
-                  prompt_version = LIBRARY_PROMPT_VERSION,
-                  source_sha256 = bundle$source$sha256 %||% "",
-                  text = text$audit %||% list(error = text$error %||% ""),
-                  vision = vision$audit %||% list(error = vision$error %||% ""),
-                  comparison = comparison,
-                  adjudication = list(error = "No valid extraction lane was available."),
-                  independent_models = independent_models,
-                  independence_policy = independence_policy,
-                  independence_gate_passed = independent_models ||
-                    identical(independence_policy, "off"),
-                  warning = warning
-                )))
-  }
-  extraction <- best$result$extraction
-  text_present <- if (isTRUE(text$available)) isTRUE(text$result$model_present) else NA
-  vision_present <- if (isTRUE(vision$available)) isTRUE(vision$result$model_present) else NA
-  model_present <- if (!is.na(text_present) && !is.na(vision_present) &&
-                       identical(text_present, vision_present)) text_present else
-    if (isTRUE(best$result$model_present)) TRUE else NA
-  status <- "needs_review"
-  adjudication <- NULL
-  if (isTRUE(comparison$comparable) && !text_present && !vision_present) {
-    status <- "machine_consistent"
-    model_present <- FALSE
-  } else if (isTRUE(comparison$comparable) && isTRUE(comparison$consistent)) {
-    status <- "machine_consistent"
-    model_present <- isTRUE(text$result$model_present) && isTRUE(vision$result$model_present)
-  } else if (isTRUE(adjudicate) && isTRUE(comparison$comparable)) {
-    stage(0.81, paste0("Discrepancy adjudication: ", endpoint_label("adjudication"),
-                       " (LLM inference)"), "adjudication")
-    adjudication <- ingest_adjudicate_extractions(metadata, text, vision, comparison, bundle, cfg)
-    if (isTRUE(adjudication$available)) {
-      extraction <- adjudication$result$resolved_extraction
-      model_present <- isTRUE(adjudication$result$model_present)
-      unresolved <- adjudication$result$unresolved_fields %||% list()
-      major_unresolved <- any(vapply(unresolved, function(x) identical(x$impact, "major"), logical(1)))
-      status <- if (major_unresolved) "needs_review" else "machine_adjudicated"
+  ingest_reconcile_extractions(
+    metadata, bundle, text, vision, cfg, adjudicate = adjudicate,
+    progress = function(value, message, name) {
+      stage(0.78 + 0.22 * value, message, name)
     }
-    stage(0.95, paste0("Adjudication complete", runtime_label(adjudication)), "adjudication")
-  }
-  checks <- text$audit$deterministic_checks %||% text$checks %||% NULL
-  binding_checks <- text$audit$synthesis_binding_checks %||% NULL
-  if (isTRUE(cfg$deliberative$enabled) && isTRUE(model_present) &&
-      ((is.list(checks) && !isTRUE(checks$ready)) ||
-       isTRUE(text$audit$synthesis_quarantined) ||
-       (is.list(binding_checks) && !isTRUE(binding_checks$ready)))) {
-    status <- "needs_review"
-    warning <- paste(Filter(nzchar, c(
-      warning,
-      "The evidence-led investigation did not pass all deterministic completeness, consistency, and ledger-binding gates."
-    )), collapse = " ")
-  }
-  if (!independent_models && identical(independence_policy, "preferred") &&
-      status %in% c("machine_consistent", "machine_adjudicated")) {
-    status <- "needs_review"
-    warning <- paste(Filter(nzchar, c(
-      warning,
-      paste(
-        "Correlated extraction lanes are retained as exploratory evidence",
-        "and cannot receive a machine-consistent publication status."
-      )
-    )), collapse = " ")
-  }
-  stage(1, "Extraction and reconciliation complete", "complete")
-  list(
-    status = status,
-    model_present = model_present,
-    extraction = extraction,
-    text = text,
-    vision = vision,
-    comparison = comparison,
-    adjudication = adjudication,
-    independent_models = independent_models,
-    independence_policy = independence_policy,
-    independence_gate_passed = independent_models ||
-      identical(independence_policy, "off"),
-    warning = warning,
-    audit = list(
-      schema_version = LIBRARY_SCHEMA_VERSION,
-      prompt_version = LIBRARY_PROMPT_VERSION,
-      source_sha256 = bundle$source$sha256 %||% "",
-      text = text$audit %||% list(error = text$error %||% ""),
-      vision = vision$audit %||% list(error = vision$error %||% ""),
-      comparison = comparison,
-      adjudication = adjudication$audit %||% list(error = adjudication$error %||% ""),
-      independent_models = independent_models,
-      independence_policy = independence_policy,
-      independence_gate_passed = independent_models ||
-        identical(independence_policy, "off"),
-      warning = warning
-    )
   )
 }

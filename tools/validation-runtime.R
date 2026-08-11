@@ -200,7 +200,15 @@ liber_validation_git <- function(root) {
   status_lines <- if (nzchar(status)) strsplit(status, "\n", fixed = TRUE)[[1L]] else character()
   untracked_status <- status_lines[startsWith(status_lines, "?? ")]
   tracked_status <- status_lines[!startsWith(status_lines, "?? ")]
-  changed_paths <- unique(substring(status_lines, 4L))
+  provenance_status <- status_lines[!grepl(
+    paste0(
+      "(^|/)(Rplots[.]pdf|[.]RData|[.]Rhistory)$|",
+      "/src/(tmp[.]def|symbols[.]rds|[^/]+[.](o|obj|dll|so|dylib))$"
+    ),
+    chartr("\\", "/", substring(status_lines, 4L)),
+    ignore.case = TRUE
+  )]
+  changed_paths <- unique(substring(provenance_status, 4L))
   changed_paths <- changed_paths[nzchar(changed_paths)]
   changed_paths <- sort(chartr("\\", "/", changed_paths), method = "radix")
   changed_records <- vapply(changed_paths, function(relative) {

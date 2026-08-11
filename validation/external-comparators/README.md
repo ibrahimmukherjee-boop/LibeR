@@ -88,7 +88,9 @@ NONMEM, Monolix, Pumas, and production-deployment results.
   against CmdStan/Stan Math; TMB is useful engineering evidence but shares
   CppAD ancestry.
 - `validation/nonmem/run-validation.R --run` is the direct NONMEM gate.
-  ADVAN14 remains unavailable with NONMEM 7.3 and requires a 7.4+ runner.
+  NONMEM 7.6 covers ADVAN1-15 and ADVAN18 directly; ADVAN16/17 need the
+  optional RADAR5NM licence and otherwise retain explicit `not-run` rows plus
+  equivalent ADVAN18 comparisons.
 - `validation/liberality/external/run-validation.R` performs the existing
   PopED/PFIM comparison.
 - `validation/liberary/` contains the curated AED corpus gate.

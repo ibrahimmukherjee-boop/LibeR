@@ -36,10 +36,25 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// lity_weighted_information_cpp
+Rcpp::List lity_weighted_information_cpp(const Rcpp::List& matrices, const Rcpp::NumericVector& weights, const Rcpp::Nullable<Rcpp::NumericMatrix>& prior_input, double tolerance);
+RcppExport SEXP _LibeRality_lity_weighted_information_cpp(SEXP matricesSEXP, SEXP weightsSEXP, SEXP prior_inputSEXP, SEXP toleranceSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type matrices(matricesSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type weights(weightsSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::Nullable<Rcpp::NumericMatrix>& >::type prior_input(prior_inputSEXP);
+    Rcpp::traits::input_parameter< double >::type tolerance(toleranceSEXP);
+    rcpp_result_gen = Rcpp::wrap(lity_weighted_information_cpp(matrices, weights, prior_input, tolerance));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_LibeRality_lity_fim_cpp", (DL_FUNC) &_LibeRality_lity_fim_cpp, 4},
     {"_LibeRality_lity_matrix_metrics_cpp", (DL_FUNC) &_LibeRality_lity_matrix_metrics_cpp, 2},
+    {"_LibeRality_lity_weighted_information_cpp", (DL_FUNC) &_LibeRality_lity_weighted_information_cpp, 4},
     {NULL, NULL, 0}
 };
 

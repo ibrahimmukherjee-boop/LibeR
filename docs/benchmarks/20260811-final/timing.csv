@@ -1,0 +1,10 @@
+"workload","method","nonmem_end_to_end_seconds","nonmem_core_seconds","liberation_compatibility_end_to_end_seconds","liberation_compatibility_core_seconds","liberation_optimized_end_to_end_seconds","liberation_optimized_core_seconds","nlmixr2_end_to_end_seconds","nlmixr2_core_seconds"
+"estimation","FO",4.54,0.266,0.670000000000002,0.12,0.670000000000002,0.13,10.94,8.77
+"estimation","FOCE",4.5,0.594,0.609999999999999,0.11,0.6,0.11,12.98,10.68
+"estimation","FOCEI",4.51000000000001,0.875,0.590000000000003,0.08,0.58,0.09,13.17,10.95
+"estimation","LAPLACE",5.53,1.625,0.650000000000006,0.15,0.66,0.16,13.22,11.05
+"estimation","ITS",11.59,7.641,7.25,6.78,6.83,6.35,,
+"estimation","IMP",73.25,69.125,54.4300000000001,53.95,31.93,31.45,,
+"estimation","SAEM",6.57,3.219,17.88,17.4,9.03,8.56,38.69,36.41
+"estimation","BAYES",24.81,21.109,1.44,0.97,16.45,15.99,,
+"simulation","SIMULATION",6.94,3.172,0.930000000000007,0.62,0.729999999999961,0.42,4.60000000000002,3.94

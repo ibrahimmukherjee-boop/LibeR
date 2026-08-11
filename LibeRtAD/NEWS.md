@@ -1,5 +1,13 @@
-# LibeRtAD 0.8.1
+# LibeRtAD 0.8.2
 
+- Introduces an R-independent `ProgramIR` value representation in the
+  standalone `LibeRtAD/program_ir.hpp` header and makes the numerical `Program`
+  own only standard C++ containers after construction. The R list is now an
+  explicit adapter input rather than retained numerical state, providing a
+  stable seam for CLI/service/desktop consumers.
+- Avoids a redundant zero-order CppAD forward sweep in combined scalar
+  `value_gradient()` evaluation by reusing the recorded Taylor state for the
+  reverse sweep. The scalar value and gradient remain numerically identical.
 - Routes CppAD value-graph `printf` diagnostics through R's console adapter,
   preventing GCC from linking direct `puts`/`putchar` calls into LibeRtAD or
   downstream engine packages.

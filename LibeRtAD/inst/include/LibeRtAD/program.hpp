@@ -2,13 +2,13 @@
 #define LIBERTAD_PROGRAM_HPP
 
 #include <LibeRtAD/cppad_r_output.hpp>
+#include <LibeRtAD/program_ir.hpp>
 #include <LibeRtAD/sparse_hessian.hpp>
 
 #include <algorithm>
 #include <cmath>
 #include <memory>
 #include <stdexcept>
-#include <string>
 #include <type_traits>
 #include <unordered_map>
 #include <utility>
@@ -16,44 +16,36 @@
 
 namespace libertad {
 
-enum class Op : int {
-  input = 0,
-  constant = 1,
-  add = 2,
-  sub = 3,
-  mul = 4,
-  div = 5,
-  pow = 6,
-  neg = 7,
-  exp = 8,
-  log = 9,
-  sqrt = 10,
-  sin = 11,
-  cos = 12,
-  tan = 13,
-  tanh = 14,
-  abs = 15,
-  expm1 = 16,
-  log1p = 17,
-  min = 18,
-  max = 19,
-  cond_lt = 20,
-  cond_le = 21,
-  cond_gt = 22,
-  cond_ge = 23,
-  cond_eq = 24,
-  cond_ne = 25
-};
+inline int normalize_ir_reference(Op op, int value, bool first) {
+  if (op == Op::input && first) return value - 1;
+  if (value <= 0) return -1;
+  return value - 1;
+}
 
-struct Node {
-  Op op = Op::constant;
-  int a = -1;
-  int b = -1;
-  int c = -1;
-  int d = -1;
-  double value = 0.0;
-  std::string label;
-};
+inline ProgramIR program_ir_from_r(const Rcpp::List& ir) {
+  ProgramIR result;
+  result.version = Rcpp::as<int>(ir["version"]);
+  result.input_names = Rcpp::as<std::vector<std::string>>(ir["input_names"]);
+  result.output_names = Rcpp::as<std::vector<std::string>>(ir["output_names"]);
+  Rcpp::IntegerVector output = ir["output_nodes"];
+  result.output_nodes.reserve(static_cast<std::size_t>(output.size()));
+  for (int value : output) result.output_nodes.push_back(value - 1);
+  Rcpp::List source = ir["nodes"];
+  result.nodes.reserve(static_cast<std::size_t>(source.size()));
+  for (R_xlen_t index = 0; index < source.size(); ++index) {
+    Rcpp::List item = source[index];
+    Node node;
+    node.op = static_cast<Op>(Rcpp::as<int>(item["op"]));
+    node.a = normalize_ir_reference(node.op, Rcpp::as<int>(item["a"]), true);
+    node.b = normalize_ir_reference(node.op, Rcpp::as<int>(item["b"]), false);
+    node.c = normalize_ir_reference(node.op, Rcpp::as<int>(item["c"]), false);
+    node.d = normalize_ir_reference(node.op, Rcpp::as<int>(item["d"]), false);
+    node.value = Rcpp::as<double>(item["value"]);
+    node.label = Rcpp::as<std::string>(item["label"]);
+    result.nodes.push_back(std::move(node));
+  }
+  return result;
+}
 
 template <class Scalar>
 inline Scalar scalar_exp(const Scalar& x) {
@@ -227,28 +219,12 @@ class Program {
   std::unordered_map<std::string, std::size_t> input_positions;
   std::unordered_map<std::string, std::size_t> output_positions;
 
-  explicit Program(const Rcpp::List& ir) {
-    version = Rcpp::as<int>(ir["version"]);
-    input_names = Rcpp::as<std::vector<std::string>>(ir["input_names"]);
-    output_names = Rcpp::as<std::vector<std::string>>(ir["output_names"]);
-    Rcpp::IntegerVector out = ir["output_nodes"];
-    output_nodes.reserve(out.size());
-    for (int value : out) output_nodes.push_back(value - 1);
-
-    Rcpp::List rnodes = ir["nodes"];
-    nodes.reserve(rnodes.size());
-    for (R_xlen_t i = 0; i < rnodes.size(); ++i) {
-      Rcpp::List rn = rnodes[i];
-      Node node;
-      node.op = static_cast<Op>(Rcpp::as<int>(rn["op"]));
-      node.a = normalize_reference(node.op, Rcpp::as<int>(rn["a"]), true);
-      node.b = normalize_reference(node.op, Rcpp::as<int>(rn["b"]), false);
-      node.c = normalize_reference(node.op, Rcpp::as<int>(rn["c"]), false);
-      node.d = normalize_reference(node.op, Rcpp::as<int>(rn["d"]), false);
-      node.value = Rcpp::as<double>(rn["value"]);
-      node.label = Rcpp::as<std::string>(rn["label"]);
-      validate_node(node, static_cast<int>(i));
-      nodes.push_back(std::move(node));
+  explicit Program(ProgramIR ir)
+      : version(ir.version), input_names(std::move(ir.input_names)),
+        nodes(std::move(ir.nodes)), output_names(std::move(ir.output_names)),
+        output_nodes(std::move(ir.output_nodes)) {
+    for (std::size_t index = 0; index < nodes.size(); ++index) {
+      validate_node(nodes[index], static_cast<int>(index));
     }
     if (output_names.size() != output_nodes.size()) {
       throw std::invalid_argument("IR output names/nodes have different lengths.");
@@ -267,6 +243,8 @@ class Program {
       }
     }
   }
+
+  explicit Program(const Rcpp::List& ir) : Program(program_ir_from_r(ir)) {}
 
   template <class Scalar>
   std::vector<Scalar> eval_all(const std::vector<Scalar>& inputs) const {
@@ -335,12 +313,6 @@ class Program {
   }
 
  private:
-  static int normalize_reference(Op op, int value, bool first) {
-    if (op == Op::input && first) return value - 1;
-    if (value <= 0) return -1;
-    return value - 1;
-  }
-
   static int arity(Op op) {
     if (op == Op::input || op == Op::constant) return 0;
     if (op == Op::neg || (op >= Op::exp && op <= Op::log1p)) return 1;

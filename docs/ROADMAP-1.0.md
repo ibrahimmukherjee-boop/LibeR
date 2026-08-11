@@ -80,7 +80,8 @@ The following boundaries remain explicit:
 
 Exercise all scientifically valid combinations of:
 
-- ADVAN1-14 and their supported TRANS parameterisations;
+- ADVAN1-18 and their supported TRANS parameterisations, including DAE, DDE,
+  and combined delayed-equilibrium systems;
 - bolus, oral, infusion, multiple-dose, ADDL, lagged, and steady-state events
   where structurally meaningful;
 - one-, two-, three-, general linear, ODE, stiff ODE, nonlinear elimination,
@@ -250,7 +251,43 @@ scientific validation.
 - 100% completion of destructive-confirmation and recovery tasks; and
 - median System Usability Scale score at least 80.
 
-### 6.4 Security and supply chain
+### 6.4 Cross-estimator numerical architecture
+
+Before the 1.0 performance freeze, consolidate the common numerical work used
+by deterministic, quadrature, importance-sampling, stochastic and Bayesian
+estimators.  This work must preserve the declared NONMEM-compatible policy and
+retain the general CppAD route whenever a specialised route is ineligible.
+
+- Fuse eligible analytical ADVAN1--4/11/12 propagation with subject likelihood
+  evaluation for value-only stochastic sweeps, with recorded-tape equivalence
+  guards and automatic fallback.
+- Provide guarded native shared-memory subject execution for the fused,
+  R-independent kernel.  Never call R, share a mutable `ADFun`, or retape from
+  a native worker thread; PSOCK remains the portable fallback.
+- Maintain one execution-local conditional-state service for modes, objective
+  values, curvature/proposal factors and parameter anchors, and reuse it across
+  FOCE/FOCEI/Laplace, IMP, GQ, SAEM and BAYES where estimator semantics permit.
+- Extend MU-aware centring, scaling and diagnostics beyond the current
+  IMP/SAEM/BAYES specialisations without changing the model contract or
+  silently rewriting user models.
+- Use a common stochastic diagnostic contract for phase/stationarity evidence,
+  independent replicates or chains, modern R-hat/ESS/MCSE summaries and explicit
+  stopping recommendations.  Automatic stopping remains opt-in until its
+  operating characteristics are independently qualified.
+
+Acceptance requires value/gradient/seeded-trajectory equivalence where
+applicable, explicit fallback telemetry, scaling tests, and a full matched-
+control benchmark with core and end-to-end timings.
+
+Implementation status (10 August 2026): the guarded fused analytical evaluator,
+native immutable-data subject executor, layered conditional-state caches,
+MU-preserving GQ/deterministic mode starts, exact guarded HMC/NUTS MU
+non-centred geometry, modern MCMC diagnostics, and SAEM stationarity/replicate
+contract are implemented. The complete standard matched-control performance
+gate was rerun after the final engine build; its scrubbed timing tables and
+graph are retained under `docs/benchmarks/20260811-final/`.
+
+### 6.5 Security and supply chain
 
 - development practices are mapped to NIST SSDF;
 - remotely exposed applications are assessed against OWASP ASVS 5.0 Level 2

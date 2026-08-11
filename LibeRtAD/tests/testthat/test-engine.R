@@ -23,6 +23,18 @@ test_that("program evaluation can use non-taped fixed inputs", {
   expect_equal(unname(model$gradient(c(X = 10))), 2)
 })
 
+test_that("combined scalar value and gradient uses one reverse sweep", {
+  model <- ad_compile(
+    "Y = (X - 1)^2 + 3 * Z^2 + X * Z",
+    inputs = c("X", "Z"), outputs = "Y",
+    at = c(X = 2, Z = -1), wrt = c("X", "Z")
+  )
+  combined <- model$value_gradient(c(X = 2, Z = -1))
+  expect_equal(unname(combined$value), 2, tolerance = 1e-12)
+  expect_equal(unname(combined$gradient), c(1, -4), tolerance = 1e-12)
+  expect_identical(model$tape_info()$derivative_strategy, "reverse")
+})
+
 test_that("non-active inputs are reusable CppAD dynamic parameters", {
   model <- ad_compile(
     "Y = X^P + P^X",

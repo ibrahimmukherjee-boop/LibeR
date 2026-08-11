@@ -1,3 +1,13 @@
+# LibeRary 0.8.2
+
+- Adds `ingest_reconcile_extractions()` as a scheduler-friendly boundary for
+  independently computed text and vision lanes. This permits resumable HPC
+  workflows without duplicating LibeRary's reconciliation and adjudication
+  policy.
+- Applies configured output-token limits to OpenAI-compatible providers such
+  as vLLM, matching the existing Ollama behavior and reducing truncated
+  structured responses.
+
 # LibeRary 0.8.0
 
 - Makes independent text/vision extraction models the required default.

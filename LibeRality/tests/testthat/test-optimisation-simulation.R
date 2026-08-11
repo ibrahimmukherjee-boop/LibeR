@@ -11,6 +11,20 @@ test_that("coordinate exchange returns a valid improved design record", {
   expect_true(is.finite(result$evaluation$criteria$value))
 })
 
+test_that("information reuses guarded LibeRation prediction plans", {
+  .lity_prediction_plan_clear()
+  design <- lity_example()$design
+  first <- lity_information(design)
+  second <- lity_information(design)
+  expect_gt(first$diagnostics$prediction_plan$cache_misses, 0L)
+  expect_gt(second$diagnostics$prediction_plan$cache_hits, 0L)
+  expect_equal(second$matrix, first$matrix, tolerance = 1e-12)
+  expect_identical(
+    second$diagnostics$prediction_plan$backend,
+    "persistent guarded CppAD dynamic-parameter tape"
+  )
+})
+
 test_that("allocation optimisation preserves the subject total", {
   design <- lity_example()$design
   original <- sum(vapply(design$arms, `[[`, numeric(1), "size"))
@@ -20,6 +34,25 @@ test_that("allocation optimisation preserves the subject total", {
   )
   final <- sum(vapply(result$design$arms, `[[`, numeric(1), "size"))
   expect_equal(final, original)
+})
+
+test_that("allocation optimisation can activate an initially empty arm", {
+  design <- lity_example()$design
+  skip_if(length(design$arms) < 2L)
+  total <- sum(vapply(design$arms, `[[`, numeric(1), "size"))
+  design$arms[[1L]]$size <- total
+  design$arms[[1L]]$allocation <- 1
+  design$arms[[2L]]$size <- 0
+  design$arms[[2L]]$allocation <- 0
+  result <- lity_optimise(
+    design, lity_criterion_D(), method = "fedorov_wynn",
+    control = list(maxit = 2)
+  )
+  expect_s3_class(result, "lity_optimisation")
+  expect_equal(
+    sum(vapply(result$design$arms, `[[`, numeric(1), "size")),
+    total
+  )
 })
 
 test_that("allocation methods use criterion-specific sensitivities", {

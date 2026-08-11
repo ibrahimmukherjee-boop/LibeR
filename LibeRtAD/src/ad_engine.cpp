@@ -407,7 +407,13 @@ Rcpp::List libertad_tape_value_gradient(SEXP tape_pointer,
   if (tape->range.size() != 1U) Rcpp::stop("Gradient requires a scalar tape output.");
   std::vector<double> point = tape_point(*tape, x);
   std::vector<double> value = tape_forward_zero(*tape, point);
-  std::vector<double> jac = tape_jacobian(*tape, point);
+  // Forward(0) above leaves the Taylor coefficients required by Reverse(1)
+  // on the tape.  Calling the general Jacobian helper here used to perform a
+  // second identical zero-order sweep before the reverse sweep.
+  std::vector<double> jac = tape->fun.Reverse(1, std::vector<double>{1.0});
+  tape->derivative_strategy = "reverse";
+  tape->jacobian_nonzeros = static_cast<std::size_t>(std::count_if(
+    jac.begin(), jac.end(), [](double current) { return current != 0.0; }));
   return Rcpp::List::create(
     Rcpp::Named("value") = named_vector(value, tape->range),
     Rcpp::Named("gradient") = named_vector(jac, tape->domain)

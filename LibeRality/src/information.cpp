@@ -127,3 +127,54 @@ Rcpp::List lity_matrix_metrics_cpp(const Rcpp::NumericMatrix& information_input,
     Rcpp::Named("minimum_eigenvalue") = eigenvalues.size() ? eigenvalues.minCoeff() : R_NegInf
   );
 }
+
+// Accumulate many endpoint/stratum/arm information blocks in one native pass
+// and calculate matrix diagnostics without materialising an intermediate R
+// matrix after every addition.
+// [[Rcpp::export]]
+Rcpp::List lity_weighted_information_cpp(
+    const Rcpp::List& matrices, const Rcpp::NumericVector& weights,
+    const Rcpp::Nullable<Rcpp::NumericMatrix>& prior_input = R_NilValue,
+    double tolerance = 1e-10) {
+  if (matrices.size() != weights.size()) {
+    Rcpp::stop("Information blocks and weights must have equal length.");
+  }
+  Eigen::MatrixXd total;
+  bool initialized = false;
+  for (R_xlen_t index = 0; index < matrices.size(); ++index) {
+    Rcpp::NumericMatrix source(matrices[index]);
+    const Eigen::MatrixXd block = libertad::r_matrix_map(source);
+    if (block.rows() != block.cols()) {
+      Rcpp::stop("Every information block must be square.");
+    }
+    if (!initialized) {
+      total = Eigen::MatrixXd::Zero(block.rows(), block.cols());
+      initialized = true;
+    } else if (block.rows() != total.rows()) {
+      Rcpp::stop("Information block dimensions do not match.");
+    }
+    if (!std::isfinite(weights[index]) || weights[index] < 0.0) {
+      Rcpp::stop("Information weights must be finite and non-negative.");
+    }
+    total.noalias() += weights[index] * block;
+  }
+  if (prior_input.isNotNull()) {
+    Rcpp::NumericMatrix source(prior_input);
+    const Eigen::MatrixXd prior = libertad::r_matrix_map(source);
+    if (!initialized) {
+      total = prior;
+      initialized = true;
+    } else if (prior.rows() != total.rows() || prior.cols() != total.cols()) {
+      Rcpp::stop("Prior information dimensions do not match.");
+    } else {
+      total += prior;
+    }
+  }
+  if (!initialized) Rcpp::stop("At least one information block or prior is required.");
+  total = 0.5 * (total + total.transpose()).eval();
+  Rcpp::NumericMatrix wrapped = libertad::eigen_matrix_to_r(total);
+  Rcpp::List metrics = lity_matrix_metrics_cpp(wrapped, tolerance);
+  metrics["information"] = wrapped;
+  metrics["blocks"] = matrices.size();
+  return metrics;
+}

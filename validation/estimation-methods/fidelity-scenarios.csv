@@ -1,0 +1,9 @@
+scenario,feature,methods,policies,reference,release_requirement
+correlated-two-eta,correlated OMEGA plus covariate and combined residual error,FO|FOCE|FOCEI|LAPLACE|ITS|GQ|IMP|SAEM,nonmem_compatibility|liber_optimized,matched policy target and ETA agreement,required
+correlated-posterior,correlated OMEGA joint posterior geometry,HMC|NUTS,nonmem_compatibility|liber_optimized,finite posterior trajectory and explicit posterior-score semantics,required
+correlated-nonparametric,two-dimensional ETA support likelihood,NPML|NPAG,nonmem_compatibility|liber_optimized,normalized support weights and fixed-support NPML preservation,required
+iov-two-occasion,IOV expansion with repeated occasion layouts,FOCEI|LAPLACE|IMP|SAEM,liber_optimized,finite objective and accepted expanded ETA modes,required
+ode-advan6,CppAD ODE retaping and conditional-mode integration,FOCEI|LAPLACE|IMP,liber_optimized,finite objective and accepted ODE ETA modes,required
+blq-m3,censored Gaussian likelihood with observations around LLOQ,LAPLACE|IMP|SAEM,nonmem_compatibility|liber_optimized,finite censored likelihood estimator results,required
+user-likelihood,compiled categorical or Markov likelihood,LAPLACE|IMP|SAEM|BAYES,liber_optimized,finite compiled likelihood and posterior target,required
+boundary-variance,OMEGA and SIGMA close to their admissible boundary,FO|FOCEI,nonmem_compatibility|liber_optimized,finite target plus final mode diagnostics,required

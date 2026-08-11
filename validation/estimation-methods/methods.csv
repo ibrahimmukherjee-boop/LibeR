@@ -3,12 +3,12 @@ FO,deterministic approximation,NONMEM 7.3 METHOD=0 POSTHOC,direct,0.05,0.10
 FOCE,deterministic approximation,NONMEM 7.3 METHOD=COND,direct,0.05,0.10
 FOCEI,deterministic approximation,NONMEM 7.3 METHOD=COND INTERACTION,direct,0.03,0.08
 LAPLACE,deterministic approximation,NONMEM 7.3 METHOD=COND LAPLACIAN,direct,0.05,0.10
-ITS,conditional stochastic,NONMEM 7.3 METHOD=ITS,aligned,0.08,0.15
-GQ,exact marginal,independent adaptive numerical integration,none,0.001,
-IMP,importance sampling,independent adaptive numerical integration plus NONMEM 7.3 METHOD=IMP,aligned,0.15,0.20
-SAEM,stochastic approximation,independent adaptive numerical integration plus NONMEM 7.3 METHOD=SAEM,aligned,0.20,0.30
+ITS,iterative two-stage conditional-mode and variance approximation,NONMEM 7.3 METHOD=ITS,aligned,0.08,0.15
+GQ,finite adaptive Gauss-Hermite marginal integration,independent adaptive numerical integration,none,0.001,
+IMP,importance-sampling Monte-Carlo EM,independent adaptive numerical integration plus NONMEM 7.3 METHOD=IMP,aligned,0.15,0.20
+SAEM,complete-data auxiliary-function stochastic approximation EM,independent adaptive numerical integration plus NONMEM 7.3 METHOD=SAEM,aligned,0.20,0.30
 BAYES,posterior sampling,independent normalized marginal posterior,none,0.12,
 HMC,Hamiltonian posterior sampling,independent normalized marginal posterior,none,0.08,
-NUTS,Hamiltonian posterior sampling,independent normalized marginal posterior,none,0.08,
-NPML,nonparametric maximum likelihood,independent fixed-support EM,none,0.000001,
-NPAG,nonparametric adaptive grid,independent likelihood recomputation and dominance,none,0.000001,
+NUTS,multinomial or classic-slice dynamic Hamiltonian posterior sampling,independent normalized marginal posterior,none,0.08,
+NPML,fixed-support nonparametric maximum likelihood,independent fixed-support EM,none,0.000001,
+NPAG,adaptive-grid nonparametric maximum likelihood,independent likelihood recomputation and dominance,none,0.000001,

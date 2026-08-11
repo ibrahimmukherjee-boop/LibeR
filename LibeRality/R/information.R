@@ -1,3 +1,58 @@
+.lity_prediction_plan_cache <- new.env(parent = emptyenv())
+.lity_prediction_plan_cache$.order <- character()
+
+.lity_prediction_plan_key <- function(model, events) {
+  structural <- intersect(
+    c("ID", "EVID", "MDV", "CMT", "DVID", "SS", "ADDL", "RATE"),
+    names(events)
+  )
+  .lity_hash(list(
+    model = model,
+    rows = nrow(events),
+    structure = events[structural]
+  ))
+}
+
+.lity_prediction_plan_clear <- function() {
+  keys <- setdiff(
+    ls(.lity_prediction_plan_cache, all.names = TRUE), ".order"
+  )
+  if (length(keys)) {
+    remove(list = keys, envir = .lity_prediction_plan_cache)
+  }
+  .lity_prediction_plan_cache$.order <- character()
+  invisible(NULL)
+}
+
+.lity_prediction_plan <- function(model, events, theta, sigma) {
+  key <- .lity_prediction_plan_key(model, events)
+  hit <- exists(key, envir = .lity_prediction_plan_cache, inherits = FALSE)
+  if (hit) {
+    plan <- get(key, envir = .lity_prediction_plan_cache, inherits = FALSE)
+  } else {
+    plan <- LibeRation::nm_prediction_plan(
+      model, events, theta = theta, sigma = sigma
+    )
+    assign(key, plan, envir = .lity_prediction_plan_cache)
+    .lity_prediction_plan_cache$.order <- c(
+      .lity_prediction_plan_cache$.order, key
+    )
+    limit <- max(1L, as.integer(getOption(
+      "LibeRality.prediction_plan_cache_size", 64L
+    )))
+    while (length(.lity_prediction_plan_cache$.order) > limit) {
+      discard <- .lity_prediction_plan_cache$.order[[1L]]
+      .lity_prediction_plan_cache$.order <-
+        .lity_prediction_plan_cache$.order[-1L]
+      if (exists(discard, envir = .lity_prediction_plan_cache,
+                 inherits = FALSE)) {
+        remove(list = discard, envir = .lity_prediction_plan_cache)
+      }
+    }
+  }
+  list(plan = plan, hit = hit)
+}
+
 .lity_parameter_spec <- function(model) {
   theta <- model$THETAS
   omega <- model$OMEGAS
@@ -249,7 +304,10 @@
 }
 
 .lity_prediction_parts <- function(model, events, theta, sigma, endpoint) {
-  derivative <- LibeRation::nm_prediction_derivatives(model, events, theta = theta, sigma = sigma)
+  cached <- .lity_prediction_plan(model, events, theta, sigma)
+  derivative <- LibeRation::nm_prediction_plan_evaluate(
+    cached$plan, events, theta = theta, sigma = sigma
+  )
   observed <- which(events$EVID == 0 & events$MDV == 0 & as.integer(events$DVID) == endpoint$dvid)
   if (!length(observed)) return(NULL)
   jacobian <- derivative$jacobian
@@ -264,7 +322,9 @@
   list(mu = as.numeric(derivative$value[observed]), H = H, G = G,
        data = events[observed, , drop = FALSE], diagnostics = list(
          propagation_kernel = derivative$propagation_kernel %||% "unknown",
-         operation_count = derivative$operation_count %||% NA_integer_
+         operation_count = derivative$operation_count %||% NA_integer_,
+         prediction_plan_cache_hit = cached$hit,
+         prediction_plan = derivative$plan_telemetry
        ))
 }
 
@@ -407,9 +467,11 @@ lity_information <- function(design, scenario = 1L, model = NULL, tolerance = 1e
   parameters <- .lity_parameter_spec(model)
   total <- matrix(0, nrow(parameters), nrow(parameters), dimnames = list(parameters$name, parameters$name))
   arm_contributions <- list(); kernels <- character(); operation_count <- 0
+  prediction_cache_hits <- prediction_cache_misses <- prediction_retapes <- 0L
   for (arm_name in names(design$arms)) {
     arm <- design$arms[[arm_name]]
-    arm_total <- matrix(0, nrow(parameters), nrow(parameters), dimnames = dimnames(total))
+    arm_blocks <- list()
+    arm_weights <- numeric()
     strata <- .lity_strata_for_arm(design$population, arm)
     for (stratum_index in seq_len(nrow(strata))) {
       events <- arm$events
@@ -424,13 +486,27 @@ lity_information <- function(design, scenario = 1L, model = NULL, tolerance = 1e
         if (is.null(contribution)) next
         effective <- arm$size * strata$weight[[stratum_index]] * selected$adherence *
           (1 - selected$dropout) * (1 - selected$missed_sample)
-        arm_total <- arm_total + effective * contribution$information
+        arm_blocks[[length(arm_blocks) + 1L]] <- contribution$information
+        arm_weights[[length(arm_weights) + 1L]] <- effective
         kernels <- c(kernels, contribution$diagnostics$propagation_kernel)
         operation_count <- operation_count + (contribution$diagnostics$operation_count %||% 0)
+        prediction_cache_hits <- prediction_cache_hits +
+          as.integer(isTRUE(contribution$diagnostics$prediction_plan_cache_hit))
+        prediction_cache_misses <- prediction_cache_misses +
+          as.integer(!isTRUE(contribution$diagnostics$prediction_plan_cache_hit))
+        prediction_retapes <- prediction_retapes + as.integer(
+          contribution$diagnostics$prediction_plan$retapes %||% 0L
+        )
       }
     }
+    arm_total <- if (length(arm_blocks)) {
+      lity_weighted_information_cpp(
+        arm_blocks, arm_weights,
+        matrix(0, nrow(parameters), nrow(parameters)), tolerance
+      )$information
+    } else matrix(0, nrow(parameters), nrow(parameters))
+    dimnames(arm_total) <- dimnames(total)
     arm_contributions[[arm_name]] <- arm_total
-    total <- total + arm_total
   }
   if (!is.null(design$prior_fim)) {
     prior <- design$prior_fim
@@ -441,9 +517,15 @@ lity_information <- function(design, scenario = 1L, model = NULL, tolerance = 1e
       prior <- aligned
     }
     if (!all(dim(prior) == dim(total))) .lity_stop("Prior FIM dimension does not match estimated parameters.")
-    total <- total + prior
+  } else {
+    prior <- matrix(0, nrow(total), ncol(total))
   }
-  metrics <- lity_matrix_metrics_cpp(total, tolerance)
+  metrics <- lity_weighted_information_cpp(
+    unname(arm_contributions), rep(1, length(arm_contributions)),
+    prior, tolerance
+  )
+  total <- metrics$information
+  dimnames(total) <- list(parameters$name, parameters$name)
   covariance <- metrics$covariance
   dimnames(covariance) <- dimnames(total)
   values <- parameters$value
@@ -470,6 +552,12 @@ lity_information <- function(design, scenario = 1L, model = NULL, tolerance = 1e
       noncontinuous = "distribution-aware working-moment information",
       endpoint_blocks = "block diagonal conditional on shared parameter vector",
       propagation_kernels = sort(unique(kernels)), operation_count = operation_count,
+      prediction_plan = list(
+        backend = "persistent guarded CppAD dynamic-parameter tape",
+        cache_hits = prediction_cache_hits,
+        cache_misses = prediction_cache_misses,
+        cumulative_retapes = prediction_retapes
+      ),
       tolerance = tolerance, warnings = validation$warnings
     ), created_at = .lity_now()
   ), class = "lity_information")

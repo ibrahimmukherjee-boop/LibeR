@@ -13,10 +13,15 @@
 **/src/*.dll
 **/src/*.a
 **/src/symbols.rds
+**/src/tmp.def
 node_modules/
 dist/
 .lib/
 .testlib/
+.test-library/
+.install-*.out
+.install-*.err
+Rplots.pdf
 .jobs/
 .checks/
 .dist/

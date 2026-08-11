@@ -8,6 +8,13 @@ liber_validation_configure_rtools(root)
 
 manifest <- liber_validation_manifest(root)
 packages <- names(manifest$packages)
+# Generated native objects are not source inputs and can otherwise make the
+# dirty-worktree provenance hash depend on whether a developer compiled just
+# before creating the library. Normalize that state before naming/marking the
+# immutable validation library.
+invisible(lapply(packages, function(package) {
+  liber_validation_clean_native_source(file.path(root, package))
+}))
 destination <- liber_validation_library_path(root)
 force <- "--force" %in% args
 git <- liber_validation_git(root)
@@ -20,8 +27,11 @@ if (dir.exists(destination) && !force) {
 
 parent <- dirname(destination)
 dir.create(parent, recursive = TRUE, showWarnings = FALSE)
-temporary <- tempfile("validation-library-", tmpdir = parent)
+temporary <- chartr(
+  "\\", "/", tempfile("validation-library-", tmpdir = parent)
+)
 dir.create(temporary, recursive = TRUE, showWarnings = FALSE)
+temporary <- normalizePath(temporary, winslash = "/", mustWork = TRUE)
 on.exit(unlink(temporary, recursive = TRUE, force = TRUE), add = TRUE)
 
 release_dir <- file.path(root, "releases", manifest$release)

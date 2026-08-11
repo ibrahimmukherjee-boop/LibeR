@@ -9,3 +9,7 @@ lity_matrix_metrics_cpp <- function(information_input, tolerance = 1e-10) {
     .Call(`_LibeRality_lity_matrix_metrics_cpp`, information_input, tolerance)
 }
 
+lity_weighted_information_cpp <- function(matrices, weights, prior_input = NULL, tolerance = 1e-10) {
+    .Call(`_LibeRality_lity_weighted_information_cpp`, matrices, weights, prior_input, tolerance)
+}
+

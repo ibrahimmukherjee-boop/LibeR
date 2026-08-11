@@ -18,38 +18,53 @@ if (!requireNamespace("LibeRation", quietly = TRUE)) {
   stop("Install LibeRation before running NONMEM validation.", call. = FALSE)
 }
 
-run_execute <- function(model, expected_table) {
-  execute <- Sys.which("execute")
-  if (!nzchar(execute)) stop("PsN execute is not available in PATH.", call. = FALSE)
+run_execute <- function(model, expected_table, dde = FALSE) {
+  nonmem_command <- getFromNamespace(".nm_nonmem_command", "LibeRation")
+  process_arguments <- getFromNamespace(
+    ".nm_nonmem_process_arguments", "LibeRation"
+  )
+  sanitize_log <- getFromNamespace(".nm_nonmem_log", "LibeRation")
+  execute <- nonmem_command()
+  if (!nzchar(execute)) {
+    stop(
+      "PsN execute is not available in PATH and LIBERATION_NONMEM_COMMAND is not configured.",
+      call. = FALSE
+    )
+  }
   stamp <- format(Sys.time(), "%Y%m%dT%H%M%S", tz = "UTC")
   directory <- paste0(
     tools::file_path_sans_ext(model), "_run_", stamp, "_", Sys.getpid()
   )
-  if (.Platform$OS.type == "windows") {
-    script <- sub("\\.bat$", "", execute, ignore.case = TRUE)
-    perl <- file.path(dirname(execute), "perl.exe")
-    if (!file.exists(perl)) perl <- Sys.which("perl")
-    if (!nzchar(perl) || !file.exists(script)) {
-      stop("The Windows PsN Perl launcher could not be resolved.", call. = FALSE)
-    }
-    portable_root <- dirname(dirname(dirname(execute)))
-    nonmem_paths <- c(
-      file.path(portable_root, "nm_7.3.0_g", "run"),
-      file.path(portable_root, "scripts"),
-      file.path(portable_root, "Perl", "bin"),
-      file.path(portable_root, "gfortran", "libexec", "gcc", "i586-pc-mingw32", "4.6.0"),
-      file.path(portable_root, "gfortran", "bin")
+  arguments <- c(paste0("-directory=", directory), "-clean=0", model)
+  if (isTRUE(dde)) {
+    # PsN's preliminary NM-TRAN check runs before NONMEM's ddexpand utility
+    # and therefore cannot resolve AD_x_y variables in an unexpanded stream.
+    arguments <- c(
+      arguments, "-no-check_nmtran",
+      "-nmfe_options=-prdefault -xmloff -dde"
     )
-    Sys.setenv(PATH = paste(c(nonmem_paths, Sys.getenv("PATH")), collapse = ";"))
-    status <- system2(perl, c(shQuote(script), paste0("-directory=", directory), model))
-  } else {
-    status <- system2(execute, c(paste0("-directory=", directory), model))
   }
-  if (!identical(status, 0L)) stop("PsN execute returned status ", status, ".", call. = FALSE)
+  process <- do.call(
+    processx::run,
+    process_arguments(execute, arguments, fixture_dir)
+  )
+  sanitized <- sanitize_log(process)
+  if (!identical(process$status, 0L)) {
+    detail <- paste(tail(sanitized, 20L), collapse = "\n")
+    stop(
+      "PsN execute returned status ", process$status,
+      if (nzchar(detail)) paste0(".\n", detail) else ".",
+      call. = FALSE
+    )
+  }
   listing <- file.path(directory, "NM_run1", "psn.lst")
   if (!file.exists(listing) || !file.exists(expected_table)) {
     nmtran <- file.path(directory, "NM_run1", "nmtran_error.txt")
-    detail <- if (file.exists(nmtran)) paste(readLines(nmtran, warn = FALSE), collapse = "\n") else ""
+    detail <- c(
+      if (file.exists(nmtran)) readLines(nmtran, warn = FALSE) else character(),
+      tail(sanitized, 30L)
+    )
+    detail <- paste(unique(detail[nzchar(trimws(detail))]), collapse = "\n")
     stop("NONMEM execution did not complete. ", detail, call. = FALSE)
   }
   invisible(directory)
@@ -69,21 +84,29 @@ omega_zero <- data.frame(OMEGA = 1, Value = 0, FIX = TRUE)
 validation_results <- list()
 
 validate_case <- function(name, model, tolerance, data_columns = columns,
-                          allow_unavailable = FALSE) {
-  data_path <- paste0(tolower(name), ".dat")
-  model_path <- paste0(tolower(name), ".mod")
-  table_path <- paste0(tolower(name), ".tab")
+                          allow_unavailable = FALSE, dde = FALSE,
+                          fixture = name) {
+  data_path <- paste0(tolower(fixture), ".dat")
+  model_path <- paste0(tolower(fixture), ".mod")
+  table_path <- paste0(tolower(fixture), ".tab")
   if (run_nonmem || !file.exists(table_path)) {
     execution_error <- tryCatch({
-      run_execute(model_path, table_path)
+      run_execute(model_path, table_path, dde = dde)
       NULL
     }, error = identity)
     if (!is.null(execution_error)) {
       detail <- conditionMessage(execution_error)
       unavailable <- isTRUE(allow_unavailable) &&
-        grepl("UNKNOWN SUBROUTINE", detail, ignore.case = TRUE)
+        grepl(
+          "UNKNOWN SUBROUTINE|RADAR5NM license extension is required",
+          detail, ignore.case = TRUE
+        )
       if (!unavailable) stop(execution_error)
-      cat(name, ": NOT RUN (installed NONMEM does not provide this ADVAN)\n", sep = "")
+      cat(
+        name,
+        ": NOT RUN (installed NONMEM licence does not provide this ADVAN runtime)\n",
+        sep = ""
+      )
       validation_results[[name]] <<- data.frame(
         case = name, kind = "prediction", passed = NA,
         maximum_absolute_difference = NA_real_, compared_records = 0L,
@@ -92,7 +115,7 @@ validate_case <- function(name, model, tolerance, data_columns = columns,
         tolerance = tolerance, status = "not-run",
         detail = detail, stringsAsFactors = FALSE
       )
-      return(invisible(NULL))
+      return(invisible("not-run"))
     }
   }
   data <- utils::read.table(data_path, col.names = data_columns)
@@ -123,6 +146,7 @@ validate_case <- function(name, model, tolerance, data_columns = columns,
     tolerance = tolerance, status = "passed", detail = "",
     stringsAsFactors = FALSE
   )
+  invisible("passed")
 }
 
 base_input <- columns
@@ -239,7 +263,96 @@ validate_case("ADVAN6", LibeRation::nm_model(
 
 validate_case("ADVAN13", stiff_model(13), 2e-5)
 
-validate_case("ADVAN14", stiff_model(14), 2e-5, allow_unavailable = TRUE)
+validate_case("ADVAN14", stiff_model(14), 2e-5)
+
+validate_case("ADVAN15", LibeRation::nm_model(
+  INPUT = base_input, ADVAN = 15, TRANS = 1, DOSECMP = 1, OBSCMP = 1,
+  PRED = paste(
+    "K=THETA(1)*exp(ETA(1))", "BIND=THETA(2)", "S1=THETA(3)",
+    sep = "\n"
+  ),
+  DES = "DADT(1)=-K*FREE",
+  ALG = "RES(1)=FREE-A(1)/(1+BIND)",
+  DAE_CONFIG = LibeRation::nm_dae_config("FREE", initial = 0),
+  EXPERIMENTAL = LibeRation::nm_experimental_config(
+    enabled = TRUE, label = "ADVAN15 IDAS-equilibrium validation"
+  ),
+  ERROR = "Y=F", THETAS = theta_table(c(.4, 1, 20)),
+  OMEGAS = omega_zero, ODE_CONTROL = list(rtol = 2e-7, atol = 1e-10)
+), 2e-5)
+
+dde_model <- function(advan) LibeRation::nm_model(
+  INPUT = base_input, ADVAN = advan, TRANS = 1, DOSECMP = 1, OBSCMP = 1,
+  PRED = paste(
+    "K=THETA(1)*exp(ETA(1))", "FB=THETA(2)", "TAU1=THETA(3)",
+    "S1=THETA(4)", sep = "\n"
+  ),
+  DES = "DADT(1)=-K*A(1)+FB*LAG(A(1),TAU1)",
+  DDE_CONFIG = LibeRation::nm_dde_config(
+    history = 0, step = .002, minimum_delay = 2
+  ),
+  EXPERIMENTAL = LibeRation::nm_experimental_config(
+    enabled = TRUE, label = paste0("ADVAN", advan, " DDE validation")
+  ),
+  ERROR = "Y=F", THETAS = theta_table(c(.4, .08, 2, 20)),
+  OMEGAS = omega_zero
+)
+advan16_status <- validate_case(
+  "ADVAN16", dde_model(16), 3e-4, allow_unavailable = TRUE, dde = TRUE
+)
+validate_case("ADVAN18", dde_model(18), 3e-4, dde = TRUE)
+
+advan17_model <- LibeRation::nm_model(
+  INPUT = base_input, ADVAN = 17, TRANS = 1, DOSECMP = 1, OBSCMP = 1,
+  PRED = paste(
+    "K=THETA(1)*exp(ETA(1))", "FB=THETA(2)", "TAU1=THETA(3)",
+    "BIND=THETA(4)", "S1=THETA(5)", sep = "\n"
+  ),
+  DES = "DADT(1)=-K*FREE+FB*LAG(FREE,TAU1)",
+  ALG = "RES(1)=FREE-A(1)/(1+BIND)",
+  DDE_CONFIG = LibeRation::nm_dde_config(
+    history = 0, step = .002, minimum_delay = 2
+  ),
+  DAE_CONFIG = LibeRation::nm_dae_config("FREE", initial = 0),
+  EXPERIMENTAL = LibeRation::nm_experimental_config(
+    enabled = TRUE, label = "ADVAN17 delayed-equilibrium validation"
+  ),
+  ERROR = "Y=F", THETAS = theta_table(c(.4, .08, 2, 1, 20)),
+  OMEGAS = omega_zero, ODE_CONTROL = list(rtol = 2e-7, atol = 1e-10)
+)
+if (identical(advan16_status, "passed")) {
+  validate_case(
+    "ADVAN17", advan17_model, 4e-4,
+    allow_unavailable = TRUE, dde = TRUE
+  )
+} else {
+  detail <- paste(
+    "ADVAN17 shares the RADAR5NM runtime with ADVAN16.",
+    "The installed NONMEM licence failed the ADVAN16 capability probe,",
+    "so ADVAN17 was not submitted to that unavailable runtime."
+  )
+  cat("ADVAN17: NOT RUN (RADAR5NM extension unavailable; see ADVAN16 probe)\n")
+  validation_results[["ADVAN17"]] <- data.frame(
+    case = "ADVAN17", kind = "prediction", passed = NA,
+    maximum_absolute_difference = NA_real_, compared_records = 0L,
+    theta_difference = NA_real_, eta_difference = NA_real_,
+    covariance_se_difference = NA_real_, tolerance = 4e-4,
+    status = "not-run", detail = detail, stringsAsFactors = FALSE
+  )
+}
+
+# ADVAN16 and ADVAN17 use the separately licensed RADAR5NM runtime. When that
+# extension is unavailable, ADVAN18 provides an independent NONMEM DDE_SOLVER
+# reference for identical delay equations. ADVAN17's equilibrium component is
+# additionally exercised directly against ADVAN15 above.
+validate_case(
+  "ADVAN16_EQUIVALENT", dde_model(16), 3e-4,
+  dde = TRUE, fixture = "ADVAN18"
+)
+validate_case(
+  "ADVAN17_EQUIVALENT", advan17_model, 4e-4,
+  dde = TRUE, fixture = "ADVAN17EQV"
+)
 
 steady_state_input <- c(columns[1:6], "SS", "II", columns[7:8])
 validate_case("SSBOLUS", LibeRation::nm_model(

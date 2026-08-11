@@ -272,6 +272,12 @@ library_llm_chat <- function(messages, cfg = NULL, role = .library_llm_roles(),
   } else {
     body <- list(model = model, messages = messages,
                  temperature = endpoint$temperature %||% 0)
+    prediction <- suppressWarnings(as.integer(
+      endpoint$num_predict %||% cfg$ollama$num_predict %||% 8192L
+    ))
+    if (length(prediction) && is.finite(prediction[[1L]]) && prediction[[1L]] >= 1L) {
+      body$max_tokens <- prediction[[1L]]
+    }
     # `store` is an OpenAI-specific option. Omitting it for compatible
     # endpoints keeps the provider layer usable with LM Studio, vLLM and other
     # servers that implement only the common chat-completions fields.

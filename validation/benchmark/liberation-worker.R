@@ -10,6 +10,20 @@ metrics_path <- normalizePath(args[[2L]], winslash = "/", mustWork = FALSE)
 summary_path <- normalizePath(args[[3L]], winslash = "/", mustWork = FALSE)
 
 elapsed <- function() unname(proc.time()[["elapsed"]])
+diagnostic_scalar <- function(value) {
+  if (is.null(value) || !length(value)) return("")
+  flattened <- unlist(value, recursive = TRUE, use.names = TRUE)
+  if (!length(flattened)) return("")
+  formatted <- vapply(flattened, function(item) {
+    if (is.numeric(item)) format(item, digits = 12L, trim = TRUE) else
+      as.character(item)
+  }, character(1))
+  labels <- names(flattened)
+  if (!is.null(labels) && any(nzchar(labels))) {
+    paste0(ifelse(nzchar(labels), paste0(labels, "="), ""), formatted,
+           collapse = ";")
+  } else paste(formatted, collapse = ";")
+}
 invisible(gc(reset = TRUE))
 process_started <- elapsed()
 config <- readRDS(config_path)
@@ -76,7 +90,47 @@ result <- tryCatch({
         fit$diagnostics$conditional_modes$evaluations %||% NA_integer_,
       tape_records = fit$diagnostics$tapes$records %||% NA_integer_,
       tape_retapes = fit$diagnostics$tapes$retapes %||% NA_integer_,
-      shared_prediction_tapes = fit$diagnostics$tapes$shared_prediction_tapes %||% NA_integer_
+      shared_prediction_tapes = fit$diagnostics$tapes$shared_prediction_tapes %||% NA_integer_,
+      its_mstep_schedule = diagnostic_scalar(
+        fit$diagnostics$mstep_schedule %||% ""
+      ),
+      its_acceleration = fit$diagnostics$acceleration$method %||% "",
+      imp_sampling = fit$diagnostics$sampling %||% "",
+      imp_proposal = fit$diagnostics$proposal %||% "",
+      imp_sample_schedule = diagnostic_scalar(
+        fit$diagnostics$sample_schedule %||% ""
+      ),
+      imp_mstep_schedule = if (identical(fit$method, "IMP")) {
+        diagnostic_scalar(fit$diagnostics$mstep_schedule %||% "")
+      } else "",
+      saem_kernel = fit$diagnostics$eta_sampler$resolved_kernel %||% "",
+      stochastic_stopped_early = isTRUE(
+        fit$diagnostics$stationarity$stopped_early %||% FALSE
+      ),
+      stochastic_retained_support = as.integer(
+        fit$diagnostics$stochastic_approximation$retained_latent_support %||%
+          NA_integer_
+      ),
+      stochastic_phase_timing = {
+        phase <- unlist(
+          fit$diagnostics$phase_timing$seconds %||% list(),
+          use.names = TRUE
+        )
+        if (length(phase)) paste(
+          sprintf("%s=%.9g", names(phase), as.numeric(phase)),
+          collapse = ";"
+        ) else ""
+      },
+      bayes_outer_kernel = fit$diagnostics$outer_sampler$resolved_kernel %||% "",
+      stochastic_outer_acceptance = fit$diagnostics$outer_acceptance %||% NA_real_,
+      stochastic_eta_acceptance = fit$diagnostics$eta_acceptance %||%
+        fit$diagnostics$acceptance %||% NA_real_,
+      posterior_min_ess = if (length(fit$posterior$population$ess)) {
+        min(fit$posterior$population$ess, na.rm = TRUE)
+      } else NA_real_,
+      posterior_median_ess = if (length(fit$posterior$population$ess)) {
+        stats::median(fit$posterior$population$ess, na.rm = TRUE)
+      } else NA_real_
     )
   } else if (identical(config$workload, "simulation")) {
     simulated <- do.call(

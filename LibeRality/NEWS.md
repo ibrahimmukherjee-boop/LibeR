@@ -1,5 +1,13 @@
-# LibeRality 0.3.0
+# LibeRality 0.3.1
 
+- Reuses bounded, guarded LibeRation prediction plans across repeated design
+  evaluations instead of recording the same CppAD prediction tape on every
+  optimizer visit. Cache hits, misses, and automatic retapes are reported in
+  information diagnostics; numerical information remains unchanged.
+- Accumulates endpoint/stratum/arm Fisher-information blocks and matrix
+  diagnostics in one native Eigen pass. Pure allocation optimisation records
+  each fixed arm once per scenario and subsequently reweights those matrices
+  instead of rebuilding prediction tapes at every allocation update.
 - Makes the externally cross-validated FO block-diagonal information
   approximation the default for new designs. `full_gaussian` remains an
   explicit supported alternative.

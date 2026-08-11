@@ -115,6 +115,40 @@ test_that("dual-lane comparison finds material parameter discrepancies", {
   expect_true(any(vapply(different$differences, function(x) x$field == "theta.CL" && x$impact == "major", logical(1))))
 })
 
+test_that("precomputed extraction lanes reconcile without rerunning inference", {
+  extraction <- pipeline_extraction(5)
+  text <- list(
+    available = TRUE,
+    result = list(model_present = TRUE, recoverability = list(overall = 0.9),
+                  extraction = extraction),
+    audit = list(lane = "text")
+  )
+  vision <- list(
+    available = TRUE,
+    result = list(model_present = TRUE, recoverability = list(overall = 0.85),
+                  extraction = extraction),
+    audit = list(lane = "vision")
+  )
+  cfg <- ingest_load_config()
+  cfg$deliberative$enabled <- FALSE
+  cfg$llm$indexing$provider <- "ollama"
+  cfg$llm$indexing$model <- "independent-text"
+  cfg$llm$vision$provider <- "ollama"
+  cfg$llm$vision$model <- "independent-vision"
+  cfg$llm$extraction_independence <- "required"
+  bundle <- list(source = list(sha256 = "distributed-fixture"))
+
+  result <- ingest_reconcile_extractions(
+    pipeline_metadata(), bundle, text, vision, cfg, adjudicate = TRUE
+  )
+
+  expect_equal(result$status, "machine_consistent")
+  expect_true(result$model_present)
+  expect_true(result$independent_models)
+  expect_true(result$independence_gate_passed)
+  expect_equal(result$audit$source_sha256, "distributed-fixture")
+})
+
 test_that("Ollama vision messages retain a one-image JSON array", {
   message <- list(role = "user", content = list(
     list(type = "text", text = "read this"),

@@ -34,6 +34,24 @@ estimates is a failed validation, not a speed result.
 6. **Queue parity**: the same serialized job must produce equivalent local and
    LibeRties-worker results, with package/version fingerprints recorded.
 
+### August 2026 ADVAN and performance campaign
+
+The 6 August 2026 Windows campaign directly passed NONMEM prediction
+comparisons for ADVAN1–15 and ADVAN18, plus bolus/infusion steady state and
+RATE1/RATE2 dosing. The installed NONMEM licence lacks RADAR5NM, so ADVAN16/17
+are explicitly `not-run` as direct comparators; equation-matched ADVAN18 checks
+passed with maximum prediction differences of `4.61e-9`. The clean-room
+implementation and full timing interpretation are recorded in
+[`RADAU-BENCHMARK-2026-08-06.md`](RADAU-BENCHMARK-2026-08-06.md).
+
+A repeated 100-subject ADVAN1 benchmark (one warm-up, three measured
+fresh-process repetitions) found lower median LibeRation end-to-end times for
+all tested methods and simulation. A supplementary structural smoke matrix
+also exposed non-finite exact gradients in selected three-compartment and ODE
+conditional estimators and severe ADVAN6/13 retaping. Those failures remain
+visible evidence and are not converted to passes with finite-difference
+fallback.
+
 ## Independent software comparators
 
 `validation/external-comparators/` adds a versioned registry and a portable
@@ -54,7 +72,7 @@ The executable portable campaign currently compares:
   linear-Gaussian likelihood;
 - QSP reaction-network trajectories and conservation with deSolve;
 - nonlinear Brusselator QSP trajectories with headless COPASI when installed;
-- ADVAN14 stiff ODE, SDE, DDE, nonlinear DAE, and QSP trajectories or moments
+- ADVAN14 stiff ODE, SDE, general DDE, nonlinear DAE, and QSP trajectories or moments
   with Julia SciML/Sundials when installed;
 - FO, FOCE, and FOCEI population parameters and conditional modes with
   nlmixr2, including freely estimated OMEGA/SIGMA, full correlated OMEGA,
@@ -79,7 +97,7 @@ Rscript tools/create-validation-library.R --source
 Rscript validation/external-comparators/run-validation.R
 ```
 
-The complete registry also tracks NONMEM 7.4+ ADVAN14, Monolix, Pumas, Stan
+The complete registry also tracks NONMEM 7.6 RADAR5NM ADVAN16/17, Monolix, Pumas, Stan
 HMMs, ASReview, document-parser comparisons, and deployment isolation.
 nlmixr2, pomp/bssm, and posologyr now have executable optional gates. The
 nlmixr2 gate deliberately separates its fixed-variance algorithm fixture from
@@ -106,13 +124,14 @@ against an independently normalized marginal posterior, with sampler
 diagnostics gated where applicable. NPML and NPAG are checked against an
 independent fixed/adaptive-support EM calculation.
 
-The 24 July 2026 Windows release-profile campaign passed every declared check
+The 10 August 2026 Windows release-profile campaign passed every declared check
 for all 13 methods. The largest direct deterministic NONMEM THETA difference
 was `1.34e-4`; ITS differed by `5.10e-3`. Decision-grade 3,000-sample NONMEM
-IMP differed by `2.19e-2`, while LibeRation IMP differed from the independently
-integrated marginal optimum by `1.90e-5`. SAEM differed from NONMEM by
-`5.52e-4`. GQ matched the exact marginal optimum within `1.45e-8`; the largest
-HMC/NUTS posterior-quantile difference was `3.07e-2`. NPML support weights
+IMP differed from the independently integrated optimum by `1.90e-2`, while
+LibeRation IMP differed by `3.93e-3`. LibeRation SAEM differed from the
+independent optimum by `1.42e-2` and from the finite NONMEM SAEM run by
+`6.33e-2`. GQ matched the exact marginal optimum within `2.39e-7`; the largest
+HMC/NUTS posterior-quantile difference was `2.61e-2`. NPML support weights
 agreed within `3.45e-12`, and the NPAG likelihood improvement agreed within
 `5.87e-9`.
 
@@ -131,6 +150,23 @@ Rscript validation/estimation-methods/run-validation.R --run-nonmem
 
 Without `--run-nonmem`, direct/aligned NONMEM rows remain explicitly
 `not-run`, and the result is not marked complete.
+
+The estimator-identity gate is complemented by a broader structural and
+numerical fidelity matrix:
+
+```text
+Rscript validation/estimation-methods/run-fidelity-matrix.R
+```
+
+Its manifest is `validation/estimation-methods/fidelity-scenarios.csv`. The
+matrix covers all 13 public estimators across correlated ETAs with covariates
+and combined error, posterior geometry, multidimensional nonparametric
+supports, IOV, ADVAN6 ODE execution, BLQ likelihood, compiled Markov/user
+likelihood, and near-boundary parameters across the applicable compatibility
+and optimized policies. It also checks hard final-mode acceptance, fixed-support NPML,
+likelihood-monotone NPAG pruning, explicit Bayesian objective semantics, and
+common-score SAEM replicate selection. This is an internal fidelity gate, not
+a substitute for the matched external NONMEM and independent-reference rows.
 
 ## Non-PK likelihood and latent-state validation
 
@@ -197,6 +233,9 @@ Monte Carlo calibration:
   fixed-step Euler/Milstein simulation moments;
 - a closed-form two-interval method-of-steps solution tests a smooth-history
   linear DDE, second-order refinement, and the parameterized-delay derivative;
+- ADVAN16/17 additionally exercise the clean-room Radau IIA order-five path,
+  including its explicit solver-scope boundary, collocation history, and AD
+  parameter/delay sensitivities; ADVAN18 remains an RK4 comparator;
 - a nonlinear algebraic constraint with an analytic reduced solution tests
   index-1 DAE predictions and implicit sensitivities;
 - a closed-form irreversible two-species reaction tests QSP amounts,
@@ -334,20 +373,29 @@ The July 2026 Windows benchmark produced:
 | ADVAN11 | 4.55660842e-9 | 6 |
 | ADVAN12 | 1.91085725e-9 | 6 |
 | ADVAN13 | 7.83511256e-10 | 6 |
+| ADVAN14 | 1.38853029e-9 | 6 |
+| ADVAN15 (equilibrium DAE) | 3.13036250e-8 | 10 |
+| ADVAN16-equivalent dynamics (NONMEM ADVAN18 reference) | 2.04385033e-8 | 14 |
+| ADVAN17-equivalent delayed equilibrium (NONMEM ADVAN18 reference) | 5.24029886e-9 | 14 |
+| ADVAN18 | 2.04385033e-8 | 14 |
 | ADVAN1 repeated bolus steady state | 3.46666562e-9 | 4 |
 | ADVAN1 intermittent-infusion steady state | 3.99814670e-9 | 6 |
 | ADVAN1 modelled rate (`RATE=-1`, `R1`) | 4.35503544e-9 | 6 |
 | ADVAN1 modelled duration (`RATE=-2`, `D1`) | 4.35503544e-9 | 6 |
 
-ADVAN14 is implemented and internally checked against the same stiff system,
-but it is not marked externally validated: the available NONMEM 7.3
-installation reports ADVAN14 as an unknown subroutine. The runner records that
-case as `not-run` and keeps `complete = false`; it never converts the missing
-reference into a pass. A paired ADVAN14 result requires NONMEM 7.4 or newer.
+The August 2026 campaign used NONMEM 7.6 and directly passed ADVAN1-15 and
+ADVAN18. ADVAN16 and ADVAN17 share NONMEM's separately licensed RADAR5NM
+runtime; the installed licence reaches the runtime but explicitly rejects both
+routines before model evaluation. The runner records both direct cases as
+`not-run` and therefore keeps `complete = false`. It separately validates their
+delay equations against NONMEM's independent ADVAN18 DDE solver; ADVAN17's
+equilibrium component is also exercised directly by ADVAN15. These equivalent
+checks are supporting numerical evidence, not substitutes for a future direct
+RADAR5NM comparison.
 
 The compact FOCEI benchmark estimates clearance with fixed residual and random
 effect variances, then compares the final fixed effect, every subject ETA, and
-the covariance-step standard error. Against NONMEM 7.3, the July 2026 benchmark
+the covariance-step standard error. Against NONMEM, the current compact benchmark
 gave absolute differences of `1.33651e-4` for THETA1, `6.07381e-5` for ETA1,
 and `3.04130e-3` for the THETA1 standard error.
 

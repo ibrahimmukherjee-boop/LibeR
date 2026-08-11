@@ -145,8 +145,8 @@ the engine never substitutes a silently truncated repeated-dose sum.
 The joint likelihood is recorded once as a persistent CppAD tape. FO uses the
 first-order marginal Gaussian covariance; FOCE freezes residual variance at
 ETA zero; FOCEI retains interaction; Laplace uses exact conditional curvature.
-ITS, importance sampling with common random numbers, SAEM, and Bayesian MCMC
-share the same C++ prediction and likelihood path. Full covariance OMEGA,
+ITS, importance-sampling Monte-Carlo EM, SAEM, and Bayesian MCMC share the
+same C++ prediction and likelihood path. Full covariance OMEGA,
 occasion-expanded ETAs, mixtures, priors, censoring, and correlated residuals
 are composed in that same objective.
 
@@ -157,8 +157,8 @@ include implicit mode sensitivities, curvature/log-determinant derivatives,
 and nonlinear parameter transforms. The numerical gradient-Jacobian Hessian
 is retained as a labelled comparator/fallback. Indefinite covariance repair is
 available only through the explicit, audited `nm_covariance_repair()` API.
-IMP reuses its common-random-number marginal objective; SAEM performs a
-post-fit marginal importance-information calculation. Bayesian runs report
+IMP and SAEM perform post-fit marginal importance-information calculations
+for frequentist covariance. Bayesian runs report
 posterior SDs, posterior CVs, 95% credible intervals, and posterior
 covariance/correlation matrices directly from the saved chain.
 

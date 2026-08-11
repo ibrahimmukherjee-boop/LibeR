@@ -17,6 +17,15 @@ methods <- option_value("methods", "deterministic")
 engines <- toupper(option_value("engines", "NONMEM,LIBERATION"))
 repeats <- option_value("repeats", "1")
 warmups <- option_value("warmups", "0")
+validation_library <- option_value(
+  "library", Sys.getenv("LIBER_VALIDATION_LIBRARY", "")
+)
+include_covariance <- liber_validation_flag(
+  "covariance", TRUE, args = args
+)
+include_simulation <- liber_validation_flag(
+  "simulation", TRUE, args = args
+)
 selected <- strsplit(
   option_value("scenarios", paste(benchmark_scenario_names(), collapse = ",")),
   ",", fixed = TRUE
@@ -50,6 +59,11 @@ for (index in seq_along(selected)) {
     paste0("--warmups=", warmups), paste0("--scenario=", scenario),
     paste0("--output=", destination)
   )
+  if (nzchar(validation_library)) {
+    command <- c(command, paste0("--library=", validation_library))
+  }
+  if (!include_covariance) command <- c(command, "--no-covariance")
+  if (!include_simulation) command <- c(command, "--no-simulation")
   cat(sprintf("[%d/%d] %s\n", index, length(selected), scenario))
   statuses[[index]] <- system2(rscript, command)
 }

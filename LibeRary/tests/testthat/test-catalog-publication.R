@@ -117,6 +117,29 @@ test_that("remote LLM content is blocked unless explicitly enabled", {
                "Remote LLM content transfer is disabled")
 })
 
+test_that("OpenAI-compatible requests honor configured output limits", {
+  cfg <- ingest_load_config()
+  cfg$llm$indexing$provider <- "openai_compatible"
+  cfg$llm$indexing$model <- "fixture-model"
+  cfg$llm$indexing$num_predict <- 4321L
+  cfg$llm$providers$openai_compatible$base_url <- "http://127.0.0.1:12345"
+  captured <- NULL
+  old <- options(LibeRary.llm_transport = function(request) {
+    captured <<- request$body$data
+    stop("request captured")
+  })
+  on.exit(options(old), add = TRUE)
+
+  expect_error(
+    library_llm_chat(
+      list(list(role = "user", content = "fixture")), cfg, "indexing",
+      sensitive = FALSE
+    ),
+    "request captured"
+  )
+  expect_identical(captured$max_tokens, 4321L)
+})
+
 test_that("catalogue publication restores the prior entry when index activation fails", {
   root <- tempfile("liberary-transaction-")
   on.exit(unlink(root, recursive = TRUE, force = TRUE), add = TRUE)

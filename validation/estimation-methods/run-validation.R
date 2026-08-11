@@ -18,6 +18,10 @@ source(file.path(root, "tools", "validation-runtime.R"), local = TRUE)
 option_value <- function(name, default = NULL) {
   liber_validation_option(name, default, args = args)
 }
+numerical_mode <- option_value("mode", "nonmem_compatibility")
+if (!numerical_mode %in% c("nonmem_compatibility", "liber_optimized")) {
+  stop("--mode must be nonmem_compatibility or liber_optimized.", call. = FALSE)
+}
 validation_runtime <- liber_validation_library(
   root, c("LibeRtAD", "LibeRation"),
   library = option_value("library", Sys.getenv("LIBER_VALIDATION_LIBRARY", ""))
@@ -78,7 +82,8 @@ validation_model <- function(theta = 1, theta_fixed = FALSE) {
     SIGMAS = data.frame(SIGMA = 1L, Value = sigma, FIX = TRUE),
     LIK_CONFIG = LibeRation::nm_lik_config(
       error = "additive", sigma_parameterization = "variance"
-    )
+    ),
+    NUMERICAL_MODE = numerical_mode
   )
 }
 
@@ -160,8 +165,8 @@ fit_controls <- list(
   ),
   IMP = list(n_imp = if (quick) 200L else 500L, seed = seed),
   SAEM = list(
-    n_iter = if (quick) 160L else 400L,
-    burn = if (quick) 50L else 120L, mcmc_steps = 2L,
+    n_iter = if (quick) 240L else 400L,
+    burn = if (quick) 70L else 120L, mcmc_steps = 2L,
     mstep_maxit = if (quick) 8L else 12L, seed = seed
   ),
   BAYES = list(
@@ -611,6 +616,7 @@ provenance <- liber_validation_provenance(
   dependencies = c("Rcpp", "jsonlite", "openssl"),
   metadata = list(
     profile = if (quick) "quick" else "release",
+    numerical_mode = numerical_mode,
     nonmem_requested = run_nonmem,
     nonmem_execute = unname(Sys.which("execute")),
     methods = as.list(expected_methods),
@@ -624,6 +630,7 @@ summary <- list(
   schema = "liber.estimation-method-validation/1",
   passed = passed, complete = complete,
   profile = if (quick) "quick" else "release",
+  numerical_mode = numerical_mode,
   references = list(
     exact_marginal_mle = exact_mle,
     posterior_mean = posterior_mean, posterior_sd = posterior_sd,
@@ -649,6 +656,7 @@ markdown_table <- function(frame) {
 report <- c(
   paste0("# Estimation-method validation: ", stamp), "",
   paste0("- Profile: `", if (quick) "quick" else "release", "`."),
+  paste0("- Numerical mode: `", numerical_mode, "`."),
   paste0("- Exact marginal THETA1 optimum: ", format(exact_mle, digits = 10), "."),
   paste0(
     "- Independent posterior THETA1 mean (SD): ",

@@ -8,8 +8,10 @@ independent evidence file is recorded as `not-run`, never as agreement.
 
 - Use `validation/nonmem/run-validation.R --run` with the intended NONMEM
   installation and PsN `execute` on `PATH`.
-- NONMEM 7.3 covers the currently executable ADVAN and estimation controls;
-  ADVAN14 requires NONMEM 7.4 or newer.
+- NONMEM 7.6 directly covers ADVAN1-15 and ADVAN18 in the current campaign.
+  ADVAN16/17 additionally require the separately licensed RADAR5NM extension;
+  when it is absent, their direct controls are retained as `not-run` and their
+  dynamics are compared with equivalent ADVAN18 controls.
 - Retain control streams, data hashes, NONMEM version/build, command line,
   listing/table outputs, LibeR source identity, tolerances, and the generated
   LibeR provenance bundle.
@@ -34,13 +36,14 @@ independent evidence file is recorded as `not-run`, never as agreement.
 - Record whether objective constants, variance transforms, priors, and
   censoring conventions are identical before declaring a numerical tolerance.
 
-## NONMEM 7.4+ ADVAN14
+## NONMEM 7.6 ADVAN16/17 with RADAR5NM
 
-- Re-run the canonical stiff fixture already compared with SciML.
-- Add bolus, infusion, repeated-dose, and steady-state forms supported by the
-  installed NONMEM build.
-- Treat SciML agreement as independent numerical corroboration, not a
-  substitute for the direct compatibility result.
+- Re-run the checked-in ADVAN16/17 controls on an installation with the
+  optional RADAR5NM licence extension.
+- Retain the direct result alongside the existing ADVAN18 equivalent-delay and
+  ADVAN15 equilibrium-component comparisons.
+- Never convert licence rejection into agreement; it remains explicit
+  capability evidence with status `not-run`.
 
 ## Deployment qualification
 
