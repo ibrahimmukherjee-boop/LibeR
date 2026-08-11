@@ -59,6 +59,18 @@ The chosen theme is applied in the document head before the main interface
 renders to avoid a light/dark flash. Switching theme in any LibeR application
 therefore becomes the starting preference for the other applications.
 
+### Optional monochrome theme
+
+`tools/shared/gui/liber-theme-mono.css` is an opt-in greyscale theme.
+Loaded after the design system and the package stylesheet, it collapses
+every product accent to a single graphite ramp, adds soft-extruded depth
+cues on panels, buttons, and inputs, and keeps red exclusively for
+destructive actions. Shell geometry, density, focus treatment, and the
+light/dark contract are unchanged, so it composes with the existing
+`liber.theme` switch. It suits deployments that prefer a print-like,
+low-stimulus appearance (teaching, documentation screenshots, review
+sessions) and users with colour-vision deficiencies.
+
 The canonical browser contract lives in
 `tools/shared/gui/liber-design-system.js` and
 `tools/shared/gui/liber-design-system.css`. Package copies are generated

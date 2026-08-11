@@ -1,7 +1,11 @@
 root <- normalizePath(getwd(), winslash = "/", mustWork = TRUE)
 check_only <- "--check" %in% commandArgs(trailingOnly = TRUE)
 source_root <- file.path(root, "tools", "shared", "gui")
-assets <- c("liber-design-system.js", "liber-design-system.css")
+assets <- c(
+  "liber-design-system.js",
+  "liber-design-system.css",
+  "liber-theme-mono.css"
+)
 target_roots <- c(
   "LibeRtAD/inst/htmlwidgets",
   "LibeRation/inst/htmlwidgets",

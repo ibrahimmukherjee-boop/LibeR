@@ -11,203 +11,228 @@
 <meta property="og:image" content="assets/screenshot-liberation.png">
 <style>
   :root {
-    --bg: #ffffff;
-    --bg-soft: #f5f5f7;
-    --text: #1d1d1f;
-    --muted: #6e6e73;
-    --line: #d2d2d7;
-    --accent: #0071e3;
-    --accent-hover: #0077ed;
-    --card-radius: 22px;
-    --purple: #7d5ba6;
-    --blue: #3a6ea5;
-    --red: #b33f49;
-    --green: #3f7d5a;
-    --amber: #b07b2e;
-    --teal: #2f8b7e;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #000000;
-      --bg-soft: #161617;
-      --text: #f5f5f7;
-      --muted: #a1a1a6;
-      --line: #2d2d2f;
-    }
+    --bg: #e6e7e9;
+    --ink: #1d1d1f;
+    --muted: #5f6368;
+    --faint: #8a8d91;
+    --radius: 28px;
+    --radius-sm: 18px;
+    /* Soft-extruded light: key light top-left, shade bottom-right. */
+    --raise: 10px 10px 24px rgba(30,32,34,.15), -10px -10px 24px rgba(255,255,255,.92);
+    --raise-sm: 5px 5px 12px rgba(30,32,34,.14), -5px -5px 12px rgba(255,255,255,.9);
+    --press: inset 5px 5px 12px rgba(30,32,34,.12), inset -5px -5px 12px rgba(255,255,255,.85);
+    --press-sm: inset 3px 3px 7px rgba(30,32,34,.11), inset -3px -3px 7px rgba(255,255,255,.8);
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { scroll-behavior: smooth; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     background: var(--bg);
-    color: var(--text);
+    color: var(--ink);
     font-size: 19px;
     line-height: 1.55;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
-  a { color: var(--accent); text-decoration: none; }
-  a:hover { text-decoration: underline; }
+  a { color: var(--ink); text-decoration: none; }
+  img { filter: grayscale(1); }
 
   /* Nav */
   nav {
     position: sticky; top: 0; z-index: 100;
     display: flex; align-items: center; justify-content: space-between;
     padding: 0 max(24px, calc(50vw - 560px));
-    height: 52px;
-    background: color-mix(in srgb, var(--bg) 78%, transparent);
-    backdrop-filter: saturate(1.8) blur(20px);
-    -webkit-backdrop-filter: saturate(1.8) blur(20px);
-    border-bottom: 1px solid var(--line);
+    height: 60px;
+    background: color-mix(in srgb, var(--bg) 82%, transparent);
+    backdrop-filter: saturate(1.1) blur(18px);
+    -webkit-backdrop-filter: saturate(1.1) blur(18px);
+    box-shadow: 0 1px 0 rgba(30,32,34,.08);
   }
-  .nav-brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 19px; color: var(--text); }
-  .nav-brand img { width: 30px; height: 30px; }
-  .nav-links { display: flex; align-items: center; gap: 26px; font-size: 14px; }
-  .nav-links a { color: var(--text); opacity: .85; }
-  .nav-links a:hover { opacity: 1; text-decoration: none; }
+  .nav-brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 19px; letter-spacing: .01em; }
+  .nav-brand img { width: 32px; height: 32px; }
+  .nav-links { display: flex; align-items: center; gap: 24px; font-size: 14px; font-weight: 600; }
+  .nav-links a { color: var(--muted); }
+  .nav-links a:hover { color: var(--ink); }
   .nav-cta {
-    background: var(--accent); color: #fff !important; opacity: 1 !important;
-    padding: 7px 16px; border-radius: 980px; font-weight: 600;
+    color: #fff !important; background: var(--ink);
+    padding: 8px 18px; border-radius: 980px;
+    box-shadow: var(--raise-sm);
   }
-  .nav-cta:hover { background: var(--accent-hover); }
+  .nav-cta:hover { background: #000; }
   @media (max-width: 720px) { .nav-links a:not(.nav-cta) { display: none; } }
 
   /* Hero */
-  header {
-    text-align: center;
-    padding: 96px 24px 72px;
+  header { text-align: center; padding: 92px 24px 76px; }
+  .hero-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 118px; height: 118px; border-radius: 50%;
+    background: var(--bg); box-shadow: var(--raise);
+    margin-bottom: 36px;
   }
-  header img.dove { width: 96px; height: 96px; margin-bottom: 28px; }
+  .hero-badge img { width: 72px; height: 72px; }
   h1 {
-    font-size: clamp(44px, 7vw, 76px);
-    font-weight: 700; letter-spacing: -0.02em; line-height: 1.05;
+    font-size: clamp(42px, 7vw, 78px);
+    font-weight: 800; letter-spacing: -0.015em; line-height: 1.04;
+    text-transform: uppercase;
+  }
+  h1 .outline {
+    color: transparent;
+    -webkit-text-stroke: 2px var(--ink);
+    text-stroke: 2px var(--ink);
   }
   .hero-sub {
-    max-width: 680px; margin: 22px auto 0;
-    font-size: clamp(21px, 2.6vw, 28px); font-weight: 400; color: var(--muted); line-height: 1.4;
+    max-width: 660px; margin: 26px auto 0;
+    font-size: clamp(20px, 2.5vw, 26px); color: var(--muted); line-height: 1.45;
   }
-  .hero-ctas { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 38px; }
+  .hero-ctas { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; margin-top: 42px; }
   .btn {
-    display: inline-block; padding: 14px 30px; border-radius: 980px;
-    font-size: 19px; font-weight: 600; transition: all .18s ease;
+    display: inline-block; padding: 15px 32px; border-radius: 980px;
+    font-size: 18px; font-weight: 700; transition: box-shadow .15s ease, transform .15s ease;
   }
-  .btn:hover { text-decoration: none; transform: translateY(-1px); }
-  .btn-primary { background: var(--accent); color: #fff; }
-  .btn-primary:hover { background: var(--accent-hover); }
-  .btn-secondary { border: 1.5px solid var(--accent); color: var(--accent); }
-  .trust {
-    margin-top: 44px; font-size: 15px; color: var(--muted); letter-spacing: .01em;
-  }
+  .btn-primary { background: var(--ink); color: #fff; box-shadow: var(--raise-sm); }
+  .btn-primary:hover { background: #000; }
+  .btn-secondary { background: var(--bg); color: var(--ink); box-shadow: var(--raise-sm); }
+  .btn:active { box-shadow: var(--press-sm); transform: translateY(1px); }
+  .trust { margin-top: 48px; font-size: 15px; color: var(--faint); }
   .trust span { white-space: nowrap; }
   .trust span + span::before { content: "·"; margin: 0 12px; }
 
   /* Sections */
-  section { padding: 88px 24px; }
+  section { padding: 84px 24px; }
   .wrap { max-width: 1120px; margin: 0 auto; }
-  .eyebrow { font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; color: var(--accent); margin-bottom: 12px; }
-  h2 { font-size: clamp(32px, 4.5vw, 52px); font-weight: 700; letter-spacing: -0.015em; line-height: 1.1; }
-  .section-sub { max-width: 640px; margin-top: 16px; font-size: 21px; color: var(--muted); }
+  .eyebrow {
+    display: inline-block; font-size: 13px; font-weight: 800; text-transform: uppercase;
+    letter-spacing: .14em; color: var(--muted);
+    padding: 7px 16px; border-radius: 980px; background: var(--bg); box-shadow: var(--press-sm);
+    margin-bottom: 20px;
+  }
+  h2 { font-size: clamp(30px, 4.4vw, 50px); font-weight: 800; letter-spacing: -0.01em; line-height: 1.08; }
+  .section-sub { max-width: 640px; margin-top: 16px; font-size: 20px; color: var(--muted); }
   .center { text-align: center; }
   .center .section-sub { margin-left: auto; margin-right: auto; }
-  section.soft { background: var(--bg-soft); }
 
   /* Screenshot showcase */
-  .shot {
-    margin-top: 52px; border-radius: var(--card-radius); overflow: hidden;
-    box-shadow: 0 30px 80px rgba(0,0,0,.25);
-    border: 1px solid var(--line);
+  .shot-frame {
+    margin-top: 54px; padding: 18px; border-radius: var(--radius);
+    background: var(--bg); box-shadow: var(--raise);
   }
-  .shot img { display: block; width: 100%; height: auto; }
-  .shot-caption { margin-top: 18px; font-size: 16px; color: var(--muted); text-align: center; }
+  .shot-frame .screen { border-radius: 16px; overflow: hidden; box-shadow: var(--press-sm); }
+  .shot-frame img { display: block; width: 100%; height: auto; }
+  .shot-caption { margin-top: 20px; font-size: 15px; color: var(--muted); text-align: center; }
 
   /* Package cards */
-  .grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 22px; margin-top: 52px;
-  }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; margin-top: 56px; }
   .card {
-    background: var(--bg); border: 1px solid var(--line); border-radius: var(--card-radius);
-    padding: 34px 30px; transition: transform .2s ease, box-shadow .2s ease;
+    background: var(--bg); border-radius: var(--radius); padding: 36px 32px;
+    box-shadow: var(--raise);
     display: flex; flex-direction: column; gap: 12px;
+    transition: transform .18s ease;
   }
-  section.soft .card { border: none; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
-  .card:hover { transform: translateY(-4px); box-shadow: 0 16px 44px rgba(0,0,0,.12); }
-  .card img.icon { width: 52px; height: 52px; }
-  .card h3 { font-size: 24px; font-weight: 700; letter-spacing: -0.01em; }
-  .card h3 .accent-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-left: 8px; vertical-align: middle; }
-  .card p { font-size: 17px; color: var(--muted); flex: 1; }
-  .card .role { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; }
-  .card a.more { font-size: 17px; font-weight: 600; }
+  .card:hover { transform: translateY(-3px); }
+  .card .icon-well {
+    width: 72px; height: 72px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg); box-shadow: var(--press-sm);
+    margin-bottom: 6px;
+  }
+  .card .icon-well img { width: 44px; height: 44px; }
+  .card h3 { font-size: 24px; font-weight: 800; letter-spacing: -0.01em; }
+  .card p { font-size: 16.5px; color: var(--muted); flex: 1; }
+  .card .role { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .12em; color: var(--faint); }
+  .card a.more { font-size: 16px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; }
+  .card a.more::after { content: "›"; font-size: 22px; line-height: 1; transition: transform .15s ease; }
+  .card a.more:hover::after { transform: translateX(3px); }
 
   /* Workflow */
-  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 22px; margin-top: 52px; counter-reset: step; }
-  .step { text-align: center; padding: 30px 22px; border-radius: var(--card-radius); background: var(--bg); box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 30px; margin-top: 56px; counter-reset: step; }
+  .step {
+    text-align: center; padding: 34px 24px; border-radius: var(--radius);
+    background: var(--bg); box-shadow: var(--raise);
+  }
   .step .num {
     counter-increment: step;
     display: inline-flex; align-items: center; justify-content: center;
-    width: 46px; height: 46px; border-radius: 50%;
-    background: var(--accent); color: #fff; font-size: 21px; font-weight: 700; margin-bottom: 16px;
+    width: 56px; height: 56px; border-radius: 50%;
+    background: var(--ink); color: #fff; font-size: 22px; font-weight: 800;
+    box-shadow: var(--raise-sm);
+    margin-bottom: 18px;
   }
   .step .num::before { content: counter(step); }
-  .step h3 { font-size: 21px; margin-bottom: 8px; }
-  .step p { font-size: 16px; color: var(--muted); }
-  .powered { margin-top: 34px; text-align: center; font-size: 17px; color: var(--muted); }
+  .step h3 { font-size: 21px; font-weight: 800; margin-bottom: 8px; }
+  .step p { font-size: 15.5px; color: var(--muted); }
+  .powered { margin-top: 38px; text-align: center; font-size: 16px; color: var(--muted); }
 
-  /* Demos */
-  .demo-card { position: relative; }
-  .demo-card .badge {
-    position: absolute; top: 26px; right: 26px;
-    font-size: 12px; font-weight: 700; letter-spacing: .06em;
-    padding: 5px 12px; border-radius: 980px; background: #34c75922; color: #1a8d3e;
+  /* Demo rows (chevron list, like a settings pane) */
+  .demo-list { max-width: 720px; margin: 52px auto 0; display: grid; gap: 22px; }
+  .demo-row {
+    display: flex; align-items: center; gap: 20px;
+    padding: 22px 28px; border-radius: 980px;
+    background: var(--bg); box-shadow: var(--raise-sm);
+    transition: transform .15s ease;
   }
-  @media (prefers-color-scheme: dark) { .demo-card .badge { color: #4cd964; } }
+  .demo-row:hover { transform: translateY(-2px); }
+  .demo-row .icon-well {
+    width: 56px; height: 56px; flex: 0 0 56px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: var(--press-sm);
+  }
+  .demo-row .icon-well img { width: 34px; height: 34px; }
+  .demo-row .demo-text { flex: 1; min-width: 0; text-align: left; }
+  .demo-row .demo-text strong { display: block; font-size: 19px; font-weight: 800; }
+  .demo-row .demo-text span { display: block; font-size: 15px; color: var(--muted); }
+  .demo-row .chev {
+    width: 42px; height: 42px; flex: 0 0 42px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg); box-shadow: var(--raise-sm);
+    font-size: 22px; font-weight: 700; color: var(--ink);
+  }
 
   /* Install */
   .code {
-    margin-top: 44px; text-align: left;
-    background: #101418; color: #e8eef4;
-    border-radius: 18px; padding: 28px 30px;
-    font: 16px/1.7 "SF Mono", ui-monospace, Consolas, Menlo, monospace;
-    overflow-x: auto;
-    white-space: pre;
+    max-width: 820px; margin: 48px auto 0; text-align: left;
+    background: var(--bg); color: var(--ink);
+    border-radius: var(--radius-sm); padding: 30px 34px;
+    font: 15.5px/1.75 "SF Mono", ui-monospace, Consolas, Menlo, monospace;
+    overflow-x: auto; white-space: pre;
+    box-shadow: var(--press);
   }
-  .code .c { color: #7fa06f; }
-  .code .s { color: #d8a35c; }
-  .install-note { margin-top: 22px; font-size: 16px; color: var(--muted); }
+  .code .c { color: var(--faint); }
+  .code .s { color: var(--muted); }
+  .install-note { margin-top: 24px; font-size: 16px; color: var(--muted); }
+  .install-note a { font-weight: 700; text-decoration: underline; }
 
   /* Docs list */
-  .doc-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 48px; }
+  .doc-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 22px; margin-top: 52px; }
   .doc-links a {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 20px 26px; border-radius: 16px; border: 1px solid var(--line);
-    color: var(--text); font-size: 18px; font-weight: 600;
-    transition: border-color .15s ease, background .15s ease;
+    padding: 22px 28px; border-radius: 980px;
+    background: var(--bg); box-shadow: var(--raise-sm);
+    font-size: 17px; font-weight: 700;
+    transition: transform .15s ease;
   }
-  .doc-links a:hover { text-decoration: none; border-color: var(--accent); background: var(--bg-soft); }
-  .doc-links a::after { content: "→"; color: var(--accent); font-size: 20px; }
+  .doc-links a:hover { transform: translateY(-2px); }
+  .doc-links a::after { content: "›"; font-size: 22px; color: var(--muted); }
 
   /* Footer */
-  footer {
-    padding: 52px 24px 64px; border-top: 1px solid var(--line);
-    text-align: center; font-size: 15px; color: var(--muted);
-  }
+  footer { padding: 60px 24px 72px; text-align: center; font-size: 15px; color: var(--muted); }
   footer a { color: var(--muted); text-decoration: underline; }
-  footer .foot-brand { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 16px; color: var(--text); font-weight: 700; font-size: 17px; }
+  footer .foot-brand { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 16px; color: var(--ink); font-weight: 800; font-size: 17px; }
   footer .foot-brand img { width: 26px; height: 26px; }
 
   /* Reveal animation */
-  .reveal { opacity: 0; transform: translateY(24px); transition: opacity .7s ease, transform .7s ease; }
+  .reveal { opacity: 0; transform: translateY(22px); transition: opacity .65s ease, transform .65s ease; }
   .reveal.visible { opacity: 1; transform: none; }
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
     .reveal { opacity: 1; transform: none; transition: none; }
+    .card, .demo-row, .doc-links a, .step { transition: none; }
   }
 </style>
 </head>
 <body>
 
 <nav>
-  <a class="nav-brand" href="#" style="text-decoration:none">
+  <a class="nav-brand" href="#">
     <img src="assets/liber-dove.svg" alt="LibeR dove logo"> LibeR
   </a>
   <div class="nav-links">
@@ -221,8 +246,8 @@
 </nav>
 
 <header>
-  <img class="dove" src="assets/liber-dove.svg" alt="">
-  <h1>Pharmacometrics,<br>made effortless.</h1>
+  <span class="hero-badge"><img src="assets/liber-dove.svg" alt=""></span>
+  <h1><span class="outline">Pharmaco</span>metrics,<br>made effortless.</h1>
   <p class="hero-sub">LibeR is a free, open-source ecosystem for pharmacological modelling and simulation — from literature discovery to individualised dosing, in one coherent workflow.</p>
   <div class="hero-ctas">
     <a class="btn btn-primary" href="https://svdijkman.shinyapps.io/liberation/">Try the live demo</a>
@@ -235,14 +260,14 @@
   </p>
 </header>
 
-<section class="soft">
+<section>
   <div class="wrap center reveal">
-    <p class="eyebrow">The workbench</p>
+    <span class="eyebrow">The workbench</span>
     <h2>Serious science.<br>A calm, focused interface.</h2>
     <p class="section-sub">The LibeRation workbench brings model editing, estimation, simulation, and diagnostics together — with light and dark themes and keyboard-friendly navigation.</p>
-    <div class="shot"><img src="assets/screenshot-liberation.png" alt="LibeRation population PK/PD modelling workbench, dark theme" loading="lazy"></div>
+    <div class="shot-frame"><div class="screen"><img src="assets/screenshot-liberation.png" alt="LibeRation population PK/PD modelling workbench" loading="lazy"></div></div>
     <p class="shot-caption">LibeRation — population PK/PD modelling and simulation.</p>
-    <div class="shot"><img src="assets/screenshot-liberality.png" alt="LibeRality optimal trial design workbench, dark theme" loading="lazy"></div>
+    <div class="shot-frame"><div class="screen"><img src="assets/screenshot-liberality.png" alt="LibeRality optimal trial design workbench" loading="lazy"></div></div>
     <p class="shot-caption">LibeRality — model-informed optimal clinical trial design.</p>
   </div>
 </section>
@@ -250,49 +275,49 @@
 <section id="packages">
   <div class="wrap reveal">
     <div class="center">
-      <p class="eyebrow">The ecosystem</p>
+      <span class="eyebrow">The ecosystem</span>
       <h2>Six packages. One philosophy.</h2>
       <p class="section-sub">Each package does one job well, shares the same design language, and connects seamlessly to the others.</p>
     </div>
     <div class="grid">
       <div class="card">
-        <img class="icon" src="assets/dove-liberation.svg" alt="" loading="lazy">
-        <p class="role" style="color:var(--blue)">Modelling &amp; simulation</p>
+        <span class="icon-well"><img src="assets/dove-liberation.svg" alt="" loading="lazy"></span>
+        <p class="role">Modelling &amp; simulation</p>
         <h3>LibeRation</h3>
         <p>Build, estimate, and simulate population PK/PD models. FOCE, SAEM, Bayesian methods, diagnostics, VPCs, and NONMEM import/export — in a full visual workbench.</p>
         <a class="more" href="https://github.com/ibrahimmukherjee-boop/LibeR/tree/main/LibeRation">Learn more</a>
       </div>
       <div class="card">
-        <img class="icon" src="assets/dove-liberality.svg" alt="" loading="lazy">
-        <p class="role" style="color:var(--amber)">Optimal design</p>
+        <span class="icon-well"><img src="assets/dove-liberality.svg" alt="" loading="lazy"></span>
+        <p class="role">Optimal design</p>
         <h3>LibeRality</h3>
         <p>Design better clinical trials with expected-information criteria, constrained optimisation, Pareto analysis, and complete trial simulation.</p>
         <a class="more" href="https://github.com/ibrahimmukherjee-boop/LibeR/tree/main/LibeRality">Learn more</a>
       </div>
       <div class="card">
-        <img class="icon" src="assets/dove-liberator.svg" alt="" loading="lazy">
-        <p class="role" style="color:var(--teal)">Precision dosing</p>
+        <span class="icon-well"><img src="assets/dove-liberator.svg" alt="" loading="lazy"></span>
+        <p class="role">Precision dosing</p>
         <h3>LibeRator</h3>
         <p>Bayesian individualisation of treatment from longitudinal patient evidence, with encrypted storage and uncertainty-aware regimen comparison. For research and teaching.</p>
         <a class="more" href="https://github.com/ibrahimmukherjee-boop/LibeR/tree/main/LibeRator">Learn more</a>
       </div>
       <div class="card">
-        <img class="icon" src="assets/dove-liberary.svg" alt="" loading="lazy">
-        <p class="role" style="color:var(--green)">Model discovery</p>
+        <span class="icon-well"><img src="assets/dove-liberary.svg" alt="" loading="lazy"></span>
+        <p class="role">Model discovery</p>
         <h3>LibeRary</h3>
         <p>Search the scientific literature and use language and vision models to extract, validate, and catalogue published pharmacometric models.</p>
         <a class="more" href="https://github.com/ibrahimmukherjee-boop/LibeR/tree/main/LibeRary">Learn more</a>
       </div>
       <div class="card">
-        <img class="icon" src="assets/dove-libertad.svg" alt="" loading="lazy">
-        <p class="role" style="color:var(--purple)">Numerical core</p>
+        <span class="icon-well"><img src="assets/dove-libertad.svg" alt="" loading="lazy"></span>
+        <p class="role">Numerical core</p>
         <h3>LibeRtAD</h3>
         <p>The engine underneath: exact automatic differentiation via CppAD and Eigen, with fast C++ solvers powering every other package.</p>
         <a class="more" href="https://github.com/ibrahimmukherjee-boop/LibeR/tree/main/LibeRtAD">Learn more</a>
       </div>
       <div class="card">
-        <img class="icon" src="assets/dove-liberties.svg" alt="" loading="lazy">
-        <p class="role" style="color:var(--red)">Execution &amp; queues</p>
+        <span class="icon-well"><img src="assets/dove-liberties.svg" alt="" loading="lazy"></span>
+        <p class="role">Execution &amp; queues</p>
         <h3>LibeRties</h3>
         <p>Durable local and remote job queues with authentication, tenant isolation, quotas, audit chains, and integrity checks for secure, scalable model runs.</p>
         <a class="more" href="https://github.com/ibrahimmukherjee-boop/LibeR/tree/main/LibeRties">Learn more</a>
@@ -301,10 +326,10 @@
   </div>
 </section>
 
-<section id="workflow" class="soft">
+<section id="workflow">
   <div class="wrap reveal">
     <div class="center">
-      <p class="eyebrow">How it fits together</p>
+      <span class="eyebrow">How it fits together</span>
       <h2>From literature to patient.<br>Four steps.</h2>
     </div>
     <div class="steps">
@@ -336,39 +361,42 @@
 <section id="demos">
   <div class="wrap reveal">
     <div class="center">
-      <p class="eyebrow">Try it now</p>
+      <span class="eyebrow">Try it now</span>
       <h2>Live demos. No installation.</h2>
       <p class="section-sub">Hosted teaching deployments — synthetic data only. First load may take a few seconds while the server wakes up.</p>
     </div>
-    <div class="grid">
-      <div class="card demo-card">
-        <span class="badge">LIVE</span>
-        <img class="icon" src="assets/dove-liberation.svg" alt="" loading="lazy">
-        <h3>LibeRation</h3>
-        <p>The full modelling workbench: edit a model, run an estimation, and explore diagnostics.</p>
-        <a class="more" href="https://svdijkman.shinyapps.io/liberation/">Open demo</a>
-      </div>
-      <div class="card demo-card">
-        <span class="badge">LIVE</span>
-        <img class="icon" src="assets/dove-liberality.svg" alt="" loading="lazy">
-        <h3>LibeRality</h3>
-        <p>Optimal trial design: evaluate, optimise, and simulate a teaching study design.</p>
-        <a class="more" href="https://svdijkman.shinyapps.io/liberality/">Open demo</a>
-      </div>
-      <div class="card demo-card">
-        <span class="badge">LIVE</span>
-        <img class="icon" src="assets/dove-liberator.svg" alt="" loading="lazy">
-        <h3>LibeRator</h3>
-        <p>Adaptive therapeutic optimisation with synthetic longitudinal dosing data.</p>
-        <a class="more" href="https://svdijkman.shinyapps.io/liberator/">Open demo</a>
-      </div>
+    <div class="demo-list">
+      <a class="demo-row" href="https://svdijkman.shinyapps.io/liberation/">
+        <span class="icon-well"><img src="assets/dove-liberation.svg" alt="" loading="lazy"></span>
+        <span class="demo-text">
+          <strong>LibeRation</strong>
+          <span>The full modelling workbench: edit a model, run an estimation, explore diagnostics.</span>
+        </span>
+        <span class="chev">›</span>
+      </a>
+      <a class="demo-row" href="https://svdijkman.shinyapps.io/liberality/">
+        <span class="icon-well"><img src="assets/dove-liberality.svg" alt="" loading="lazy"></span>
+        <span class="demo-text">
+          <strong>LibeRality</strong>
+          <span>Optimal trial design: evaluate, optimise, and simulate a teaching study design.</span>
+        </span>
+        <span class="chev">›</span>
+      </a>
+      <a class="demo-row" href="https://svdijkman.shinyapps.io/liberator/">
+        <span class="icon-well"><img src="assets/dove-liberator.svg" alt="" loading="lazy"></span>
+        <span class="demo-text">
+          <strong>LibeRator</strong>
+          <span>Adaptive therapeutic optimisation with synthetic longitudinal dosing data.</span>
+        </span>
+        <span class="chev">›</span>
+      </a>
     </div>
   </div>
 </section>
 
-<section id="install" class="soft">
+<section id="install">
   <div class="wrap center reveal">
-    <p class="eyebrow">Get started</p>
+    <span class="eyebrow">Get started</span>
     <h2>Install in one line.</h2>
     <p class="section-sub">Requires R 4.1+ and a C++17 toolchain. CppAD and Eigen are bundled — nothing else to hunt down.</p>
     <div class="code"><span class="c"># In R:</span>
@@ -384,7 +412,7 @@ LibeRation::liber_doctor(strict = TRUE)</div>
 <section id="docs">
   <div class="wrap reveal">
     <div class="center">
-      <p class="eyebrow">Go deeper</p>
+      <span class="eyebrow">Go deeper</span>
       <h2>Documentation.</h2>
     </div>
     <div class="doc-links">
