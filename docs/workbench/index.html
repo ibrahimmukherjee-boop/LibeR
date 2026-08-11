@@ -522,7 +522,12 @@ S2 = V</textarea>
         <label class="chk" style="margin:0"><input type="checkbox" id="pLogY"> Log Y</label>
         <label class="chk" style="margin:0"><input type="checkbox" id="pBigPts"> Large points</label>
       </div>
-      <div id="dataPlotEmpty" class="empty"><strong>No plottable records</strong>Choose numeric axes or run the required diagnostic.</div>
+      <div id="dataPlotEmpty" class="empty"><strong>No plottable records</strong><span id="dataPlotEmptyWhy">Choose numeric axes or run the required diagnostic.</span>
+        <div class="btn-row" style="justify-content:center;margin-top:12px">
+          <button class="btn btn-sm" id="btnEmptyExample">Load example study</button>
+          <button class="btn btn-sm" id="btnEmptyImport">Import CSV</button>
+        </div>
+      </div>
       <div class="plot-wrap" id="dataPlotWrap" style="display:none"><svg id="dataPlot" viewBox="0 0 720 420"></svg></div>
     </section>
   </div>
@@ -1076,20 +1081,45 @@ function exampleDataset() {
   setDataset("example-oral-pk.csv", ["ID", "TIME", "EVID", "AMT", "CMT", "DV", "MDV"], rows);
 }
 $("btnExampleDs").addEventListener("click", exampleDataset);
+$("btnEmptyExample").addEventListener("click", exampleDataset);
+$("btnEmptyImport").addEventListener("click", () => $("csvFile").click());
 $("btnImport").addEventListener("click", () => $("csvFile").click());
+const NM_COLS = ["ID", "TIME", "EVID", "AMT", "CMT", "DV", "MDV", "RATE", "SS", "II", "ADDL", "WT", "AGE", "SEX", "DOSE"];
+function parseDelimited(text) {
+  const lines = text.split(/\r?\n/).filter(l => l.trim() !== "" && !l.trim().startsWith("#") && !l.trim().startsWith("@"));
+  if (lines.length < 2) throw new Error("file needs a header row and at least one data row");
+  // detect delimiter from the header: comma, semicolon, or tab
+  const head = lines[0];
+  const delim = [",", ";", "\t"].map(d => ({ d, n: head.split(d).length }))
+    .sort((a, b) => b.n - a.n)[0];
+  if (delim.n < 2) throw new Error("no comma, semicolon, or tab delimiter found in the header");
+  const clean = (s) => s.replace(/^["']|["']$/g, "").trim();
+  // normalise well-known NONMEM columns to uppercase so TIME/DV/EVID are recognised
+  const cols = head.split(delim.d).map(s => {
+    const c = clean(s);
+    return NM_COLS.includes(c.toUpperCase()) ? c.toUpperCase() : c;
+  });
+  const rows = lines.slice(1).map(l => {
+    const parts = l.split(delim.d);
+    const r = {};
+    cols.forEach((c, i) => {
+      const raw = clean(parts[i] === undefined ? "" : parts[i]);
+      if (raw === "" || raw === ".") { r[c] = NaN; return; }
+      const x = parseFloat(raw);
+      r[c] = Number.isFinite(x) && /^[-+.\d eE]+$/.test(raw) ? x : raw;
+    });
+    return r;
+  });
+  return { cols, rows };
+}
 $("csvFile").addEventListener("change", (e) => {
   const file = e.target.files[0];
   if (!file) return;
   file.text().then(text => {
-    const lines = text.trim().split(/\r?\n/);
-    const cols = lines[0].split(",").map(s => s.trim());
-    const rows = lines.slice(1).map(l => {
-      const parts = l.split(",");
-      const r = {};
-      cols.forEach((c, i) => { const x = parseFloat(parts[i]); r[c] = Number.isFinite(x) ? x : (parts[i] || "").trim(); });
-      return r;
-    });
+    const { cols, rows } = parseDelimited(text);
     setDataset(file.name, cols, rows);
+    if (!cols.includes("TIME") || !cols.includes("DV"))
+      log('Dataset "' + file.name + '" loaded, but it has no TIME/DV columns — plotting works, estimation needs TIME and DV');
   }).catch(err => log("CSV import failed: " + err.message));
   e.target.value = "";
 });
@@ -1374,13 +1404,18 @@ function drawGof() {
 }
 
 /* ---------- data plot ---------- */
+function plotEmpty(why) {
+  $("dataPlotEmptyWhy").textContent = why;
+  $("dataPlotEmpty").style.display = ""; $("dataPlotWrap").style.display = "none";
+}
 function drawDataPlot() {
   const svg = $("dataPlot");
   if (!svg) return;
-  if (!S.dataset) { $("dataPlotEmpty").style.display = ""; $("dataPlotWrap").style.display = "none"; return; }
+  if (!S.dataset) return plotEmpty("No dataset loaded yet — load the example study or import a CSV.");
   const xc = $("pX").value, yc = $("pY").value;
+  if (!xc || !yc) return plotEmpty("The dataset has no numeric columns to plot.");
   const rows = S.dataset.rows.filter(r => Number.isFinite(r[xc]) && Number.isFinite(r[yc]));
-  if (!xc || !yc || !rows.length) { $("dataPlotEmpty").style.display = ""; $("dataPlotWrap").style.display = "none"; return; }
+  if (!rows.length) return plotEmpty("No rows have numeric values in both " + xc + " and " + yc + ".");
   $("dataPlotEmpty").style.display = "none"; $("dataPlotWrap").style.display = "";
 
   const strat = $("pStrat").value, facet = $("pFacet").value, type = $("pType").value;
@@ -1400,24 +1435,27 @@ function drawDataPlot() {
     const fx = (fi % cols_) * fw, fy = Math.floor(fi / cols_) * fh;
     const m = { l: 52, r: 12, t: fv !== null ? 26 : 12, b: 40 };
     let data = fv === null ? rows : rows.filter(r => r[facet] === fv);
-    if (binX && data.length > 8) {
+    // bin a numeric column into ~8 equal-width bins, averaging the other axis,
+    // separately within each stratification group so colours stay meaningful
+    const binned = (recs, byCol, avgCol) => {
       const groups = new Map();
-      const xmin = Math.min(...data.map(r => r[xc])), xmax = Math.max(...data.map(r => r[xc]));
-      const nb = 8, bw = (xmax - xmin) / nb || 1;
-      for (const r of data) {
-        const b = Math.min(nb - 1, Math.floor((r[xc] - xmin) / bw));
-        if (!groups.has(b)) groups.set(b, []);
-        groups.get(b).push(r);
+      const bmin = Math.min(...recs.map(r => r[byCol])), bmax = Math.max(...recs.map(r => r[byCol]));
+      const nb = 8, bw = (bmax - bmin) / nb || 1;
+      for (const r of recs) {
+        const b = Math.min(nb - 1, Math.floor((r[byCol] - bmin) / bw));
+        const g = strat ? r[strat] : "_";
+        const key = g + "|" + b;
+        if (!groups.has(key)) groups.set(key, { g, b, rs: [] });
+        groups.get(key).rs.push(r);
       }
-      data = [...groups.entries()].map(([b, rs]) => ({
-        [xc]: xmin + (b + 0.5) * bw,
-        [yc]: rs.reduce((s, r) => s + r[yc], 0) / rs.length,
-        [strat || "_"]: "binned", ID: "bin"
+      return [...groups.values()].map(({ g, b, rs }) => ({
+        [byCol]: bmin + (b + 0.5) * bw,
+        [avgCol]: rs.reduce((s, r) => s + r[avgCol], 0) / rs.length,
+        [strat || "_s"]: g, ID: "bin-" + g
       }));
-    }
-    if (binY && data.length > 8) {
-      data = data.map(r => ({ ...r, [yc]: Math.round(r[yc] * 2) / 2 }));
-    }
+    };
+    if (binX && data.length > 8) data = binned(data, xc, yc);
+    if (binY && data.length > 8) data = binned(data, yc, xc);
     const xs = data.map(r => r[xc]), ys = data.map(r => r[yc]).filter(v => !logY_ || v > 0);
     if (!ys.length) return;
     const xmin = Math.min(...xs), xmax = Math.max(...xs) || 1;
@@ -1428,10 +1466,17 @@ function drawDataPlot() {
       return fy + m.t + (fh - m.t - m.b) - ((v - ymin) / (ymax - ymin || 1)) * (fh - m.t - m.b);
     };
     for (const f of [0, .5, 1]) {
-      const xv = xmin + f * (xmax - xmin), yv = ymin + f * (ymax - ymin);
+      const xv = xmin + f * (xmax - xmin);
       out += `<line x1="${X(xv)}" y1="${fy + m.t}" x2="${X(xv)}" y2="${fy + fh - m.b}" stroke="${grid}"/>`;
       out += `<text x="${X(xv)}" y="${fy + fh - 22}" text-anchor="middle" font-size="10.5" fill="${mut}">${xv.toFixed(1)}</text>`;
-      if (!logY_) out += `<text x="${fx + m.l - 7}" y="${Y(yv) + 4}" text-anchor="end" font-size="10.5" fill="${mut}">${yv.toFixed(1)}</text>`;
+    }
+    // y ticks: geometric spacing on log scale, linear otherwise
+    const yticks = logY_
+      ? [ymin, Math.sqrt(ymin * ymax), ymax]
+      : [ymin, ymin + 0.5 * (ymax - ymin), ymax];
+    for (const yv of yticks) {
+      out += `<line x1="${fx + m.l}" y1="${Y(yv)}" x2="${fx + fw - m.r}" y2="${Y(yv)}" stroke="${grid}"/>`;
+      out += `<text x="${fx + m.l - 7}" y="${Y(yv) + 4}" text-anchor="end" font-size="10.5" fill="${mut}">${yv >= 100 ? yv.toFixed(0) : yv.toPrecision(3)}</text>`;
     }
     if (fv !== null) out += `<text x="${fx + fw / 2}" y="${fy + 16}" text-anchor="middle" font-size="11.5" font-weight="800" fill="${mut}">${facet} = ${fv}</text>`;
     const stratVals = strat ? [...new Set(data.map(r => r[strat]))] : [null];
@@ -1441,7 +1486,7 @@ function drawDataPlot() {
       if (type !== "scatter") {
         const ids = [...new Set(sub.map(r => r.ID))];
         for (const id of ids) {
-          const line = sub.filter(r => r.ID === id).sort((a, b) => a[xc] - b[xc]);
+          const line = sub.filter(r => r.ID === id && (!logY_ || r[yc] > 0)).sort((a, b) => a[xc] - b[xc]);
           if (line.length > 1) out += `<polyline fill="none" stroke="${colr}" stroke-width="1.3" opacity=".7" points="${line.map(r => X(r[xc]) + "," + Y(r[yc])).join(" ")}"/>`;
         }
       }
@@ -1464,6 +1509,8 @@ renderPriors();
 syncRouteUI();
 applyTheme(savedTheme);
 refreshQueue();
+exampleDataset();
+log("Example study preloaded so every control is live — Import dataset replaces it");
 drawModelPlot();
 log("Workbench ready");
 $("logText").textContent = "Workbench ready";
