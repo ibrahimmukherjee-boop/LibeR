@@ -42,7 +42,7 @@ lator_regimen_candidates <- function(amounts, intervals, routes = "oral",
       any(!is.finite(covariance))) {
     .lator_stop("ETA covariance must be a finite square matrix matching the ETA mean.")
   }
-  native <- getFromNamespace(".liberation_mvn_draws", "LibeRation")
+  native <- utils::getFromNamespace(".liberation_mvn_draws", "LibeRation")
   native(mean, covariance, as.integer(n))
 }
 

@@ -57,5 +57,5 @@ summarize for the local Help AI. AIC, BIC, and likelihood-ratio deltas are
 calculated only for fits whose reported objective is a comparable likelihood.
 BAYES, HMC, and NUTS posterior scores remain visible but are explicitly
 excluded; use \code{\link[=nm_waic]{nm_waic()}} or
-\code{\link[=nm_loo]{nm_loo()}} for those fits.
+\code{\link[=nm_psis_loo]{nm_psis_loo()}} for those fits.
 }

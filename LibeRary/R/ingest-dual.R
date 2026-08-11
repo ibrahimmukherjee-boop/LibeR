@@ -496,7 +496,7 @@ ingest_reconcile_extractions <- function(metadata, bundle, text, vision, cfg = N
   }
   runtime_label <- function(lane) {
     processor <- lane$audit$runtime$processor %||% ""
-    if (nzchar(processor)) paste0(" — ", processor) else ""
+    if (nzchar(processor)) paste0(" - ", processor) else ""
   }
 
   stage(0.05, "Comparing text and vision claims (CPU)", "reconciliation")

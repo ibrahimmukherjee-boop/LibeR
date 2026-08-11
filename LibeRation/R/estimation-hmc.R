@@ -849,7 +849,7 @@
   })
   if (is.null(dim(normalized))) normalized <- matrix(normalized, ncol = 1L)
   ends <- cumsum(sizes)
-  starts <- c(1L, head(ends, -1L) + 1L)
+  starts <- c(1L, utils::head(ends, -1L) + 1L)
   Map(function(first, last) normalized[first:last, , drop = FALSE], starts, ends)
 }
 
@@ -910,7 +910,7 @@
     pairs <- rho[seq.int(1L, last, by = 2L)] +
       rho[seq.int(2L, last, by = 2L)]
     negative <- which(!is.finite(pairs) | pairs < 0)
-    if (length(negative)) pairs <- head(pairs, negative[[1L]] - 1L)
+    if (length(negative)) pairs <- utils::head(pairs, negative[[1L]] - 1L)
     if (length(pairs) > 1L) {
       for (index in 2:length(pairs)) {
         pairs[[index]] <- min(pairs[[index]], pairs[[index - 1L]])
