@@ -1,5 +1,17 @@
 # LibeR
 
+**Website:** [ibrahimmukherjee-boop.github.io/LibeR](https://ibrahimmukherjee-boop.github.io/LibeR/) ·
+**Live demos:** [LibeRation](https://svdijkman.shinyapps.io/liberation/) ·
+[LibeRality](https://svdijkman.shinyapps.io/liberality/) ·
+[LibeRator](https://svdijkman.shinyapps.io/liberator/)
+
+> This is a public fork of [svdijkman/LibeR](https://github.com/svdijkman/LibeR) with an
+> added GitHub Pages site and documentation improvements.
+
+**In one sentence:** LibeR lets you discover pharmacometric models in the literature,
+build and estimate them, use them to design better clinical trials, and translate them
+into individualised dosing — free, open source, and fast.
+
 LibeR is a six-package population PK/PD, optimal-design, and model-informed precision-dosing ecosystem with an R-facing
 workflow and a single C++ numerical runtime.
 

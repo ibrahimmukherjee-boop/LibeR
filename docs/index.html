@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LibeR — Open-source pharmacometrics, made effortless</title>
+<meta name="description" content="LibeR is a free, open-source ecosystem for pharmacometric modelling, optimal trial design, and individualised treatment. Six packages, one philosophy.">
+<link rel="icon" href="assets/liber-dove.svg" type="image/svg+xml">
+<meta property="og:title" content="LibeR — Open-source pharmacometrics, made effortless">
+<meta property="og:description" content="Model discovery, estimation, simulation, optimal design, and precision dosing — in one coherent, open ecosystem.">
+<meta property="og:image" content="assets/screenshot-liberation.png">
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg-soft: #f5f5f7;
+    --text: #1d1d1f;
+    --muted: #6e6e73;
+    --line: #d2d2d7;
+    --accent: #0071e3;
+    --accent-hover: #0077ed;
+    --card-radius: 22px;
+    --purple: #7d5ba6;
+    --blue: #3a6ea5;
+    --red: #b33f49;
+    --green: #3f7d5a;
+    --amber: #b07b2e;
+    --teal: #2f8b7e;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000000;
+      --bg-soft: #161617;
+      --text: #f5f5f7;
+      --muted: #a1a1a6;
+      --line: #2d2d2f;
+    }
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 19px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* Nav */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 max(24px, calc(50vw - 560px));
+    height: 52px;
+    background: color-mix(in srgb, var(--bg) 78%, transparent);
+    backdrop-filter: saturate(1.8) blur(20px);
+    -webkit-backdrop-filter: saturate(1.8) blur(20px);
+    border-bottom: 1px solid var(--line);
+  }
+  .nav-brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 19px; color: var(--text); }
+  .nav-brand img { width: 30px; height: 30px; }
+  .nav-links { display: flex; align-items: center; gap: 26px; font-size: 14px; }
+  .nav-links a { color: var(--text); opacity: .85; }
+  .nav-links a:hover { opacity: 1; text-decoration: none; }
+  .nav-cta {
+    background: var(--accent); color: #fff !important; opacity: 1 !important;
+    padding: 7px 16px; border-radius: 980px; font-weight: 600;
+  }
+  .nav-cta:hover { background: var(--accent-hover); }
+  @media (max-width: 720px) { .nav-links a:not(.nav-cta) { display: none; } }
+
+  /* Hero */
+  header {
+    text-align: center;
+    padding: 96px 24px 72px;
+  }
+  header img.dove { width: 96px; height: 96px; margin-bottom: 28px; }
+  h1 {
+    font-size: clamp(44px, 7vw, 76px);
+    font-weight: 700; letter-spacing: -0.02em; line-height: 1.05;
+  }
+  .hero-sub {
+    max-width: 680px; margin: 22px auto 0;
+    font-size: clamp(21px, 2.6vw, 28px); font-weight: 400; color: var(--muted); line-height: 1.4;
+  }
+  .hero-ctas { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 38px; }
+  .btn {
+    display: inline-block; padding: 14px 30px; border-radius: 980px;
+    font-size: 19px; font-weight: 600; transition: all .18s ease;
+  }
+  .btn:hover { text-decoration: none; transform: translateY(-1px); }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-secondary { border: 1.5px solid var(--accent); color: var(--accent); }
+  .trust {
+    margin-top: 44px; font-size: 15px; color: var(--muted); letter-spacing: .01em;
+  }
+  .trust span { white-space: nowrap; }
+  .trust span + span::before { content: "·"; margin: 0 12px; }
+
+  /* Sections */
+  section { padding: 88px 24px; }
+  .wrap { max-width: 1120px; margin: 0 auto; }
+  .eyebrow { font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; color: var(--accent); margin-bottom: 12px; }
+  h2 { font-size: clamp(32px, 4.5vw, 52px); font-weight: 700; letter-spacing: -0.015em; line-height: 1.1; }
+  .section-sub { max-width: 640px; margin-top: 16px; font-size: 21px; color: var(--muted); }
+  .center { text-align: center; }
+  .center .section-sub { margin-left: auto; margin-right: auto; }
+  section.soft { background: var(--bg-soft); }
+
+  /* Screenshot showcase */
+  .shot {
+    margin-top: 52px; border-radius: var(--card-radius); overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,.25);
+    border: 1px solid var(--line);
+  }
+  .shot img { display: block; width: 100%; height: auto; }
+  .shot-caption { margin-top: 18px; font-size: 16px; color: var(--muted); text-align: center; }
+
+  /* Package cards */
+  .grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 22px; margin-top: 52px;
+  }
+  .card {
+    background: var(--bg); border: 1px solid var(--line); border-radius: var(--card-radius);
+    padding: 34px 30px; transition: transform .2s ease, box-shadow .2s ease;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  section.soft .card { border: none; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+  .card:hover { transform: translateY(-4px); box-shadow: 0 16px 44px rgba(0,0,0,.12); }
+  .card img.icon { width: 52px; height: 52px; }
+  .card h3 { font-size: 24px; font-weight: 700; letter-spacing: -0.01em; }
+  .card h3 .accent-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-left: 8px; vertical-align: middle; }
+  .card p { font-size: 17px; color: var(--muted); flex: 1; }
+  .card .role { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; }
+  .card a.more { font-size: 17px; font-weight: 600; }
+
+  /* Workflow */
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 22px; margin-top: 52px; counter-reset: step; }
+  .step { text-align: center; padding: 30px 22px; border-radius: var(--card-radius); background: var(--bg); box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+  .step .num {
+    counter-increment: step;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 46px; height: 46px; border-radius: 50%;
+    background: var(--accent); color: #fff; font-size: 21px; font-weight: 700; margin-bottom: 16px;
+  }
+  .step .num::before { content: counter(step); }
+  .step h3 { font-size: 21px; margin-bottom: 8px; }
+  .step p { font-size: 16px; color: var(--muted); }
+  .powered { margin-top: 34px; text-align: center; font-size: 17px; color: var(--muted); }
+
+  /* Demos */
+  .demo-card { position: relative; }
+  .demo-card .badge {
+    position: absolute; top: 26px; right: 26px;
+    font-size: 12px; font-weight: 700; letter-spacing: .06em;
+    padding: 5px 12px; border-radius: 980px; background: #34c75922; color: #1a8d3e;
+  }
+  @media (prefers-color-scheme: dark) { .demo-card .badge { color: #4cd964; } }
+
+  /* Install */
+  .code {
+    margin-top: 44px; text-align: left;
+    background: #101418; color: #e8eef4;
+    border-radius: 18px; padding: 28px 30px;
+    font: 16px/1.7 "SF Mono", ui-monospace, Consolas, Menlo, monospace;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .code .c { color: #7fa06f; }
+  .code .s { color: #d8a35c; }
+  .install-note { margin-top: 22px; font-size: 16px; color: var(--muted); }
+
+  /* Docs list */
+  .doc-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 48px; }
+  .doc-links a {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 26px; border-radius: 16px; border: 1px solid var(--line);
+    color: var(--text); font-size: 18px; font-weight: 600;
+    transition: border-color .15s ease, background .15s ease;
+  }
+  .doc-links a:hover { text-decoration: none; border-color: var(--accent); background: var(--bg-soft); }
+  .doc-links a::after { content: "→"; color: var(--accent); font-size: 20px; }
+
+  /* Footer */
+  footer {
+    padding: 52px 24px 64px; border-top: 1px solid var(--line);
+    text-align: center; font-size: 15px; color: var(--muted);
+  }
+  footer a { color: var(--muted); text-decoration: underline; }
+  footer .foot-brand { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 16px; color: var(--text); font-weight: 700; font-size: 17px; }
+  footer .foot-brand img { width: 26px; height: 26px; }
+
+  /* Reveal animation */
+  .reveal { opacity: 0; transform: translateY(24px); transition: opacity .7s ease, transform .7s ease; }
+  .reveal.visible { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .reveal { opacity: 1; transform: none; transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="#" style="text-decoration:none">
+    <img src="assets/liber-dove.svg" alt="LibeR dove logo"> LibeR
+  </a>
+  <div class="nav-links">
+    <a href="#packages">Packages</a>
+    <a href="#workflow">Workflow</a>
+    <a href="#demos">Live demos</a>
+    <a href="#install">Install</a>
+    <a href="#docs">Docs</a>
+    <a class="nav-cta" href="https://github.com/ibrahimmukherjee-boop/LibeR">GitHub</a>
+  </div>
+</nav>
+
+<header>
+  <img class="dove" src="assets/liber-dove.svg" alt="">
+  <h1>Pharmacometrics,<br>made effortless.</h1>
+  <p class="hero-sub">LibeR is a free, open-source ecosystem for pharmacological modelling and simulation — from literature discovery to individualised dosing, in one coherent workflow.</p>
+  <div class="hero-ctas">
+    <a class="btn btn-primary" href="https://svdijkman.shinyapps.io/liberation/">Try the live demo</a>
+    <a class="btn btn-secondary" href="https://github.com/ibrahimmukherjee-boop/LibeR">View the source</a>
+  </div>
+  <p class="trust">
+    <span>MIT licensed</span>
+    <span>R interface, C++ engine</span>
+    <span>Cross-validated against NONMEM, PopED &amp; PFIM</span>
+  </p>
+</header>
+
+<section class="soft">
+  <div class="wrap center reveal">
+    <p class="eyebrow">The workbench</p>
+    <h2>Serious science.<br>A calm, focused interface.</h2>
+    <p class="section-sub">The LibeRation workbench brings model editing, estimation, simulation, and diagnostics together — with light and dark themes and keyboard-friendly navigation.</p>
+    <div class="shot"><img src="assets/screenshot-liberation.png" alt="LibeRation population PK/PD modelling workbench, dark theme" loading="lazy"></div>
+    <p class="shot-caption">LibeRation — population PK/PD modelling and simulation.</p>
+    <div class="shot"><img src="assets/screenshot-liberality.png" alt="LibeRality optimal trial design workbench, dark theme" loading="lazy"></div>
+    <p class="shot-caption">LibeRality — model-informed optimal clinical trial design.</p>
+  </div>
+</section>
+
+<section id="packages">
+  <div class="wrap reveal">
+    <div class="center">
+      <p class="eyebrow">The ecosystem</p>
+      <h2>Six packages. One philosophy.</h2>
+      <p class="section-sub">Each package does one job well, shares the same design language, and connects seamlessly to the others.</p>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <img class="icon" src="assets/dove-liberation.svg" alt="" loading="lazy">
+        <p class="role" style="color:var(--blue)">Modelling &amp; simulation</p>
+        <h3>LibeRation</h3>
+        <p>Build, estimate, and simulate population PK/PD models. FOCE, SAEM, Bayesian methods, diagnostics, VPCs, and NONMEM import/export — in a full visual workbench.</p>
+        <a class="more" href="https://github.com/ibrahimmukherjee-boop/LibeR/tree/main/LibeRation">Learn more</a>
+      </div>
+      <div class="card">
+        <img class="icon" src="assets/dove-liberality.svg" alt="" loading="lazy">
+        <p class="role" style="color:var(--amber)">Optimal design</p>
+        <h3>LibeRality</h3>
+        <p>Design better clinical trials with expected-information criteria, constrained optimisation, Pareto analysis, and complete trial simulation.</p>
+        <a class="more" href="https://github.com/ibrahimmukherjee-boop/LibeR/tree/main/LibeRality">Learn more</a>
+      </div>
+      <div class="card">
+        <img class="icon" src="assets/dove-liberator.svg" alt="" loading="lazy">
+        <p class="role" style="color:var(--teal)">Precision dosing</p>
+        <h3>LibeRator</h3>
+        <p>Bayesian individualisation of treatment from longitudinal patient evidence, with encrypted storage and uncertainty-aware regimen comparison. For research and teaching.</p>
+        <a class="more" href="https://github.com/ibrahimmukherjee-boop/LibeR/tree/main/LibeRator">Learn more</a>
+      </div>
+      <div class="card">
+        <img class="icon" src="assets/dove-liberary.svg" alt="" loading="lazy">
+        <p class="role" style="color:var(--green)">Model discovery</p>
+        <h3>LibeRary</h3>
+        <p>Search the scientific literature and use language and vision models to extract, validate, and catalogue published pharmacometric models.</p>
+        <a class="more" href="https://github.com/ibrahimmukherjee-boop/LibeR/tree/main/LibeRary">Learn more</a>
+      </div>
+      <div class="card">
+        <img class="icon" src="assets/dove-libertad.svg" alt="" loading="lazy">
+        <p class="role" style="color:var(--purple)">Numerical core</p>
+        <h3>LibeRtAD</h3>
+        <p>The engine underneath: exact automatic differentiation via CppAD and Eigen, with fast C++ solvers powering every other package.</p>
+        <a class="more" href="https://github.com/ibrahimmukherjee-boop/LibeR/tree/main/LibeRtAD">Learn more</a>
+      </div>
+      <div class="card">
+        <img class="icon" src="assets/dove-liberties.svg" alt="" loading="lazy">
+        <p class="role" style="color:var(--red)">Execution &amp; queues</p>
+        <h3>LibeRties</h3>
+        <p>Durable local and remote job queues with authentication, tenant isolation, quotas, audit chains, and integrity checks for secure, scalable model runs.</p>
+        <a class="more" href="https://github.com/ibrahimmukherjee-boop/LibeR/tree/main/LibeRties">Learn more</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="workflow" class="soft">
+  <div class="wrap reveal">
+    <div class="center">
+      <p class="eyebrow">How it fits together</p>
+      <h2>From literature to patient.<br>Four steps.</h2>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <span class="num"></span>
+        <h3>Discover</h3>
+        <p>LibeRary finds and catalogues published models from the literature.</p>
+      </div>
+      <div class="step">
+        <span class="num"></span>
+        <h3>Model</h3>
+        <p>LibeRation estimates and simulates your population PK/PD models.</p>
+      </div>
+      <div class="step">
+        <span class="num"></span>
+        <h3>Design</h3>
+        <p>LibeRality optimises your next study or clinical trial design.</p>
+      </div>
+      <div class="step">
+        <span class="num"></span>
+        <h3>Individualise</h3>
+        <p>LibeRator turns models into individualised dosing recommendations.</p>
+      </div>
+    </div>
+    <p class="powered">Powered underneath by <strong>LibeRtAD</strong> (automatic differentiation) and <strong>LibeRties</strong> (secure job execution).</p>
+  </div>
+</section>
+
+<section id="demos">
+  <div class="wrap reveal">
+    <div class="center">
+      <p class="eyebrow">Try it now</p>
+      <h2>Live demos. No installation.</h2>
+      <p class="section-sub">Hosted teaching deployments — synthetic data only. First load may take a few seconds while the server wakes up.</p>
+    </div>
+    <div class="grid">
+      <div class="card demo-card">
+        <span class="badge">LIVE</span>
+        <img class="icon" src="assets/dove-liberation.svg" alt="" loading="lazy">
+        <h3>LibeRation</h3>
+        <p>The full modelling workbench: edit a model, run an estimation, and explore diagnostics.</p>
+        <a class="more" href="https://svdijkman.shinyapps.io/liberation/">Open demo</a>
+      </div>
+      <div class="card demo-card">
+        <span class="badge">LIVE</span>
+        <img class="icon" src="assets/dove-liberality.svg" alt="" loading="lazy">
+        <h3>LibeRality</h3>
+        <p>Optimal trial design: evaluate, optimise, and simulate a teaching study design.</p>
+        <a class="more" href="https://svdijkman.shinyapps.io/liberality/">Open demo</a>
+      </div>
+      <div class="card demo-card">
+        <span class="badge">LIVE</span>
+        <img class="icon" src="assets/dove-liberator.svg" alt="" loading="lazy">
+        <h3>LibeRator</h3>
+        <p>Adaptive therapeutic optimisation with synthetic longitudinal dosing data.</p>
+        <a class="more" href="https://svdijkman.shinyapps.io/liberator/">Open demo</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="install" class="soft">
+  <div class="wrap center reveal">
+    <p class="eyebrow">Get started</p>
+    <h2>Install in one line.</h2>
+    <p class="section-sub">Requires R 4.1+ and a C++17 toolchain. CppAD and Eigen are bundled — nothing else to hunt down.</p>
+    <div class="code"><span class="c"># In R:</span>
+source(<span class="s">"https://raw.githubusercontent.com/svdijkman/LibeR/main/tools/install-ecosystem.R"</span>)
+liber_install()
+
+<span class="c"># Verify the installation:</span>
+LibeRation::liber_doctor(strict = TRUE)</div>
+    <p class="install-note">Full options, including stable-channel and manual installs, are in the <a href="https://github.com/ibrahimmukherjee-boop/LibeR/blob/main/docs/INSTALL.md">install guide</a>.</p>
+  </div>
+</section>
+
+<section id="docs">
+  <div class="wrap reveal">
+    <div class="center">
+      <p class="eyebrow">Go deeper</p>
+      <h2>Documentation.</h2>
+    </div>
+    <div class="doc-links">
+      <a href="https://github.com/ibrahimmukherjee-boop/LibeR/blob/main/docs/ARCHITECTURE.md">Architecture</a>
+      <a href="https://github.com/ibrahimmukherjee-boop/LibeR/blob/main/docs/VALIDATION.md">Validation &amp; evidence</a>
+      <a href="https://github.com/ibrahimmukherjee-boop/LibeR/blob/main/docs/INSTALL.md">Installation guide</a>
+      <a href="https://github.com/ibrahimmukherjee-boop/LibeR/blob/main/SECURITY.md">Security model</a>
+      <a href="manuals/LibeRation-0.10.9-reference.html">LibeRation reference manual</a>
+      <a href="manuals/LibeRality-0.3.1-reference.html">LibeRality reference manual</a>
+      <a href="manuals/LibeRator-0.4.1-reference.html">LibeRator reference manual</a>
+      <a href="manuals/LibeRary-0.8.2-reference.html">LibeRary reference manual</a>
+      <a href="manuals/LibeRtAD-0.8.2-reference.html">LibeRtAD reference manual</a>
+      <a href="manuals/LibeRties-0.8.3-reference.html">LibeRties reference manual</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="foot-brand"><img src="assets/liber-dove.svg" alt=""> LibeR</div>
+  <p>An open-source pharmacometrics ecosystem, MIT licensed.</p>
+  <p style="margin-top:10px">Original project by <a href="https://github.com/svdijkman">Simon van Dijkman</a> · This site is served from a <a href="https://github.com/ibrahimmukherjee-boop/LibeR">public fork</a>.</p>
+</footer>
+
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("visible");
+        observer.unobserve(entry.target);
+      }
+    }
+  }, { threshold: 0.08 });
+  document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
+</script>
+
+</body>
+</html>
