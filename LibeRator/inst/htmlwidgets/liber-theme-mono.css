@@ -1,0 +1,162 @@
+/*
+ * LibeR Mono - an opt-in monochrome theme for the LibeR applications.
+ *
+ * Load this stylesheet AFTER liber-design-system.css and the package
+ * stylesheet (for example liberWorkbench.css). It retunes every product
+ * accent to a single greyscale ramp and adds soft-extruded ("neumorphic")
+ * depth cues, reducing colour-based cognitive load while preserving the
+ * shared shell geometry, focus treatment, and information hierarchy.
+ *
+ * Design constraints honoured from docs/gui-design-system.md:
+ *  - shell geometry, typography scale, and density are unchanged;
+ *  - destructive actions remain red (colour is reserved exclusively for
+ *    irreversible operations, which makes them more salient, not less);
+ *  - status colour is always accompanied by text, so the greyscale status
+ *    palette below never removes information;
+ *  - :focus-visible outlines keep a 3:1 contrast ratio against every
+ *    surface in the ramp.
+ *
+ * The theme is intentionally variable-only where possible so it tracks
+ * upstream component changes without modification.
+ */
+
+.lw-legacy-shell.theme-light,
+.lw-legacy-shell {
+  /* Product accents collapse to a greyscale ramp. */
+  --lw-blue: #1d1d1f;
+  --lw-blue-bright: #3c3c3f;
+  --lw-green: #2c2c2e;
+  --lw-orange: #48484a;
+  --lw-model: #3a3a3c;
+  --lw-estimate: #2c2c2e;
+  --lw-diagnostic: #48484a;
+
+  /* Destructive stays red: the single permitted colour. */
+  --lw-red: #b33f49;
+
+  /* Paper-and-graphite surfaces. */
+  --lw-bg: #e8e9eb;
+  --lw-surface: #eceded;
+  --lw-surface-2: #e3e4e6;
+  --lw-surface-3: #dadbdd;
+  --lw-text: #1d1d1f;
+  --lw-muted: #5f6368;
+  --lw-line: #cfd0d2;
+  --lw-input: #f2f3f4;
+  --lw-hover: #dddee0;
+  --lw-shadow: rgba(30, 32, 34, 0.16);
+  --lw-danger-text: #a62f39;
+
+  /* Greyscale code editing; syntax is differentiated by weight-like
+     lightness steps instead of hue. */
+  --lw-code-bg: #f4f5f6;
+  --lw-code-text: #232426;
+  --lw-syntax-comment: #8a8d91;
+  --lw-syntax-string: #3a3a3c;
+  --lw-syntax-number: #1d1d1f;
+  --lw-syntax-keyword: #000000;
+  --lw-syntax-symbol: #48484a;
+  --lw-syntax-block: #b33b45;
+  --lw-syntax-parameter: #2c2c2e;
+  --lw-syntax-definition: #3a3a3c;
+  --lw-syntax-function: #1d1d1f;
+}
+
+.lw-legacy-shell.theme-dark {
+  --lw-blue: #d5d6d8;
+  --lw-blue-bright: #ffffff;
+  --lw-green: #c7c8ca;
+  --lw-orange: #aeafb1;
+  --lw-model: #bcbdbf;
+  --lw-estimate: #c7c8ca;
+  --lw-diagnostic: #aeafb1;
+
+  --lw-red: #c65560;
+
+  --lw-bg: #151617;
+  --lw-surface: #1c1d1f;
+  --lw-surface-2: #232426;
+  --lw-surface-3: #2b2c2e;
+  --lw-text: #f2f2f4;
+  --lw-muted: #9d9fa3;
+  --lw-line: #35363a;
+  --lw-input: #191a1c;
+  --lw-hover: #2e2f32;
+  --lw-shadow: rgba(0, 0, 0, 0.5);
+  --lw-danger-text: #e8949b;
+
+  --lw-code-bg: #191a1c;
+  --lw-code-text: #e8e9eb;
+  --lw-syntax-comment: #7c7f83;
+  --lw-syntax-string: #cfd0d2;
+  --lw-syntax-number: #ffffff;
+  --lw-syntax-keyword: #ffffff;
+  --lw-syntax-symbol: #bcbdbf;
+  --lw-syntax-block: #e8949b;
+  --lw-syntax-parameter: #d5d6d8;
+  --lw-syntax-definition: #c7c8ca;
+  --lw-syntax-function: #f2f2f4;
+}
+
+/* Header: flat graphite instead of the blue gradient. */
+.lw-legacy-shell .lw-app-header {
+  background: #1d1d1f;
+  box-shadow: 0 2px 9px rgba(0, 0, 0, 0.22);
+}
+.lw-legacy-shell.theme-dark .lw-app-header {
+  background: #0d0d0e;
+}
+
+/* Soft-extruded depth for panels: light key from the top-left, shade to
+   the bottom-right. Geometry (radius, spacing) is inherited unchanged. */
+.lw-legacy-shell.theme-light .lw-panel,
+.lw-legacy-shell.theme-light .lw-project-sidebar {
+  border-color: transparent;
+  box-shadow:
+    6px 6px 14px rgba(30, 32, 34, 0.13),
+    -6px -6px 14px rgba(255, 255, 255, 0.85);
+}
+
+/* Buttons read as raised keys; pressing them visually recesses. */
+.lw-legacy-shell.theme-light .lw-button {
+  border-color: transparent;
+  box-shadow:
+    3px 3px 7px rgba(30, 32, 34, 0.14),
+    -3px -3px 7px rgba(255, 255, 255, 0.9);
+}
+.lw-legacy-shell.theme-light .lw-button:active:not(:disabled) {
+  box-shadow:
+    inset 2px 2px 5px rgba(30, 32, 34, 0.16),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.7);
+}
+.lw-legacy-shell.theme-light .lw-button-link {
+  box-shadow: none;
+}
+
+/* Inputs read as gently recessed wells. */
+.lw-legacy-shell.theme-light .lw-field > input,
+.lw-legacy-shell.theme-light .lw-field > select,
+.lw-legacy-shell.theme-light .lw-field > textarea,
+.lw-legacy-shell.theme-light .lw-inline-create input,
+.lw-legacy-shell.theme-light .lw-form-stack input {
+  border-color: transparent;
+  box-shadow:
+    inset 2px 2px 5px rgba(30, 32, 34, 0.10),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.75);
+}
+.lw-legacy-shell.theme-light .lw-field > input:focus,
+.lw-legacy-shell.theme-light .lw-field > select:focus,
+.lw-legacy-shell.theme-light .lw-field > textarea:focus,
+.lw-legacy-shell.theme-light .lw-inline-create input:focus,
+.lw-legacy-shell.theme-light .lw-form-stack input:focus {
+  box-shadow:
+    inset 2px 2px 5px rgba(30, 32, 34, 0.10),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.75),
+    0 0 0 2px rgba(29, 29, 31, 0.35);
+}
+
+/* Greyscale status dots keep their text labels; running keeps its pulse
+   so state changes stay perceivable without hue. */
+.lw-legacy-shell .lw-status-ready { background: #1d1d1f; }
+.lw-legacy-shell .lw-status-running { background: #7c7f83; }
+.lw-legacy-shell.theme-dark .lw-status-ready { background: #f2f2f4; }
